@@ -1,33 +1,32 @@
-/* style.css */
+/* bowen.css */
 body {
-    font-family: system-ui, -apple-system, sans-serif;
-  }
-  
-  /* 动态滚动文字 */
-  .scroll-text {
-    animation: scrollLeft 25s linear infinite;
-    transform: rotate(-8deg);
-  }
-  
-  .scroll-text2 {
-    animation: scrollLeft 35s linear infinite;
-    transform: rotate(6deg);
-  }
-  
-  @keyframes scrollLeft {
-    0% {
-      /* 滚动的同时保持倾斜角度 */
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* 动态滚动文字 */
+.scroll-text {
+  animation: scrollLeft 25s linear infinite;
+  transform: rotate(-8deg);
+}
+
+.scroll-text2 {
+  animation: scrollLeft 35s linear infinite;
+  transform: rotate(6deg);
+}
+
+@keyframes scrollLeft {
+  0% {
       transform: translate3d(0, 0, 0) rotate(var(--rot, -8deg));
-    }
-    100% {
+  }
+  100% {
       transform: translate3d(-50%, 0, 0) rotate(var(--rot, -8deg));
-    }
   }
-  
-  /* 分别微调两段文字的倾斜变量 */
-  .scroll-text {
-    --rot: -8deg;
-  }
-  .scroll-text2 {
-    --rot: 6deg;
-  }
+}
+
+.scroll-text {
+  --rot: -8deg;
+}
+
+.scroll-text2 {
+  --rot: 6deg;
+}
