@@ -3,14 +3,14 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* 动态滚动文字 */
+/* 🌀 基础动态滚动文字效果 */
 .scroll-text {
-  animation: scrollLeft 25s linear infinite;
+  animation: scrollLeft 30s linear infinite;
   transform: rotate(-8deg);
 }
 
 .scroll-text2 {
-  animation: scrollLeft 35s linear infinite;
+  animation: scrollLeft 40s linear infinite;
   transform: rotate(6deg);
 }
 
@@ -29,4 +29,17 @@ body {
 
 .scroll-text2 {
   --rot: 6deg;
+}
+
+/* ⚡ 核心修改：针对手机小屏幕（屏幕宽度小于 768px）进行特异性加速 */
+@media (max-w-width: 768px) or (max-width: 768px) {
+  .scroll-text {
+    /* 手机上第一、三、五条：从 30 秒直接缩短到 12 秒，速度提升两倍多！ */
+    animation: scrollLeft 12s linear infinite !important;
+  }
+  
+  .scroll-text2 {
+    /* 手机上第二、四条（反向）：从 40 秒直接缩短到 15 秒，速度同样暴增！ */
+    animation: scrollLeft 15s linear infinite !important;
+  }
 }
