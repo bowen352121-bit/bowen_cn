@@ -1,0 +1,31 @@
+/* style.css */
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  
+  /* 动态滚动文字 */
+  .scroll-text {
+    animation: scrollLeft 25s linear infinite;
+  }
+  
+  .scroll-text2 {
+    animation: scrollLeft 35s linear infinite;
+  }
+  
+  @keyframes scrollLeft {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  /* 让文字稍微倾斜，更像你图片里的效果 */
+  .scroll-text {
+    transform: rotate(-8deg);
+  }
+  
+  .scroll-text2 {
+    transform: rotate(6deg);
+  }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的个人空间</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="bowen.css">
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen overflow-hidden">
+  
+  <!-- 动态滚动背景 -->
+  <div class="fixed inset-0 z-0 opacity-30 pointer-events-none">
+    <div class="scroll-text absolute inset-0 flex items-center text-[120px] font-bold tracking-widest text-teal-400/20 whitespace-nowrap">
+      MONSTER APPRECIATION MONSTER APPRECIATION MONSTER APPRECIATION 
+    </div>
+    <div class="scroll-text2 absolute inset-0 flex items-center text-[100px] font-bold tracking-widest text-sky-400/10 whitespace-nowrap" 
+         style="top: 30%; animation-direction: reverse;">
+      ZENLESS ZONE ZERO ZENLESS ZONE ZERO ZENLESS ZONE ZERO 
+    </div>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="relative z-10 max-w-4xl mx-auto p-6">
+    <nav class="flex justify-between items-center py-6">
+      <h1 class="text-3xl font-bold">我的名字</h1>
+      <div class="space-x-6">
+        <a href="#about" class="hover:text-white">关于我</a>
+        <a href="#projects" class="hover:text-white">作品</a>
+        <a href="#blog" class="hover:text-white">随笔</a>
+      </div>
+    </nav>
+
+    <header class="text-center py-20">
+      <h2 class="text-6xl font-bold mb-4">你好，我是 <span class="text-sky-400">XXX</span></h2>
+      <p class="text-2xl text-zinc-400">这里是我的个人地盘</p>
+    </header>
+
+    <!-- 其他内容... -->
+    <section id="about" class="py-16">
+      <h3 class="text-3xl font-bold mb-6">关于我</h3>
+      <p class="text-lg text-zinc-300">在这里写你的介绍...</p>
+    </section>
+  </div>
+
+  <script src="bowen.js"></script>
+</body>
+</html>
