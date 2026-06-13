@@ -4,7 +4,7 @@ const projects = [
     title: "作品 1",
     desc: "点击这里可以直接跳转到《绝区零》官方角色页面，查看更多帅气角色信息！",
     // 已成功为您添加指定链接
-    link: "https://zenless.hoyoverse.com/zh-cn/character?id=163786"
+    link: "https://www.bilibili.com/video/BV1EeXGBAENJ/?spm_id_from=333.337.search-card.all.click&vd_source=dbe94c55ba811088785b7d7059784df9"
   },
   {
     title: "作品 2",
