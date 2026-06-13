@@ -14,13 +14,16 @@ const projects = [
   
   const container = document.getElementById('projects-container');
   
-  projects.forEach(p => {
-    const card = document.createElement('div');
-    card.className = "bg-zinc-900 p-6 rounded-2xl hover:scale-105 transition cursor-pointer";
-    card.innerHTML = `
-      <h4 class="text-xl font-semibold mb-2">${p.title}</h4>
-      <p class="text-zinc-400 mb-4">${p.desc}</p>
-      <a href="${p.link}" class="text-sky-400 hover:underline">查看详情 →</a>
-    `;
-    container.appendChild(card);
-  });
+  // 安全检查：确保页面上有这个容器再执行
+  if (container) {
+    projects.forEach(p => {
+      const card = document.createElement('div');
+      card.className = "bg-zinc-900 p-6 rounded-2xl hover:scale-105 transition cursor-pointer";
+      card.innerHTML = `
+        <h4 class="text-xl font-semibold mb-2">${p.title}</h4>
+        <p class="text-zinc-400 mb-4">${p.desc}</p>
+        <a href="${p.link}" class="text-sky-400 hover:underline">查看详情 →</a>
+      `;
+      container.appendChild(card);
+    });
+  }
