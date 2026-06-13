@@ -1,8 +1,8 @@
 // bowen.js
 const projects = [
   {
-    title: "作品 1",
-    desc: "点击这里可以直接跳转到《绝区零》官方角色页面，查看更多帅气角色信息！",
+    title: "问了吗？",
+    desc: "孩子们我的电队怎会如此...... 现在加入骑士团还来得及吗......",
     // 已成功为您添加指定链接
     link: "https://www.bilibili.com/video/BV1EeXGBAENJ/?spm_id_from=333.337.search-card.all.click&vd_source=dbe94c55ba811088785b7d7059784df9"
   },
