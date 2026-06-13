@@ -9,7 +9,7 @@ const projects = [
   {
     title: "作品二",
     desc: "问？？",
-    link: "#",
+    link: "https://bowen352121-bit.github.io/bowen_java-Gluttonous-Snake/",
     image: "images/牢真.jpg" 
   }
 ];
