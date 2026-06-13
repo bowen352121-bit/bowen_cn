@@ -20,25 +20,26 @@ if (container) {
   projects.forEach(p => {
     const card = document.createElement('div');
     // 💡 核心修改：
-    // 1. 去掉了 rounded-xl 换成手机端直角/电脑端圆角（rounded-none sm:rounded-2xl），让手机端无缝铺满。
-    // 2. 去掉了 max-w-sm，宽度设为 w-full，手机上直接100%撑满。
-    // 3. border 只有在电脑端显示，手机端无边框纯铺满。
-    card.className = "bg-zinc-900/85 w-full rounded-none sm:rounded-2xl hover:scale-102 transition cursor-pointer overflow-hidden flex flex-col border-0 sm:border border-zinc-800 hover:border-teal-500/50 backdrop-blur-sm shadow-lg mb-4 sm:mb-0";
+    // 1. rounded-xl 让双排小卡片的圆角更加细腻自然。
+    // 2. border border-zinc-900 给小卡片勾勒出精致边缘。
+    card.className = "bg-zinc-900/85 w-full rounded-xl hover:scale-102 transition cursor-pointer overflow-hidden flex flex-col border border-zinc-900 shadow-md";
     
-    // 手机端高度稍微加高到 h-52，大屏更爽
+    // 💡 核心修改：手机上图片高度缩短至 h-24（电脑端 h-44），完美复刻B站主页双栏卡片的黄金比例
     const imageHtml = p.image 
-      ? `<div class="w-full h-52 sm:h-44 overflow-hidden bg-zinc-800">
-           <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+      ? `<div class="w-full h-24 sm:h-44 overflow-hidden bg-zinc-800 relative">
+           <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
          </div>`
       : '';
 
-    // 💡 字号修改：text-xl (大标题) 和 text-base (正文)，再也不怕字小了！
+    // 💡 核心修改：内边距缩小到 p-2.5，字号分别使用 text-xs 和 text-[11px]，两行隐藏截断，和B站App主页排版一模一样！
     card.innerHTML = `
       ${imageHtml}
-      <div class="p-5 flex flex-col flex-grow">
-        <h4 class="text-xl font-bold mb-2 text-zinc-100 tracking-wide">${p.title}</h4>
-        <p class="text-zinc-300 mb-4 text-base leading-relaxed flex-grow">${p.desc}</p>
-        <span class="text-teal-400 text-base hover:underline inline-block font-semibold mt-auto">查看详情 →</span>
+      <div class="p-2.5 flex flex-col flex-grow">
+        <h4 class="text-sm md:text-lg font-bold mb-1 text-zinc-100 tracking-wide line-clamp-1">${p.title}</h4>
+        <p class="text-zinc-400 mb-2 text-[11px] md:text-sm leading-snug flex-grow line-clamp-2">${p.desc}</p>
+        <span class="text-teal-400 text-[11px] md:text-sm font-semibold mt-auto flex items-center">
+          查看详情 <span class="ml-0.5 text-[9px] md:text-xs">→</span>
+        </span>
       </div>
     `;
     
