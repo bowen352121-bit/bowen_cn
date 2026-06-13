@@ -19,20 +19,26 @@ const container = document.getElementById('projects-container');
 if (container) {
   projects.forEach(p => {
     const card = document.createElement('div');
-    card.className = "bg-zinc-900/85 rounded-xl hover:scale-102 transition cursor-pointer overflow-hidden flex flex-col border border-zinc-800 hover:border-teal-500/50 backdrop-blur-sm shadow-lg max-w-sm mx-auto w-full";
+    // 💡 核心修改：
+    // 1. 去掉了 rounded-xl 换成手机端直角/电脑端圆角（rounded-none sm:rounded-2xl），让手机端无缝铺满。
+    // 2. 去掉了 max-w-sm，宽度设为 w-full，手机上直接100%撑满。
+    // 3. border 只有在电脑端显示，手机端无边框纯铺满。
+    card.className = "bg-zinc-900/85 w-full rounded-none sm:rounded-2xl hover:scale-102 transition cursor-pointer overflow-hidden flex flex-col border-0 sm:border border-zinc-800 hover:border-teal-500/50 backdrop-blur-sm shadow-lg mb-4 sm:mb-0";
     
+    // 手机端高度稍微加高到 h-52，大屏更爽
     const imageHtml = p.image 
-      ? `<div class="w-full h-36 md:h-40 overflow-hidden bg-zinc-800">
+      ? `<div class="w-full h-52 sm:h-44 overflow-hidden bg-zinc-800">
            <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
          </div>`
       : '';
 
+    // 💡 字号修改：text-xl (大标题) 和 text-base (正文)，再也不怕字小了！
     card.innerHTML = `
       ${imageHtml}
-      <div class="p-4 flex flex-col flex-grow">
-        <h4 class="text-lg font-semibold mb-1 text-zinc-100 tracking-wide">${p.title}</h4>
-        <p class="text-zinc-400 mb-3 text-xs md:text-sm line-clamp-2 flex-grow">${p.desc}</p>
-        <span class="text-teal-400 text-xs md:text-sm hover:underline inline-block font-medium mt-auto">查看详情 →</span>
+      <div class="p-5 flex flex-col flex-grow">
+        <h4 class="text-xl font-bold mb-2 text-zinc-100 tracking-wide">${p.title}</h4>
+        <p class="text-zinc-300 mb-4 text-base leading-relaxed flex-grow">${p.desc}</p>
+        <span class="text-teal-400 text-base hover:underline inline-block font-semibold mt-auto">查看详情 →</span>
       </div>
     `;
     
