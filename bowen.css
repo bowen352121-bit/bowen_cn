@@ -4,6 +4,19 @@ body {
   background-color: #f4f6f9;
 }
 
+/* 🧼 精准隐藏 ol 列表生成的默认纯黑大圆点 */
+.sidebar-list-clean {
+  list-style-type: none !important;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.sidebar-list-clean li {
+  list-style: none !important;
+  list-style-type: none !important;
+}
+
+/* 🌀 背景滚动跑马灯配置 */
 .scroll-container {
   position: absolute;
   left: 0;
@@ -11,6 +24,13 @@ body {
   display: flex;
   white-space: nowrap;
   user-select: none;
+}
+
+.text-neon-blue { 
+  color: rgba(14, 165, 233, 0.35) !important; 
+}
+.text-neon-dark { 
+  color: rgba(71, 85, 105, 0.28) !important;  
 }
 
 .scroll-text {
@@ -31,20 +51,24 @@ body {
   100% { transform: translate3d(0, 0, 0); }
 }
 
-/* 🎆 特效粒子配置 */
+@media (max-width: 768px) {
+  .scroll-text { animation-duration: 16s; }
+  .scroll-text-reverse { animation-duration: 18s; }
+}
+
+/* 🎆 点击爆发 ZZZ.jpg 特效 */
 .click-effect {
   position: fixed;
   pointer-events: none; 
   z-index: 9999;        
-  width: 32px;          
-  height: 32px;
+  width: 34px;          
+  height: 34px;
   object-fit: contain;
-  transform: translate(-50%, -50%);
   animation: floatUpAndFade 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
 }
 
 @keyframes floatUpAndFade {
-  0% { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(0.6) rotate(0deg); }
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5) rotate(0deg); }
   30% { opacity: 1; transform: translate(-50%, -50%) translateY(-20px) scale(1.1) rotate(-10deg); }
   100% { opacity: 0; transform: translate(-50%, -50%) translateY(-65px) scale(0.8) rotate(15deg); }
 }

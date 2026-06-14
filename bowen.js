@@ -1,6 +1,6 @@
 // bowen.js
 
-// 🗃️ 完整底层文章及联动数据池
+// 所有文章底层数据库：全新整合、补齐了设计图中缺失的所有旧文章内容
 const projects = [
   { 
     title: "治安官的子弹从不迷茫：比利SP以正义之名，坚守最后的骑士梦", 
@@ -33,14 +33,14 @@ const projects = [
   },
   { 
     title: "创造力是温柔的谎言吗", 
-    desc: "1.4上半卡池全员原始人？问？？深度评测指南。\n新版本数值更迭引发了核心玩家群体的广泛争论。所谓的玩法机制创新，究竟是版本更迭里对老角色的降维打击，还是在特定配队中给玩家编织的温柔谎言？本文将从物理抗性与打击面进行最严谨的拆解。", 
+    desc: "1.4上半卡池全员原始人？问？？深度评测指南。\n新版本的数值膨胀引发了核心玩家群体的广泛争论。所谓的玩法机制创新，究竟是版本更迭里对老角色的降维打击，还是在特定配队中给玩家编织的温柔谎言？本文将从物理抗性与打击面进行最严谨的拆解。", 
     link: "modal", 
     image: "images/牢真.jpg",
     date: "2026-03", views: "1.32k", comments: 0, likes: 3
   },
   {
     title: "人类正在退出人类",
-    desc: "当智能Agent与自动化系统大行其道，我们在游戏里甚至连走格子都不需要再亲自参与。这是对玩家双手的解放，还是人类逐步退出精神娱乐主导权的温水煮青蛙？深度反思数字文明对人脑原生创造力的侵蚀。",
+    desc: "当智能Agent与自动化脚本当道，我们在游戏里甚至连走格子都不需要再亲自参与。这是对玩家双手的解放，还是人类逐步退出精神娱乐主导权的温水煮青蛙？从赛博空洞的生成机制，深度反思数字文明对人脑原生创造力的侵蚀。",
     link: "modal",
     image: "images/骑士梦1.jpg",
     date: "2026-03", views: "996", comments: 0, likes: 4
@@ -54,14 +54,21 @@ const projects = [
   },
   {
     title: "脉冲点火背后的架构设计",
-    desc: "高性能数据流在边缘端实时分发的底层逻辑解析。如何通过精简握手协议与优化缓存清除策略，在千万人同时在线的高并发场景下，实现如‘脉冲点火’般的超高速响应，为前端渲染提供近乎零延迟的强力支撑。",
+    desc: "高性能数据流在边缘端实时分发的底层逻辑解析。如何通过精简握手协议与优化缓存清除策略，在千万人同时在线的高并发场景下，实现如‘脉冲点火’般的超高速响应响应，为前端渲染提供近乎零延迟的强力支撑。",
     link: "modal",
     image: "images/牢真.jpg",
     date: "2026-03", views: "1.13k", comments: 0, likes: 2
+  },
+  { 
+    title: "基于 Cloudflare 生态的 AI Agent 实践", 
+    desc: "如何利用边缘计算快速搭建轻量级智能体应用。\n利用 Workers AI 与 KV 存储，在世界的各个边缘节点部署具备超低延迟记忆功能的 Agent。摆脱繁重的传统服务器架构，让你的独立开发项目在出生时就具备全球分布式的无缝弹性和扩展能力。", 
+    link: "modal", 
+    image: "images/牢真.jpg",
+    date: "2026-03", views: "2.03k", comments: 3, likes: 7
   }
 ];
 
-// 🏛️ DOM 视图状态流向管理器
+// 🏛️ 中间主视图切换：包含自动字数统计与分钟换算
 const homeView = document.getElementById('home-view');
 const articleView = document.getElementById('article-view');
 const viewTitle = document.getElementById('view-title');
@@ -70,22 +77,42 @@ const viewImage = document.getElementById('view-image');
 const viewRealTime = document.getElementById('view-real-time');
 const viewWordCount = document.getElementById('view-word-count');
 const viewReadTime = document.getElementById('view-read-time');
+const viewClickCount = document.getElementById('view-click-count');
 const btnBackHome = document.getElementById('btn-back-home');
 
 function showArticleContent(article) {
   if (!homeView || !articleView || !viewTitle || !viewDesc || !viewImage) return;
-  
+
+  // 1. 注入内容和精准图片
   viewTitle.textContent = article.title;
   viewDesc.textContent = article.desc;
   viewImage.src = article.image;
 
-  const wordCount = article.desc.replace(/\s+/g, '').length;
+  // 2. 📝 自动字数计算和阅读分钟估算
+  const pureText = article.desc.replace(/\s+/g, ''); 
+  const wordCount = pureText.length;
+  const readMinutes = Math.max(1, Math.ceil(wordCount / 400)); 
+
   if (viewWordCount) viewWordCount.textContent = wordCount.toLocaleString();
-  if (viewReadTime) viewReadTime.textContent = Math.max(1, Math.ceil(wordCount / 350));
+  if (viewReadTime) viewReadTime.textContent = readMinutes;
+  
+  // 3. 👁️ 显示对应的阅读次数
+  if (viewClickCount) viewClickCount.textContent = article.views;
 
+  // 4. 🕒 精准时间实时跟进
   const now = new Date();
-  if (viewRealTime) viewRealTime.textContent = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const date = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  if (viewRealTime) {
+    viewRealTime.textContent = `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
+  }
 
+  // 5. 切换主视窗并丝滑置顶
   homeView.classList.add('hidden');
   articleView.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -96,73 +123,118 @@ function showHomeList() {
   articleView.classList.add('hidden');
   homeView.classList.remove('hidden');
 }
+
 if (btnBackHome) btnBackHome.addEventListener('click', showHomeList);
 
-// 📱 手机端专享搜索栏切换显示/隐藏逻辑
-const mobileSearchToggle = document.getElementById('mobile-search-toggle');
-const mobileSearchBar = document.getElementById('mobile-search-bar');
-if (mobileSearchToggle && mobileSearchBar) {
-  mobileSearchToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    mobileSearchBar.classList.toggle('hidden');
-  });
-  document.addEventListener('click', (e) => {
-    if (!mobileSearchBar.contains(e.target) && e.target !== mobileSearchToggle) {
-      mobileSearchBar.add('hidden');
-    }
-  });
-}
 
-// 🎠 轮播控制
+// 🎠 1. 顶部大 banner 轮播图逻辑
 const carouselContainer = document.getElementById('carousel-container');
 const carouselTitle = document.getElementById('carousel-title');
 const carouselDots = document.getElementById('carousel-dots');
 const carouselWrapper = document.getElementById('carousel-wrapper');
-let carouselIndex = 0;
-const bannerData = projects.slice(0, 4);
+
+let currentIndex = 0;
+let timer = null;
+
+// 选取前 5 篇作为大图轮播展示
+const bannerProjects = projects.slice(0, 5);
 
 if (carouselContainer && carouselTitle && carouselDots) {
-  bannerData.forEach((p, idx) => {
+  bannerProjects.forEach((p, idx) => {
     const slide = document.createElement('div');
-    slide.className = "w-1/10 h-full shrink-0";
-    slide.innerHTML = `<img src="${p.image}" class="w-full h-full object-cover">`;
+    slide.className = "w-1/10 h-full shrink-0 bg-zinc-800";
+    slide.innerHTML = `<img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">`;
     carouselContainer.appendChild(slide);
 
     const dot = document.createElement('span');
-    dot.className = `w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === 0 ? 'bg-sky-500 w-3' : 'bg-white/40'}`;
+    dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${idx === 0 ? 'bg-sky-500 w-4' : 'bg-white/50'}`;
     carouselDots.appendChild(dot);
   });
 
-  function switchCarousel(index) {
-    carouselIndex = index;
-    carouselContainer.style.transform = `translateX(-${carouselIndex * 10}%)`;
-    carouselTitle.textContent = bannerData[carouselIndex].title;
-    carouselDots.querySelectorAll('span').forEach((dot, dIdx) => {
-      dot.className = dIdx === carouselIndex ? "w-1.5 h-1.5 rounded-full bg-sky-500 w-3 transition-all" : "w-1.5 h-1.5 rounded-full bg-white/40";
+  function updateCarousel(index) {
+    currentIndex = index;
+    carouselContainer.style.transform = `translateX(-${currentIndex * 10}%)`;
+    carouselTitle.textContent = bannerProjects[currentIndex].title;
+    const dots = carouselDots.querySelectorAll('span');
+    dots.forEach((dot, dIdx) => {
+      dot.className = dIdx === currentIndex ? "w-2 h-2 rounded-full bg-sky-500 w-4 transition-all duration-300" : "w-2 h-2 rounded-full bg-white/50 transition-all duration-300";
     });
   }
-  if (carouselWrapper) carouselWrapper.addEventListener('click', () => showArticleContent(bannerData[carouselIndex]));
-  setInterval(() => { switchCarousel((carouselIndex + 1) % bannerData.length); }, 4000);
+
+  function startAutoPlay() {
+    timer = setInterval(() => {
+      let nextIdx = (currentIndex + 1) % bannerProjects.length;
+      updateCarousel(nextIdx);
+    }, 3500);
+  }
+
+  carouselWrapper.addEventListener('mouseenter', () => clearInterval(timer));
+  carouselWrapper.addEventListener('mouseleave', startAutoPlay);
+  
+  carouselWrapper.addEventListener('click', () => {
+    showArticleContent(bannerProjects[currentIndex]);
+  });
+
+  updateCarousel(0);
+  startAutoPlay();
 }
 
-// 📢 一念滚动签名流
-const signatures = ["孩子们别忘了骑士梦的最初梦想", "孩子们你们会坚持骑士梦的对吧？", "我敢抽格调角色你们敢吗？"];
+// 📢 2. 精准签名栏轮播控制
+const signatures = [
+  "孩子们别忘了骑士梦的最初梦想",
+  "孩子们你们会坚持骑士梦的对吧？",
+  "我敢抽格调角色你们敢吗？",
+  "正在穷举中，勿扰......"
+];
+
 const sigSlider = document.getElementById('signature-slider');
+const sigPrev = document.getElementById('sig-prev');
+const sigNext = document.getElementById('sig-next');
+
+let sigIndex = 0;
+let sigTimer = null;
+const FIXED_ROW_HEIGHT = 56; 
+
 if (sigSlider) {
-  signatures.forEach(txt => {
+  sigSlider.innerHTML = '';
+  signatures.forEach((text) => {
     const item = document.createElement('div');
-    item.className = "h-14 w-full text-xs font-bold text-zinc-700 truncate flex items-center";
-    item.textContent = txt;
+    item.className = "h-14 w-full text-xs sm:text-sm font-bold text-zinc-700 tracking-wide truncate";
+    item.style.lineHeight = `${FIXED_ROW_HEIGHT}px`; 
+    item.textContent = text;
     sigSlider.appendChild(item);
   });
+
+  function updateSignature(index) {
+    if (index < 0) sigIndex = signatures.length - 1;
+    else if (index >= signatures.length) sigIndex = 0;
+    else sigIndex = index;
+    sigSlider.style.transform = `translateY(-${sigIndex * FIXED_ROW_HEIGHT}px)`;
+  }
+
+  function startSigAutoPlay() {
+    clearInterval(sigTimer); 
+    sigTimer = setInterval(() => { updateSignature(sigIndex + 1); }, 15000); 
+  }
+
+  if (sigPrev) sigPrev.addEventListener('click', () => { clearInterval(sigTimer); updateSignature(sigIndex - 1); startSigAutoPlay(); });
+  if (sigNext) sigNext.addEventListener('click', () => { clearInterval(sigTimer); updateSignature(sigIndex + 1); startSigAutoPlay(); });
+
+  updateSignature(0);
+  startSigAutoPlay();
 }
 
-// 📊 群贤毕至列表渲染及点击无缝转详情页
-const sidebarTabs = {
-  new: projects.slice(1, 8),
-  hot: [projects[3], projects[1], projects[5], projects[0], projects[4]],
-  best: [projects[6], projects[2], projects[0], projects[5], projects[1]]
+
+// 📑 3. 右侧侧边栏“最近更新”一比一精细高仿图逻辑
+const sidebarData = {
+  // “最新”分类直接按顺序拉取前 8 篇
+  new: projects.slice(1, 9),
+  // “热门”分类进行无序混编，确保数据多样性
+  hot: [projects[4], projects[2], projects[7], projects[0], projects[6], projects[1], projects[3], projects[5]],
+  // “精选”分类进行无序混编
+  best: [projects[8], projects[2], projects[6], projects[0], projects[4], projects[1], projects[7], projects[3]]
 };
+
 const sidebarList = document.getElementById('sidebar-list');
 const tabs = {
   new: document.getElementById('tab-new'),
@@ -170,100 +242,121 @@ const tabs = {
   best: document.getElementById('tab-best')
 };
 
-function renderSidebar(type) {
+function renderSidebarList(type) {
   if (!sidebarList) return;
   sidebarList.innerHTML = '';
-  sidebarTabs[type].forEach((art, idx) => {
+  
+  sidebarData[type].forEach((article, idx) => {
     const li = document.createElement('li');
-    li.className = "flex items-start space-x-2 border-b border-zinc-100/60 pb-2 cursor-pointer group";
-    let rankHtml = idx < 3 
-      ? `<div class="${idx===0?'bg-orange-500':idx===1?'bg-emerald-500':'bg-sky-500'} text-white text-[9px] font-bold w-4 h-4 rounded-sm flex items-center justify-center shrink-0">${idx+1}</div>`
-      : `<div class="w-4 text-center text-zinc-400 font-bold text-[10px] shrink-0">${idx+1}.</div>`;
+    // 高仿图排版结构：序号 + 标题 + 多维元数据（日期、浏览量、评论、点赞）
+    li.className = "flex items-start space-x-2.5 group cursor-pointer border-b border-zinc-100/40 pb-2 last:border-0";
     
+    // 前三名气泡背景色加重
+    let badgeClass = "text-zinc-400 font-normal";
+    if (idx === 0) badgeClass = "bg-blue-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
+    if (idx === 1) badgeClass = "bg-emerald-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
+    if (idx === 2) badgeClass = "bg-orange-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
+    
+    // 如果不是前三名，单纯做个宽带占位文本
+    const badgeHtml = idx < 3 ? `<div class="${badgeClass}">${idx + 1}</div>` : `<div class="w-4 text-center text-zinc-400 font-semibold text-[11px]">${idx + 1}.</div>`;
+
     li.innerHTML = `
-      ${rankHtml}
-      <div class="flex-grow min-w-0 flex flex-col">
-        <span class="text-zinc-700 font-semibold group-hover:text-sky-600 truncate tracking-wide text-xs">${art.title}</span>
-        <div class="text-[9px] text-zinc-400 font-medium space-x-2 mt-0.5">
-          <span>${art.date}</span> <span>👁 ${art.views}</span> <span>💬 ${art.comments}</span>
+      ${badgeHtml}
+      <div class="flex-grow min-w-0 flex flex-col space-y-0.5">
+        <span class="text-zinc-700 font-medium group-hover:text-sky-600 transition truncate tracking-wide">${article.title}</span>
+        <div class="flex items-center text-[10px] text-zinc-400 font-normal space-x-2 select-none">
+          <span class="tracking-tight">${article.date}</span>
+          <span class="flex items-center">👁 ${article.views}</span>
+          <span class="flex items-center">💬 ${article.comments}</span>
+          <span class="flex items-center">👍 ${article.likes}</span>
         </div>
       </div>
     `;
-    li.addEventListener('click', () => showArticleContent(art));
+    
+    // 点按右侧任一话，无缝链接呼出该详情文章
+    li.addEventListener('click', () => {
+      showArticleContent(article);
+    });
+    
     sidebarList.appendChild(li);
   });
 }
+
 if (tabs.new && tabs.hot && tabs.best) {
-  Object.keys(tabs).forEach(k => {
-    tabs[k].addEventListener('click', () => {
-      Object.keys(tabs).forEach(x => tabs[x].className = "cursor-pointer pb-0.5 border-b-2 border-transparent text-zinc-400");
-      tabs[k].className = "cursor-pointer pb-0.5 border-b-2 border-sky-600 text-sky-600 font-black";
-      renderSidebar(k);
+  Object.keys(tabs).forEach((key) => {
+    tabs[key].addEventListener('mouseenter', () => {
+      Object.keys(tabs).forEach((k) => {
+        tabs[k].className = "cursor-pointer transition-all pb-0.5 border-b-2 border-transparent text-zinc-400 hover:text-sky-500";
+      });
+      tabs[key].className = "cursor-pointer transition-all pb-0.5 border-b-2 border-sky-600 text-sky-600 font-black";
+      renderSidebarList(key);
     });
   });
 }
-renderSidebar('new');
+renderSidebarList('new');
 
-// 主流卡片加载
+
+// 📑 4. 下方主卡片列表渲染（只渲染列表中指定的文章）
 const container = document.getElementById('projects-container');
+const mainListProjects = [projects[0], projects[1], projects[4], projects[6], projects[8]];
+
 if (container) {
-  [projects[0], projects[1], projects[2], projects[4]].forEach(p => {
+  mainListProjects.forEach((p) => {
     const card = document.createElement('div');
-    card.className = `bg-white rounded-xl border ${p.isTop?'border-sky-300 bg-sky-50/10':'border-zinc-200'} p-3.5 flex h-28 sm:h-34 cursor-pointer hover:shadow-md transition`;
+    const borderClass = p.isTop ? "border-sky-300 bg-sky-50/20 shadow-md" : "border-zinc-200 shadow-sm";
+    card.className = `bg-white/95 rounded-xl overflow-hidden border hover:shadow-md transition cursor-pointer flex flex-row h-28 sm:h-36 ${borderClass}`;
+    
+    let tagsHtml = '';
+    if (p.isTop) tagsHtml += `<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black shrink-0">置顶</span>`;
+    tagsHtml += `<span class="text-[10px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold shrink-0">原创</span>`;
+
     card.innerHTML = `
-      <div class="flex-grow min-w-0 flex flex-col justify-between pr-2">
+      <div class="p-4 flex flex-col justify-between flex-grow min-w-0">
         <div>
-          <h4 class="text-xs sm:text-base font-black text-zinc-800 truncate mb-1">${p.isTop?'<span class="bg-red-500 text-white text-[9px] px-1 py-0.2 rounded mr-1">置顶</span>':''}${p.title}</h4>
-          <p class="text-zinc-500 text-[11px] sm:text-xs line-clamp-2 leading-relaxed">${p.desc}</p>
+          <div class="flex items-center space-x-1.5 mb-1">
+            ${tagsHtml}
+            <h4 class="text-sm sm:text-base font-black text-zinc-800 tracking-wide truncate">${p.title}</h4>
+          </div>
+          <p class="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed">${p.desc}</p>
         </div>
-        <div class="text-zinc-400 text-[10px] sm:text-xs flex items-center space-x-2">
-          <span>💬 ${p.comments}</span> <span>👍 ${p.likes}</span>
-          <span class="text-sky-500 font-bold ml-auto text-[11px]">阅读全文 →</span>
+        <div class="flex items-center text-zinc-400 text-xs space-x-3 mt-1">
+          <span>💬 ${p.comments}</span>
+          <span>👍 ${p.likes}</span>
+          <span class="text-sky-500 font-semibold hover:underline ml-auto">阅读全文 →</span>
         </div>
       </div>
-      <div class="w-24 sm:w-40 h-full bg-zinc-100 rounded-md overflow-hidden shrink-0"><img src="${p.image}" class="w-full h-full object-cover"></div>
+      <div class="w-28 sm:w-44 h-full shrink-0 bg-zinc-100 border-l border-zinc-100 overflow-hidden">
+        <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+      </div>
     `;
-    card.addEventListener('click', () => showArticleContent(p));
+    
+    card.addEventListener('click', () => {
+      showArticleContent(p);
+    });
     container.appendChild(card);
   });
 }
 
-// 📱 手机抽屉状态逻辑绑定
-const hamburgerBtn = document.getElementById('hamburger-btn');
-const mobileDrawer = document.getElementById('mobile-drawer');
-const drawerOverlay = document.getElementById('drawer-overlay');
-const drawerContent = document.getElementById('drawer-content');
-
-function toggleDrawer(open) {
-  if (!mobileDrawer || !drawerContent) return;
-  if (open) {
-    mobileDrawer.classList.remove('pointer-events-none', 'opacity-0');
-    drawerContent.classList.remove('-translate-x-full');
-  } else {
-    mobileDrawer.classList.add('pointer-events-none', 'opacity-0');
-    drawerContent.classList.add('-translate-x-full');
-  }
-}
-if (hamburgerBtn) hamburgerBtn.addEventListener('click', () => toggleDrawer(true));
-if (drawerOverlay) drawerOverlay.addEventListener('click', () => toggleDrawer(false));
-
-document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    toggleDrawer(false);
+const btnMingdian = document.getElementById('btn-mingdian');
+if(btnMingdian) {
+  btnMingdian.addEventListener('click', () => {
     showHomeList();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
-});
+}
 
-const btnMingdian = document.getElementById('btn-mingdian');
-if(btnMingdian) btnMingdian.addEventListener('click', () => { showHomeList(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-
-// 全局 ZZZ 点击粒子
+// 🎆 5. 全局背景点击喷射 ZZZ 特效
 document.addEventListener('click', (e) => {
-  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next') || e.target.closest('input') || e.target.closest('button')) return;
-  const zzz = document.createElement('img');
-  zzz.src = "images/ZZZ.jpg"; zzz.className = "click-effect";
-  zzz.style.left = `${e.clientX}px`; zzz.style.top = `${e.clientY}px`;
-  document.body.appendChild(zzz);
-  setTimeout(() => zzz.remove(), 800);
+  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next') || e.target.closest('#article-view') || e.target.closest('input')) return;
+  const zzzIcon = document.createElement('img');
+  zzzIcon.src = "images/ZZZ.jpg"; 
+  zzzIcon.className = "click-effect";
+  zzzIcon.style.left = `${e.clientX}px`;
+  zzzIcon.style.top = `${e.clientY}px`;
+  const randomRot = Math.floor(Math.random() * 50) - 25;
+  zzzIcon.style.setProperty('--rand-rot', `${randomRot}deg`);
+  const randomScale = Math.random() > 0.5 ? 1.3 : 0.9; 
+  zzzIcon.style.setProperty('--rand-scale', randomScale);
+  document.body.appendChild(zzzIcon);
+  setTimeout(() => zzzIcon.remove(), 800);
 });
