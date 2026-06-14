@@ -362,42 +362,40 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 🌟 手机端侧边栏抽屉开关控制逻辑（零阴影、五分之三宽版）
+// 🌟 手机端侧边栏抽屉开关控制逻辑（零卡顿、全透明点击收回版）
 // ==========================================
 const mobileBtn = document.getElementById('mobile-menu-toggle');
 const closeBtn = document.getElementById('mobile-menu-close');
 const sidebarMenu = document.getElementById('sidebar-menu');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
 
 function openMobileSidebar() {
-  if (sidebarMenu) {
-    if (window.innerWidth < 1024) {
-      sidebarMenu.classList.remove('hidden');
-      sidebarMenu.classList.add('flex');
-    }
-    setTimeout(() => {
-      sidebarMenu.classList.add('sidebar-open');
-    }, 10);
+  if (sidebarMenu && sidebarOverlay) {
+    // 开启全透明点击拦截层
+    sidebarOverlay.classList.remove('hidden');
+    // 使用纯位移样式，开启移动端硬件加速，拒绝卡顿
+    sidebarMenu.classList.add('translate-x-0');
+    sidebarMenu.classList.remove('-translate-x-full');
     document.body.style.overflow = 'hidden'; 
   }
 }
 
 function closeMobileSidebar() {
-  if (sidebarMenu) {
-    sidebarMenu.classList.remove('sidebar-open');
-    
-    setTimeout(() => {
-      if (!sidebarMenu.classList.contains('sidebar-open') && window.innerWidth < 1024) {
-        sidebarMenu.classList.add('hidden');
-        sidebarMenu.classList.remove('flex');
-      }
-    }, 300);
+  if (sidebarMenu && sidebarOverlay) {
+    // 顺滑滑回
+    sidebarMenu.classList.remove('translate-x-0');
+    sidebarMenu.classList.add('-translate-x-full');
+    sidebarOverlay.classList.add('hidden');
     document.body.style.overflow = ''; 
   }
 }
 
+// 绑定点击事件：点击按钮展开，点击透明遮罩或关闭按钮瞬间收回
 if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
 if (closeBtn) closeBtn.addEventListener('click', closeMobileSidebar);
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
 
+// 点击侧边栏内的导航选项，自动收回
 if (sidebarMenu) {
   const sidebarButtons = sidebarMenu.querySelectorAll('button, .cursor-pointer');
   sidebarButtons.forEach(btn => {
