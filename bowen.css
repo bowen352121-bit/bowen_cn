@@ -72,3 +72,8 @@ body {
   30% { opacity: 1; transform: translate(-50%, -50%) translateY(-20px) scale(1.1) rotate(-10deg); }
   100% { opacity: 0; transform: translate(-50%, -50%) translateY(-65px) scale(0.8) rotate(15deg); }
 }
+
+/* 🗓️ 规范的原生 CSS 属性 */
+.calendar-row-gap {
+  row-gap: 10px;
+}
