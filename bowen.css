@@ -4,24 +4,60 @@ body {
   background-color: #f4f6f9;
 }
 
-/* 🎇 核心特效：全屏点击爆发出来的 ZZZ.jpg 样式（完美保留） */
+/* 🌀 回归：背景滚动字体的无缝跑马灯逻辑 */
+.scroll-container {
+  position: absolute;
+  left: 0;
+  width: 200%;
+  display: flex;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* 从右往左流 */
+.scroll-text {
+  display: inline-block;
+  animation: scrollLeft 35s linear infinite;
+}
+
+/* 从左往右流（增加错落方向感） */
+.scroll-text-reverse {
+  display: inline-block;
+  animation: scrollRight 40s linear infinite;
+}
+
+@keyframes scrollLeft {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes scrollRight {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* ⚡ 手机小屏幕下让大字滚动稍微加速 */
+@media (max-width: 768px) {
+  .scroll-text { animation-duration: 16s; }
+  .scroll-text-reverse { animation-duration: 18s; }
+}
+
+/* 🎆 核心特效：全屏点击爆发出来的 ZZZ.jpg 样式（4/5尺寸，大小错落交替） */
 .click-effect {
   position: fixed;
-  pointer-events: none; /* 防止遮挡鼠标导致无法二次点击 */
-  z-index: 9999;        /* 永远盖在最表层 */
+  pointer-events: none; 
+  z-index: 9999;        
   
-  /* 精准设为五分之四的 34px 基础大小 */
+  /* 五分之四基础比例大小 */
   width: 34px;          
   height: 34px;
   object-fit: contain;
   
-  /* 触发向上喷发淡出轨迹 */
   animation: floatUpAndOut 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
 }
 
 @keyframes floatUpAndOut {
   0% {
-    /* 配合 JS 传入的 3倍、4倍 缩放倍率 */
     transform: translate(-50%, -50%) scale(calc(var(--rand-scale, 1) * 0.4)) rotate(0deg);
     opacity: 0;
   }
@@ -37,9 +73,4 @@ body {
     transform: translate(-50%, calc(-50% - 80px)) scale(calc(var(--rand-scale, 1) * 0.6)) rotate(calc(var(--rand-rot, -15deg) * 1.5));
     opacity: 0;
   }
-}
-
-/* 轨道顺滑滚动微调 */
-#carousel-container {
-  will-change: transform;
 }
