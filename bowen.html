@@ -41,19 +41,90 @@
 
   <main class="max-w-7xl mx-auto px-2 md:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-5 relative z-10">
     
-    <aside class="col-span-1 lg:col-span-2 flex flex-col space-y-1">
-      <button id="btn-mingdian" class="w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-sky-50 text-sky-600 font-bold transition text-sm shadow-sm border border-sky-100">
-        <span class="text-base">🏠</span>
-        <span>我chovy</span>
+    <aside class="col-span-1 lg:col-span-2 flex flex-col space-y-2 select-none">
+      <button id="btn-mingdian" class="w-full flex items-center space-x-4 px-5 py-3 rounded-xl bg-white/80 text-sky-600 font-bold transition text-sm shadow-xs border border-zinc-100 hover:bg-zinc-50">
+        <span class="text-base flex items-center">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        </span>
+        <span class="tracking-wide">明殿</span>
       </button>
-      <div class="w-full text-zinc-400 text-xs px-4 py-2 mt-4 font-semibold">模块</div>
-      <div class="w-full flex items-center space-x-3 px-4 py-2 text-zinc-500 text-sm hover:bg-zinc-100 rounded-lg cursor-pointer"><span>☯</span> <span>骑士梦</span></div>
-      <div class="w-full flex items-center space-x-3 px-4 py-2 text-zinc-500 text-sm hover:bg-zinc-100 rounded-lg cursor-pointer"><span>👁</span> <span>宗师梦</span></div>
-      <div class="w-full flex items-center space-x-3 px-4 py-2 text-zinc-500 text-sm hover:bg-zinc-100 rounded-lg cursor-pointer"><span>🔧</span> <span>督查梦</span></div>
+
+      <div class="w-full flex items-center space-x-4 px-5 py-3 text-zinc-600 font-medium hover:text-sky-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <span class="text-base flex items-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
+        </span>
+        <span class="tracking-wide">無夢寺</span>
+      </div>
+
+      <div class="w-full flex items-center space-x-4 px-5 py-3 text-zinc-600 font-medium hover:text-sky-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <span class="text-base flex items-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 11-1.5 0 .75 0 011.5 0zM12.75 9a.75.75 0 11-1.5 0 .75 0 011.5 0z" /></svg>
+        </span>
+        <span class="tracking-wide">不二門</span>
+      </div>
+
+      <div class="w-full flex items-center justify-between px-5 py-3 text-zinc-600 font-medium hover:text-sky-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <div class="flex items-center space-x-4">
+          <span class="text-base flex items-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          </span>
+          <span class="tracking-wide">工巧</span>
+        </div>
+        <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+      </div>
+
+      <div class="w-full flex items-center space-x-4 px-5 py-3 text-zinc-600 font-medium hover:text-sky-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <span class="text-base flex items-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg>
+        </span>
+        <span class="tracking-wide">大千界</span>
+      </div>
+
+      <div class="w-full flex items-center space-x-4 px-5 py-3 text-zinc-600 font-medium hover:text-sky-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <span class="text-base flex items-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </span>
+        <span class="tracking-wide">覺有情</span>
+      </div>
+
+      <div class="w-full flex items-center space-x-4 px-5 py-3 text-zinc-600 font-medium hover:text-sky-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <span class="text-base flex items-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.174c-.053-.413-.03-.836.07-1.238 1.26-5.022 5.672-8.18 10.743-7.234 4.195.782 7.243 4.1 7.746 8.353.04.343.04.69 0 1.032-.503 4.253-3.551 7.571-7.746 8.353-5.071.946-9.483-2.212-10.743-7.234a4.12 4.12 0 01-.07-1.238z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h.008v.008H12V7.5zM12 12h.008v.008H12V12zM12 16.5h.008v.008H12v-.008z" /></svg>
+        </span>
+        <span class="tracking-wide">狂浪生</span>
+      </div>
+
+      <div class="w-full flex items-center space-x-4 px-5 py-3 text-sky-600 font-bold hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <span class="text-base flex items-center">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+        </span>
+        <span class="tracking-wide">四方館</span>
+      </div>
+
+      <div class="h-2"></div>
+
+      <div class="w-full flex items-center justify-between px-5 py-3.5 bg-zinc-200/50 text-red-500 font-black hover:bg-zinc-200 rounded-2xl transition cursor-pointer text-sm border border-zinc-300/30">
+        <div class="flex items-center space-x-4">
+          <span class="text-base flex items-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          </span>
+          <span class="tracking-widest">随喜</span>
+        </div>
+        <span class="text-[10px] px-1 py-0.2 border border-red-400 text-red-500 font-black rounded-sm tracking-tight scale-90 origin-right bg-white/80">HOT</span>
+      </div>
+
+      <div class="w-full flex items-center justify-between px-5 py-3 text-zinc-600 font-semibold hover:text-cyan-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
+        <div class="flex items-center space-x-4">
+          <span class="text-base flex items-center text-cyan-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </span>
+          <span class="text-zinc-700 font-bold tracking-wide">赛博灵澈</span>
+        </div>
+        <span class="text-[9px] px-1 py-0.2 border border-sky-500 text-sky-600 font-black rounded-sm tracking-tight scale-90 origin-right bg-sky-50">NEW</span>
+      </div>
     </aside>
 
     <section class="col-span-1 lg:col-span-7">
-      
       <div id="home-view" class="space-y-5">
         <div id="carousel-wrapper" class="relative w-full h-48 sm:h-72 rounded-xl overflow-hidden shadow-md group border border-zinc-100 bg-zinc-200 cursor-pointer">
           <div id="carousel-container" class="flex w-[1000%] h-full transition-transform duration-500 ease-in-out"></div>
@@ -92,7 +163,6 @@
       </div>
 
       <div id="article-view" class="hidden bg-white border border-zinc-200 shadow-sm p-5 sm:p-8 space-y-6 select-text animate-fade-in relative overflow-hidden">
-        
         <div class="absolute top-0 left-0 w-16 h-16 pointer-events-none overflow-hidden z-20">
           <div class="absolute transform -rotate-45 bg-sky-500 text-white text-[10px] font-black tracking-widest text-center shadow-sm w-[90px] py-0.5 -left-[24px] top-[14px] uppercase select-none border-b border-sky-400/30">
             原创
@@ -104,21 +174,16 @@
           
           <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-zinc-400 font-medium pb-2 border-b border-zinc-100">
             <div class="flex items-center space-x-1"><span>👤</span> <span class="text-zinc-600 font-bold">BOWEN</span></div>
-            
             <div class="flex items-center space-x-1 text-zinc-500">
               <span>📅</span> <span id="view-real-time" class="font-semibold"></span>
             </div>
-            
             <div class="flex items-center space-x-1">
               <span>✍️</span> <span>共 <span id="view-word-count" class="text-zinc-600 font-bold">0</span> 字</span>
             </div>
-            
             <div class="flex items-center space-x-1">
               <span>⏳</span> <span>需阅读 <span id="view-read-time" class="text-zinc-600 font-bold">0</span> 分钟</span>
             </div>
-            
             <div class="flex items-center space-x-1"><span>📂</span> <span class="text-sky-500 font-semibold hover:underline cursor-pointer">明殿内参</span></div>
-            
             <div class="flex items-center space-x-1"><span>👁</span> <span><span id="view-click-count" class="font-semibold">9,527</span> 次阅读</span></div>
           </div>
         </div>
@@ -127,8 +192,7 @@
           <img id="view-image" src="images/比利SP1.jpg" alt="文章图片" class="w-full h-full object-cover">
         </div>
 
-        <p id="view-desc" class="text-sm sm:text-base text-zinc-700 whitespace-pre-wrap tracking-wide leading-loose font-normal">
-          </p>
+        <p id="view-desc" class="text-sm sm:text-base text-zinc-700 whitespace-pre-wrap tracking-wide leading-loose font-normal"></p>
 
         <div class="pt-6 space-y-5 border-t border-zinc-100">
           <div class="flex items-center space-x-2 text-xs">
@@ -146,29 +210,43 @@
             ← 返回主页列表
           </button>
         </div>
-
       </div>
     </section>
 
     <aside class="col-span-1 lg:col-span-3 space-y-4">
-      <div class="bg-white/90 backdrop-blur-sm rounded-none p-4 border border-zinc-200 shadow-sm grid grid-cols-3 text-center divide-x divide-zinc-100">
-        <div><div class="text-lg font-bold text-zinc-800">10</div><div class="text-xs text-zinc-400 mt-0.5">全站文章</div></div>
-        <div><div class="text-lg font-bold text-zinc-800">733</div><div class="text-xs text-zinc-400 mt-0.5">今日阅读</div></div>
-        <div><div class="text-lg font-bold text-zinc-800">2437</div><div class="text-xs text-zinc-400 mt-0.5">全站评论</div></div>
+      
+      <div class="flex items-center space-x-2 select-none">
+        <div class="flex-grow flex bg-white border border-zinc-200 rounded-md overflow-hidden shadow-xs h-9 items-center px-2">
+          <input type="text" placeholder="上下文检索" class="w-full bg-transparent text-zinc-600 text-xs outline-none font-medium px-1">
+          <button class="text-zinc-500 hover:text-sky-600 p-1 flex items-center justify-center transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </button>
+        </div>
+        <button class="w-9 h-9 bg-zinc-200 border border-zinc-300/60 rounded-md flex items-center justify-center text-zinc-600 hover:text-orange-500 hover:bg-zinc-100 transition shadow-xs cursor-pointer">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 112.18 2.18 2.18 2.18 0 01-2.18-2.18zM4 5.27a14.73 14.73 0 0114.73 14.73h-2.39A12.34 12.34 0 004 7.66zm0 4.81a9.92 9.92 0 019.92 9.92h-2.4A7.52 7.52 0 004 12.48z"/></svg>
+        </button>
       </div>
 
-      <div class="bg-white/95 rounded-none border border-zinc-200 shadow-sm p-4 space-y-4 select-none">
-        <div class="flex items-center justify-between border-b border-zinc-100 pb-2">
-          <h4 class="text-sm font-black text-zinc-700 flex items-center space-x-1">
-            <span>✨</span> <span>群贤毕至</span>
+      <div class="bg-white rounded-md p-4 border border-zinc-200 shadow-sm grid grid-cols-3 text-center divide-x divide-zinc-100 select-none">
+        <div><div class="text-xl font-bold text-zinc-800 tracking-tight">260</div><div class="text-[11px] text-zinc-400 mt-0.5">全站文章</div></div>
+        <div><div class="text-xl font-bold text-zinc-800 tracking-tight">998</div><div class="text-[11px] text-zinc-400 mt-0.5">今日阅读</div></div>
+        <div><div class="text-xl font-bold text-zinc-800 tracking-tight">2437</div><div class="text-[11px] text-zinc-400 mt-0.5">全站评论</div></div>
+      </div>
+
+      <div class="bg-white rounded-md border border-zinc-200 shadow-sm p-4 space-y-3">
+        <div class="flex items-center justify-between border-b border-zinc-100 pb-2 select-none">
+          <h4 class="text-xs font-black text-zinc-700 flex items-center space-x-1.5 uppercase tracking-wide">
+            <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>最近更新</span>
           </h4>
           <div class="flex items-center space-x-3 text-xs font-bold h-7">
-            <span id="tab-new" class="cursor-pointer transition-all pb-1 border-b-2 border-sky-600 text-sky-600 font-black">最新</span>
-            <span id="tab-hot" class="cursor-pointer transition-all pb-1 border-b-2 border-transparent text-zinc-400 hover:text-sky-500">热门</span>
-            <span id="tab-best" class="cursor-pointer transition-all pb-1 border-b-2 border-transparent text-zinc-400 hover:text-sky-500">精选</span>
+            <span id="tab-new" class="cursor-pointer transition-all pb-0.5 border-b-2 border-sky-600 text-sky-600 font-black">最新</span>
+            <span id="tab-hot" class="cursor-pointer transition-all pb-0.5 border-b-2 border-transparent text-zinc-400 hover:text-sky-500">热门</span>
+            <span id="tab-best" class="cursor-pointer transition-all pb-0.5 border-b-2 border-transparent text-zinc-400 hover:text-sky-500">精选</span>
           </div>
         </div>
-        <ol id="sidebar-list" class="space-y-2.5 text-xs sm:text-sm min-h-[96px]"></ol>
+        
+        <ol id="sidebar-list" class="space-y-3 text-xs"></ol>
       </div>
     </aside>
 
