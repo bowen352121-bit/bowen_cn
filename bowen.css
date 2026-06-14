@@ -4,7 +4,6 @@ body {
   background-color: #f4f6f9;
 }
 
-/* 🌀 背景无缝滚动大字跑马灯 */
 .scroll-container {
   position: absolute;
   left: 0;
@@ -12,14 +11,6 @@ body {
   display: flex;
   white-space: nowrap;
   user-select: none;
-}
-
-/* 🎨 高清明显的背景英文大字着色类（电浆炫蓝与高级金属深灰） */
-.text-neon-blue { 
-  color: rgba(14, 165, 233, 0.35) !important; /* 天空电浆蓝，在白底下辨识度超高 */
-}
-.text-neon-dark { 
-  color: rgba(71, 85, 105, 0.28) !important;  /* 坚固的板岩深灰，凸显页面段落层次 */
 }
 
 .scroll-text {
@@ -40,11 +31,6 @@ body {
   100% { transform: translate3d(0, 0, 0); }
 }
 
-@media (max-width: 768px) {
-  .scroll-text { animation-duration: 16s; }
-  .scroll-text-reverse { animation-duration: 18s; }
-}
-
 /* 🎆 点击爆发 ZZZ.jpg 特效 */
 .click-effect {
   position: fixed;
@@ -53,24 +39,21 @@ body {
   width: 34px;          
   height: 34px;
   object-fit: contain;
-  animation: floatUpAndOut 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  transform: translate(-50%, -50%) scale(1);
+  animation: floatUpAndFade 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
 }
 
-@keyframes floatUpAndOut {
+@keyframes floatUpAndFade {
   0% {
-    transform: translate(-50%, -50%) scale(calc(var(--rand-scale, 1) * 0.4)) rotate(0deg);
-    opacity: 0;
-  }
-  15% {
-    transform: translate(-50%, -50%) scale(var(--rand-scale, 1)) rotate(var(--rand-rot, -15deg));
     opacity: 1;
+    transform: translate(-50%, -50%) translateY(0) scale(0.6) rotate(0deg);
   }
-  50% {
-    transform: translate(-50%, calc(-50% - 30px)) scale(var(--rand-scale, 1)) rotate(var(--rand-rot, -15deg));
+  30% {
     opacity: 1;
+    transform: translate(-50%, -50%) translateY(-25px) scale(1.1) rotate(-15deg);
   }
   100% {
-    transform: translate(-50%, calc(-50% - 80px)) scale(calc(var(--rand-scale, 1) * 0.6)) rotate(calc(var(--rand-rot, -15deg) * 1.5));
     opacity: 0;
+    transform: translate(-50%, -50%) translateY(-70px) scale(0.8) rotate(20deg);
   }
 }

@@ -1,6 +1,6 @@
 // bowen.js
 
-// 所有文章底层数据库：全新整合、补齐了设计图中缺失的所有旧文章内容
+// 🗃️ 完整文章底层核心数据库 (补齐了设计图与手机实机截图中出现的所有文章正文)
 const projects = [
   { 
     title: "治安官的子弹从不迷茫：比利SP以正义之名，坚守最后的骑士梦", 
@@ -40,7 +40,7 @@ const projects = [
   },
   {
     title: "人类正在退出人类",
-    desc: "当智能Agent与自动化脚本当道，我们在游戏里甚至连走格子都不需要再亲自参与。这是对玩家双手的解放，还是人类逐步退出精神娱乐主导权的温水煮青蛙？从赛博空洞的生成机制，深度反思数字文明对人脑原生创造力的侵蚀。",
+    desc: "当智能Agent与自动化脚脚本大行其道，我们在游戏里甚至连走格子都不需要再亲自参与。这是对玩家双手的解放，还是人类逐步退出精神娱乐主导权的温水煮青蛙？从赛博空洞的生成机制，深度反思数字文明对人脑原生创造力的侵蚀。",
     link: "modal",
     image: "images/骑士梦1.jpg",
     date: "2026-03", views: "996", comments: 0, likes: 4
@@ -68,7 +68,7 @@ const projects = [
   }
 ];
 
-// 🏛️ 中间主视图切换：包含自动字数统计与分钟换算
+// 🏛️ 视图控制器组件联通
 const homeView = document.getElementById('home-view');
 const articleView = document.getElementById('article-view');
 const viewTitle = document.getElementById('view-title');
@@ -83,23 +83,21 @@ const btnBackHome = document.getElementById('btn-back-home');
 function showArticleContent(article) {
   if (!homeView || !articleView || !viewTitle || !viewDesc || !viewImage) return;
 
-  // 1. 注入内容和精准图片
+  // 渲染文章数据
   viewTitle.textContent = article.title;
   viewDesc.textContent = article.desc;
   viewImage.src = article.image;
 
-  // 2. 📝 自动字数计算和阅读分钟估算
+  // 📝 智能字数和阅读时间精准计算
   const pureText = article.desc.replace(/\s+/g, ''); 
   const wordCount = pureText.length;
-  const readMinutes = Math.max(1, Math.ceil(wordCount / 400)); 
+  const readMinutes = Math.max(1, Math.ceil(wordCount / 380)); 
 
   if (viewWordCount) viewWordCount.textContent = wordCount.toLocaleString();
   if (viewReadTime) viewReadTime.textContent = readMinutes;
-  
-  // 3. 👁️ 显示对应的阅读次数
   if (viewClickCount) viewClickCount.textContent = article.views;
 
-  // 4. 🕒 精准时间实时跟进
+  // 🕒 注入实时系统级时间戳
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -107,12 +105,9 @@ function showArticleContent(article) {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  
-  if (viewRealTime) {
-    viewRealTime.textContent = `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
-  }
+  if (viewRealTime) viewRealTime.textContent = `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
 
-  // 5. 切换主视窗并丝滑置顶
+  // 视图无缝平滑置顶
   homeView.classList.add('hidden');
   articleView.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -126,17 +121,13 @@ function showHomeList() {
 
 if (btnBackHome) btnBackHome.addEventListener('click', showHomeList);
 
-
-// 🎠 1. 顶部大 banner 轮播图逻辑
+//  Carousel 大图轮播
 const carouselContainer = document.getElementById('carousel-container');
 const carouselTitle = document.getElementById('carousel-title');
 const carouselDots = document.getElementById('carousel-dots');
 const carouselWrapper = document.getElementById('carousel-wrapper');
-
 let currentIndex = 0;
 let timer = null;
-
-// 选取前 5 篇作为大图轮播展示
 const bannerProjects = projects.slice(0, 5);
 
 if (carouselContainer && carouselTitle && carouselDots) {
@@ -160,81 +151,29 @@ if (carouselContainer && carouselTitle && carouselDots) {
       dot.className = dIdx === currentIndex ? "w-2 h-2 rounded-full bg-sky-500 w-4 transition-all duration-300" : "w-2 h-2 rounded-full bg-white/50 transition-all duration-300";
     });
   }
-
-  function startAutoPlay() {
-    timer = setInterval(() => {
-      let nextIdx = (currentIndex + 1) % bannerProjects.length;
-      updateCarousel(nextIdx);
-    }, 3500);
-  }
-
-  carouselWrapper.addEventListener('mouseenter', () => clearInterval(timer));
-  carouselWrapper.addEventListener('mouseleave', startAutoPlay);
-  
-  carouselWrapper.addEventListener('click', () => {
-    showArticleContent(bannerProjects[currentIndex]);
-  });
-
+  carouselWrapper.addEventListener('click', () => { showArticleContent(bannerProjects[currentIndex]); });
   updateCarousel(0);
-  startAutoPlay();
+  timer = setInterval(() => { updateCarousel((currentIndex + 1) % bannerProjects.length); }, 3500);
 }
 
-// 📢 2. 精准签名栏轮播控制
-const signatures = [
-  "孩子们别忘了骑士梦的最初梦想",
-  "孩子们你们会坚持骑士梦的对吧？",
-  "我敢抽格调角色你们敢吗？",
-  "正在穷举中，勿扰......"
-];
-
+// 📢 签名文字滚动
+const signatures = ["孩子们别忘了骑士梦的最初梦想", "孩子们你们会坚持骑士梦的对吧？", "我敢抽格调角色你们敢吗？", "正在穷举中，勿扰......"];
 const sigSlider = document.getElementById('signature-slider');
-const sigPrev = document.getElementById('sig-prev');
-const sigNext = document.getElementById('sig-next');
-
-let sigIndex = 0;
-let sigTimer = null;
-const FIXED_ROW_HEIGHT = 56; 
-
 if (sigSlider) {
-  sigSlider.innerHTML = '';
   signatures.forEach((text) => {
     const item = document.createElement('div');
-    item.className = "h-14 w-full text-xs sm:text-sm font-bold text-zinc-700 tracking-wide truncate";
-    item.style.lineHeight = `${FIXED_ROW_HEIGHT}px`; 
+    item.className = "h-14 w-full text-xs font-bold text-zinc-700 truncate flex items-center";
     item.textContent = text;
     sigSlider.appendChild(item);
   });
-
-  function updateSignature(index) {
-    if (index < 0) sigIndex = signatures.length - 1;
-    else if (index >= signatures.length) sigIndex = 0;
-    else sigIndex = index;
-    sigSlider.style.transform = `translateY(-${sigIndex * FIXED_ROW_HEIGHT}px)`;
-  }
-
-  function startSigAutoPlay() {
-    clearInterval(sigTimer); 
-    sigTimer = setInterval(() => { updateSignature(sigIndex + 1); }, 15000); 
-  }
-
-  if (sigPrev) sigPrev.addEventListener('click', () => { clearInterval(sigTimer); updateSignature(sigIndex - 1); startSigAutoPlay(); });
-  if (sigNext) sigNext.addEventListener('click', () => { clearInterval(sigTimer); updateSignature(sigIndex + 1); startSigAutoPlay(); });
-
-  updateSignature(0);
-  startSigAutoPlay();
 }
 
-
-// 📑 3. 右侧侧边栏“最近更新”一比一精细高仿图逻辑
+// 📑 3. 右侧“群贤毕至”列表渲染（手机/桌面通用，点击一律链接切换到对应正文）
 const sidebarData = {
-  // “最新”分类直接按顺序拉取前 8 篇
   new: projects.slice(1, 9),
-  // “热门”分类进行无序混编，确保数据多样性
   hot: [projects[4], projects[2], projects[7], projects[0], projects[6], projects[1], projects[3], projects[5]],
-  // “精选”分类进行无序混编
   best: [projects[8], projects[2], projects[6], projects[0], projects[4], projects[1], projects[7], projects[3]]
 };
-
 const sidebarList = document.getElementById('sidebar-list');
 const tabs = {
   new: document.getElementById('tab-new'),
@@ -248,46 +187,40 @@ function renderSidebarList(type) {
   
   sidebarData[type].forEach((article, idx) => {
     const li = document.createElement('li');
-    // 高仿图排版结构：序号 + 标题 + 多维元数据（日期、浏览量、评论、点赞）
-    li.className = "flex items-start space-x-2.5 group cursor-pointer border-b border-zinc-100/40 pb-2 last:border-0";
+    li.className = "flex items-start space-x-2.5 group cursor-pointer border-b border-zinc-100/50 pb-2.5 last:border-0";
     
-    // 前三名气泡背景色加重
-    let badgeClass = "text-zinc-400 font-normal";
-    if (idx === 0) badgeClass = "bg-blue-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
-    if (idx === 1) badgeClass = "bg-emerald-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
-    if (idx === 2) badgeClass = "bg-orange-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
-    
-    // 如果不是前三名，单纯做个宽带占位文本
-    const badgeHtml = idx < 3 ? `<div class="${badgeClass}">${idx + 1}</div>` : `<div class="w-4 text-center text-zinc-400 font-semibold text-[11px]">${idx + 1}.</div>`;
+    // 一比一还原实机截图的气泡序号样式
+    let badgeHtml = "";
+    if (idx === 0) badgeHtml = `<div class="bg-orange-500 text-white font-bold rounded-sm w-4 h-4 text-[10px] flex items-center justify-center shrink-0">1</div>`;
+    else if (idx === 1) badgeHtml = `<div class="bg-emerald-500 text-white font-bold rounded-sm w-4 h-4 text-[10px] flex items-center justify-center shrink-0">2</div>`;
+    else if (idx === 2) badgeHtml = `<div class="bg-sky-500 text-white font-bold rounded-sm w-4 h-4 text-[10px] flex items-center justify-center shrink-0">3</div>`;
+    else badgeHtml = `<div class="w-4 text-center text-zinc-400 font-bold text-[11px] shrink-0">${idx + 1}.</div>`;
 
     li.innerHTML = `
       ${badgeHtml}
       <div class="flex-grow min-w-0 flex flex-col space-y-0.5">
-        <span class="text-zinc-700 font-medium group-hover:text-sky-600 transition truncate tracking-wide">${article.title}</span>
-        <div class="flex items-center text-[10px] text-zinc-400 font-normal space-x-2 select-none">
-          <span class="tracking-tight">${article.date}</span>
-          <span class="flex items-center">👁 ${article.views}</span>
-          <span class="flex items-center">💬 ${article.comments}</span>
-          <span class="flex items-center">👍 ${article.likes}</span>
+        <span class="text-zinc-700 font-semibold group-hover:text-sky-600 transition truncate tracking-wide text-xs">${article.title}</span>
+        <div class="flex items-center text-[10px] text-zinc-400 font-normal space-x-2 select-none tracking-tight">
+          <span>${article.date}</span>
+          <span>👁 ${article.views}</span>
+          <span>💬 ${article.comments}</span>
+          <span>👍 ${article.likes}</span>
         </div>
       </div>
     `;
     
-    // 点按右侧任一话，无缝链接呼出该详情文章
+    // 点按任意一句话，立刻链接切换进入该章节正文
     li.addEventListener('click', () => {
       showArticleContent(article);
     });
-    
     sidebarList.appendChild(li);
   });
 }
 
 if (tabs.new && tabs.hot && tabs.best) {
   Object.keys(tabs).forEach((key) => {
-    tabs[key].addEventListener('mouseenter', () => {
-      Object.keys(tabs).forEach((k) => {
-        tabs[k].className = "cursor-pointer transition-all pb-0.5 border-b-2 border-transparent text-zinc-400 hover:text-sky-500";
-      });
+    tabs[key].addEventListener('click', () => {
+      Object.keys(tabs).forEach((k) => tabs[k].className = "cursor-pointer transition-all pb-0.5 border-b-2 border-transparent text-zinc-400 hover:text-sky-500");
       tabs[key].className = "cursor-pointer transition-all pb-0.5 border-b-2 border-sky-600 text-sky-600 font-black";
       renderSidebarList(key);
     });
@@ -295,68 +228,81 @@ if (tabs.new && tabs.hot && tabs.best) {
 }
 renderSidebarList('new');
 
-
-// 📑 4. 下方主卡片列表渲染（只渲染列表中指定的文章）
+// 主页文章卡片流渲染
 const container = document.getElementById('projects-container');
 const mainListProjects = [projects[0], projects[1], projects[4], projects[6], projects[8]];
-
 if (container) {
   mainListProjects.forEach((p) => {
     const card = document.createElement('div');
-    const borderClass = p.isTop ? "border-sky-300 bg-sky-50/20 shadow-md" : "border-zinc-200 shadow-sm";
+    const borderClass = p.isTop ? "border-sky-300 bg-sky-50/10 shadow-sm" : "border-zinc-200 shadow-xs";
     card.className = `bg-white/95 rounded-xl overflow-hidden border hover:shadow-md transition cursor-pointer flex flex-row h-28 sm:h-36 ${borderClass}`;
-    
-    let tagsHtml = '';
-    if (p.isTop) tagsHtml += `<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black shrink-0">置顶</span>`;
-    tagsHtml += `<span class="text-[10px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold shrink-0">原创</span>`;
-
     card.innerHTML = `
-      <div class="p-4 flex flex-col justify-between flex-grow min-w-0">
+      <div class="p-3 sm:p-4 flex flex-col justify-between flex-grow min-w-0">
         <div>
           <div class="flex items-center space-x-1.5 mb-1">
-            ${tagsHtml}
-            <h4 class="text-sm sm:text-base font-black text-zinc-800 tracking-wide truncate">${p.title}</h4>
+            ${p.isTop ? '<span class="text-[9px] bg-red-100 text-red-600 px-1 py-0.2 rounded font-black">置顶</span>' : ''}
+            <h4 class="text-xs sm:text-base font-black text-zinc-800 truncate tracking-wide">${p.title}</h4>
           </div>
-          <p class="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed">${p.desc}</p>
+          <p class="text-zinc-500 text-[11px] sm:text-sm line-clamp-2 leading-relaxed">${p.desc}</p>
         </div>
-        <div class="flex items-center text-zinc-400 text-xs space-x-3 mt-1">
-          <span>💬 ${p.comments}</span>
-          <span>👍 ${p.likes}</span>
-          <span class="text-sky-500 font-semibold hover:underline ml-auto">阅读全文 →</span>
+        <div class="flex items-center text-zinc-400 text-[10px] sm:text-xs space-x-3">
+          <span>💬 ${p.comments}</span><span>👍 ${p.likes}</span>
+          <span class="text-sky-500 font-bold ml-auto">查看全文 →</span>
         </div>
       </div>
-      <div class="w-28 sm:w-44 h-full shrink-0 bg-zinc-100 border-l border-zinc-100 overflow-hidden">
-        <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+      <div class="w-24 sm:w-44 h-full shrink-0 bg-zinc-50 border-l border-zinc-100 overflow-hidden">
+        <img src="${p.image}" class="w-full h-full object-cover">
       </div>
     `;
-    
-    card.addEventListener('click', () => {
-      showArticleContent(p);
-    });
+    card.addEventListener('click', () => { showArticleContent(p); });
     container.appendChild(card);
   });
 }
 
-const btnMingdian = document.getElementById('btn-mingdian');
-if(btnMingdian) {
-  btnMingdian.addEventListener('click', () => {
+// 📱 4. 手机端侧边滑出抽屉式核心控制器
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const mobileDrawer = document.getElementById('mobile-drawer');
+const drawerOverlay = document.getElementById('drawer-overlay');
+const drawerContent = document.getElementById('drawer-content');
+
+function openDrawer() {
+  if (!mobileDrawer || !drawerContent) return;
+  mobileDrawer.classList.remove('pointer-events-none', 'opacity-0');
+  mobileDrawer.classList.add('opacity-100');
+  drawerContent.classList.remove('-translate-x-full');
+  drawerContent.classList.add('translate-x-0');
+}
+
+function closeDrawer() {
+  if (!mobileDrawer || !drawerContent) return;
+  mobileDrawer.classList.add('pointer-events-none', 'opacity-0');
+  mobileDrawer.classList.remove('opacity-100');
+  drawerContent.classList.remove('translate-x-0');
+  drawerContent.classList.add('-translate-x-full');
+}
+
+if (hamburgerBtn) hamburgerBtn.addEventListener('click', openDrawer);
+if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+
+document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    closeDrawer();
     showHomeList();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
-}
+});
 
-// 🎆 5. 全局背景点击喷射 ZZZ 特效
+const btnMingdian = document.getElementById('btn-mingdian');
+if(btnMingdian) btnMingdian.addEventListener('click', () => { showHomeList(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+// 全局 ZZZ 喷射
 document.addEventListener('click', (e) => {
-  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next') || e.target.closest('#article-view') || e.target.closest('input')) return;
+  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next') || e.target.closest('#article-view') || e.target.closest('input') || e.target.closest('#hamburger-btn')) return;
   const zzzIcon = document.createElement('img');
   zzzIcon.src = "images/ZZZ.jpg"; 
   zzzIcon.className = "click-effect";
   zzzIcon.style.left = `${e.clientX}px`;
   zzzIcon.style.top = `${e.clientY}px`;
-  const randomRot = Math.floor(Math.random() * 50) - 25;
-  zzzIcon.style.setProperty('--rand-rot', `${randomRot}deg`);
-  const randomScale = Math.random() > 0.5 ? 1.3 : 0.9; 
-  zzzIcon.style.setProperty('--rand-scale', randomScale);
   document.body.appendChild(zzzIcon);
   setTimeout(() => zzzIcon.remove(), 800);
 });
