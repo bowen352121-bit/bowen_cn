@@ -1,45 +1,45 @@
 /* bowen.css */
 body {
   font-family: system-ui, -apple-system, sans-serif;
+  background-color: #f4f6f9;
 }
 
-/* 🌀 基础动态滚动文字效果 */
-.scroll-text {
-  animation: scrollLeft 30s linear infinite;
-  transform: rotate(-8deg);
+/* 🎇 核心特效：全屏点击爆发出来的 ZZZ.jpg 样式（完美保留） */
+.click-effect {
+  position: fixed;
+  pointer-events: none; /* 防止遮挡鼠标导致无法二次点击 */
+  z-index: 9999;        /* 永远盖在最表层 */
+  
+  /* 精准设为五分之四的 34px 基础大小 */
+  width: 34px;          
+  height: 34px;
+  object-fit: contain;
+  
+  /* 触发向上喷发淡出轨迹 */
+  animation: floatUpAndOut 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
 }
 
-.scroll-text2 {
-  animation: scrollLeft 40s linear infinite;
-  transform: rotate(6deg);
-}
-
-@keyframes scrollLeft {
+@keyframes floatUpAndOut {
   0% {
-      transform: translate3d(0, 0, 0) rotate(var(--rot, -8deg));
+    /* 配合 JS 传入的 3倍、4倍 缩放倍率 */
+    transform: translate(-50%, -50%) scale(calc(var(--rand-scale, 1) * 0.4)) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, -50%) scale(var(--rand-scale, 1)) rotate(var(--rand-rot, -15deg));
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, calc(-50% - 30px)) scale(var(--rand-scale, 1)) rotate(var(--rand-rot, -15deg));
+    opacity: 1;
   }
   100% {
-      transform: translate3d(-50%, 0, 0) rotate(var(--rot, -8deg));
+    transform: translate(-50%, calc(-50% - 80px)) scale(calc(var(--rand-scale, 1) * 0.6)) rotate(calc(var(--rand-rot, -15deg) * 1.5));
+    opacity: 0;
   }
 }
 
-.scroll-text {
-  --rot: -8deg;
-}
-
-.scroll-text2 {
-  --rot: 6deg;
-}
-
-/* ⚡ 核心修改：针对手机小屏幕（屏幕宽度小于 768px）进行特异性加速 */
-@media (max-w-width: 768px) or (max-width: 768px) {
-  .scroll-text {
-    /* 手机上第一、三、五条：从 30 秒直接缩短到 12 秒，速度提升两倍多！ */
-    animation: scrollLeft 12s linear infinite !important;
-  }
-  
-  .scroll-text2 {
-    /* 手机上第二、四条（反向）：从 40 秒直接缩短到 15 秒，速度同样暴增！ */
-    animation: scrollLeft 15s linear infinite !important;
-  }
+/* 轨道顺滑滚动微调 */
+#carousel-container {
+  will-change: transform;
 }
