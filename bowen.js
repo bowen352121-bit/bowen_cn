@@ -362,7 +362,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 🌟 手机端侧边栏抽屉开关控制逻辑（带防崩安全锁版）
+// 🌟 手机端侧边栏抽屉开关控制逻辑（完美顶满版）
 // ==========================================
 const mobileBtn = document.getElementById('mobile-menu-toggle');
 const closeBtn = document.getElementById('mobile-menu-close');
@@ -371,8 +371,12 @@ const sidebarOverlay = document.getElementById('sidebar-overlay');
 
 function openMobileSidebar() {
   if (sidebarMenu && sidebarOverlay) {
-    sidebarMenu.classList.add('sidebar-open');
-    sidebarOverlay.classList.add('overlay-show');
+    sidebarMenu.classList.remove('hidden'); // 🌟 核心：移除隐藏状态
+    // 使用 setTimeout 触发过渡动画，让侧滑效果丝滑顺畅
+    setTimeout(() => {
+      sidebarMenu.classList.add('sidebar-open');
+      sidebarOverlay.classList.add('overlay-show');
+    }, 10);
     document.body.style.overflow = 'hidden'; 
   }
 }
@@ -381,6 +385,13 @@ function closeMobileSidebar() {
   if (sidebarMenu && sidebarOverlay) {
     sidebarMenu.classList.remove('sidebar-open');
     sidebarOverlay.classList.remove('overlay-show');
+    
+    // 动画播放完毕后再加回 hidden，彻底释放空间让主内容置顶
+    setTimeout(() => {
+      if (!sidebarMenu.classList.contains('sidebar-open')) {
+        sidebarMenu.classList.add('hidden');
+      }
+    }, 300);
     document.body.style.overflow = ''; 
   }
 }
@@ -389,7 +400,6 @@ if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
 if (closeBtn) closeBtn.addEventListener('click', closeMobileSidebar);
 if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
 
-// 🌟 这里加了条件判断：只有当成功捕获到 sidebarMenu 时，才去执行 querySelectorAll
 if (sidebarMenu) {
   const sidebarButtons = sidebarMenu.querySelectorAll('button, .cursor-pointer');
   sidebarButtons.forEach(btn => {
