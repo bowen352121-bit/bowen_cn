@@ -362,7 +362,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 🌟 手机端侧边栏抽屉开关控制逻辑（完美顶满版）
+// 🌟 手机端侧边栏抽屉开关控制逻辑（完美3/4宽度与显隐版）
 // ==========================================
 const mobileBtn = document.getElementById('mobile-menu-toggle');
 const closeBtn = document.getElementById('mobile-menu-close');
@@ -371,8 +371,12 @@ const sidebarOverlay = document.getElementById('sidebar-overlay');
 
 function openMobileSidebar() {
   if (sidebarMenu && sidebarOverlay) {
-    sidebarMenu.classList.remove('hidden'); // 🌟 核心：移除隐藏状态
-    // 使用 setTimeout 触发过渡动画，让侧滑效果丝滑顺畅
+    // 1. 在小屏幕下，先把隐藏类彻底去掉，切换为 flex 自适应显示
+    if (window.innerWidth < 1024) {
+      sidebarMenu.classList.remove('hidden');
+      sidebarMenu.classList.add('flex');
+    }
+    // 2. 利用延时，使 CSS 滑动动画平滑生效
     setTimeout(() => {
       sidebarMenu.classList.add('sidebar-open');
       sidebarOverlay.classList.add('overlay-show');
@@ -386,10 +390,11 @@ function closeMobileSidebar() {
     sidebarMenu.classList.remove('sidebar-open');
     sidebarOverlay.classList.remove('overlay-show');
     
-    // 动画播放完毕后再加回 hidden，彻底释放空间让主内容置顶
+    // 3. 当动画平滑收回后再加回 hidden，彻底不阻挡主页或详情视图的顶上
     setTimeout(() => {
-      if (!sidebarMenu.classList.contains('sidebar-open')) {
+      if (!sidebarMenu.classList.contains('sidebar-open') && window.innerWidth < 1024) {
         sidebarMenu.classList.add('hidden');
+        sidebarMenu.classList.remove('flex');
       }
     }, 300);
     document.body.style.overflow = ''; 
