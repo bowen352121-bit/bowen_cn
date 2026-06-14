@@ -4,7 +4,7 @@ body {
   background-color: #f4f6f9;
 }
 
-/* 🌀 回归：背景滚动字体的无缝跑马灯逻辑 */
+/* 🌀 背景滚动字体的无缝跑马灯逻辑 */
 .scroll-container {
   position: absolute;
   left: 0;
@@ -12,6 +12,17 @@ body {
   display: flex;
   white-space: nowrap;
   user-select: none;
+}
+
+/* 🎨 核心修改：重新定义背景滚动字体的色系，使其在白底下非常明显、极其有质感 */
+.text-custom-cyan { 
+  color: rgba(6, 182, 212, 0.28) !important; /* 轨道1&5：清爽高亮荧光电浆青，绝对抓眼 */
+}
+.text-custom-blue { 
+  color: rgba(2, 132, 199, 0.32) !important; /* 轨道2&4：饱满天蓝色，呼应明殿的整体基调 */
+}
+.text-custom-dark { 
+  color: rgba(30, 41, 59, 0.22) !important;  /* 轨道3：重工业极客深灰蓝（中间最粗一行），质感拉满 */
 }
 
 /* 从右往左流 */
@@ -42,13 +53,13 @@ body {
   .scroll-text-reverse { animation-duration: 18s; }
 }
 
-/* 🎆 核心特效：全屏点击爆发出来的 ZZZ.jpg 样式（4/5尺寸，大小错落交替） */
+/* 🎆 核心特效：全屏点击爆发出来的 ZZZ.jpg 样式（完美保留） */
 .click-effect {
   position: fixed;
   pointer-events: none; 
   z-index: 9999;        
   
-  /* 五分之四基础比例大小 */
+  /* 基础比例大小 */
   width: 34px;          
   height: 34px;
   object-fit: contain;

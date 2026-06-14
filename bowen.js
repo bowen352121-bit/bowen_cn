@@ -71,13 +71,14 @@ if (carouselContainer && carouselTitle && carouselDots) {
 }
 
 // ==========================================
-// 📑 2. 横向宽幅文章内容卡片列表渲染（白底风）
+// 📑 2. 横向宽幅文章内容卡片列表渲染（白底风还原）
 // ==========================================
 const container = document.getElementById('projects-container');
 
 if (container) {
   projects.forEach((p) => {
     const card = document.createElement('div');
+    // 🎨 完美还原白底高雅风：bg-white/95
     card.className = "bg-white/95 rounded-xl overflow-hidden border border-zinc-200 shadow-sm hover:shadow-md transition cursor-pointer flex flex-row h-28 sm:h-36";
     
     card.innerHTML = `
@@ -131,7 +132,6 @@ document.addEventListener('click', (e) => {
   const randomRot = Math.floor(Math.random() * 50) - 25;
   zzzIcon.style.setProperty('--rand-rot', `${randomRot}deg`);
   
-  // 3倍、4倍错落随机大小交替
   const randomScale = Math.random() > 0.5 ? 1.3 : 0.9; 
   zzzIcon.style.setProperty('--rand-scale', randomScale);
   
