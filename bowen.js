@@ -14,7 +14,7 @@ const projects = [
 ];
 
 // ==========================================
-// 🎠 1. 自动轮播图核心联动逻辑（10张图）
+// 🎠 1. 顶部大 banner 轮播图逻辑
 // ==========================================
 const carouselContainer = document.getElementById('carousel-container');
 const carouselTitle = document.getElementById('carousel-title');
@@ -71,16 +71,81 @@ if (carouselContainer && carouselTitle && carouselDots) {
 }
 
 // ==========================================
-// 📑 2. 横向宽幅文章内容卡片列表渲染（白底风还原）
+// 📢 2. 绝对对齐与精准 15 秒轮播控制
+// ==========================================
+const signatures = [
+  "孩子们别忘了骑士梦的最初梦想",
+  "孩子们你们会坚持骑士梦的对吧？",
+  "我敢抽格调角色你们敢吗？",
+  "我chovy侧滑你们给我出格调角色给我出好的啊！",
+  "正在穷举中，勿扰......"
+];
+
+const sigSlider = document.getElementById('signature-slider');
+const sigPrev = document.getElementById('sig-prev');
+const sigNext = document.getElementById('sig-next');
+
+let sigIndex = 0;
+let sigTimer = null;
+const FIXED_ROW_HEIGHT = 56; // 核心锁定高度：56像素
+
+if (sigSlider) {
+  sigSlider.innerHTML = '';
+  
+  signatures.forEach((text) => {
+    const item = document.createElement('div');
+    item.className = "h-14 w-full text-xs sm:text-sm font-bold text-zinc-700 tracking-wide truncate";
+    item.style.lineHeight = `${FIXED_ROW_HEIGHT}px`; 
+    item.textContent = text;
+    sigSlider.appendChild(item);
+  });
+
+  function updateSignature(index) {
+    if (index < 0) {
+      sigIndex = signatures.length - 1;
+    } else if (index >= signatures.length) {
+      sigIndex = 0;
+    } else {
+      sigIndex = index;
+    }
+    sigSlider.style.transform = `translateY(-${sigIndex * FIXED_ROW_HEIGHT}px)`;
+  }
+
+  function startSigAutoPlay() {
+    clearInterval(sigTimer); 
+    sigTimer = setInterval(() => {
+      updateSignature(sigIndex + 1);
+    }, 15000); // 稳固的 15 秒轮播频率
+  }
+
+  if (sigPrev) {
+    sigPrev.addEventListener('click', () => {
+      clearInterval(sigTimer); 
+      updateSignature(sigIndex - 1);
+      startSigAutoPlay();
+    });
+  }
+
+  if (sigNext) {
+    sigNext.addEventListener('click', () => {
+      clearInterval(sigTimer); 
+      updateSignature(sigIndex + 1);
+      startSigAutoPlay();
+    });
+  }
+
+  updateSignature(0);
+  startSigAutoPlay();
+}
+
+// ==========================================
+// 📑 3. 下方文章卡片数据渲染
 // ==========================================
 const container = document.getElementById('projects-container');
-
 if (container) {
   projects.forEach((p) => {
     const card = document.createElement('div');
-    // 🎨 完美还原白底高雅风：bg-white/95
     card.className = "bg-white/95 rounded-xl overflow-hidden border border-zinc-200 shadow-sm hover:shadow-md transition cursor-pointer flex flex-row h-28 sm:h-36";
-    
     card.innerHTML = `
       <div class="p-4 flex flex-col justify-between flex-grow min-w-0">
         <div>
@@ -100,13 +165,9 @@ if (container) {
         <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
       </div>
     `;
-    
     card.addEventListener('click', () => {
-      if (p.link && p.link !== "#") {
-        window.open(p.link, '_blank'); 
-      }
+      if (p.link && p.link !== "#") window.open(p.link, '_blank'); 
     });
-    
     container.appendChild(card);
   });
 }
@@ -119,13 +180,14 @@ if(btnMingdian) {
 }
 
 // ==========================================
-// 🎆 3. 全局背景点击喷射 ZZZ.jpg 特效（完美保留）
+// 🎆 4. 全局背景点击喷射 ZZZ 特效
 // ==========================================
 document.addEventListener('click', (e) => {
+  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next')) return;
+
   const zzzIcon = document.createElement('img');
   zzzIcon.src = "images/ZZZ.jpg"; 
   zzzIcon.className = "click-effect";
-  
   zzzIcon.style.left = `${e.clientX}px`;
   zzzIcon.style.top = `${e.clientY}px`;
   
@@ -136,8 +198,5 @@ document.addEventListener('click', (e) => {
   zzzIcon.style.setProperty('--rand-scale', randomScale);
   
   document.body.appendChild(zzzIcon);
-  
-  setTimeout(() => {
-    zzzIcon.remove();
-  }, 800);
+  setTimeout(() => zzzIcon.remove(), 800);
 });
