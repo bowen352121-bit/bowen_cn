@@ -77,3 +77,12 @@ body {
 .calendar-row-gap {
   row-gap: 10px;
 }
+
+/* 🌟 已追加：配合 JavaScript 做手机抽屉展开的控制类 */
+.sidebar-open {
+  transform: translateX(0) !important;
+}
+.overlay-show {
+  display: block !important;
+  opacity: 1 !important;
+}

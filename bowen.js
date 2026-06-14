@@ -360,3 +360,37 @@ document.addEventListener('click', (e) => {
   document.body.appendChild(zzzIcon);
   setTimeout(() => zzzIcon.remove(), 800);
 });
+
+// ==========================================
+// 🌟 手机端侧边栏抽屉开关控制逻辑（追加至最底部）
+// ==========================================
+const mobileBtn = document.getElementById('mobile-menu-toggle');
+const closeBtn = document.getElementById('mobile-menu-close');
+const sidebarMenu = document.getElementById('sidebar-menu');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+function openMobileSidebar() {
+  sidebarMenu.classList.add('sidebar-open');
+  sidebarOverlay.classList.add('overlay-show');
+  document.body.style.overflow = 'hidden'; // 打开时禁止底层网页上下乱滚
+}
+
+function closeMobileSidebar() {
+  sidebarMenu.classList.remove('sidebar-open');
+  sidebarOverlay.classList.remove('overlay-show');
+  document.body.style.overflow = ''; // 恢复滚动
+}
+
+if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+if (closeBtn) closeBtn.addEventListener('click', closeMobileSidebar);
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+// 当在手机侧边栏里点击了“明殿”或者其他切换动作后，自动收起侧边栏
+const sidebarButtons = sidebarMenu.querySelectorAll('button, .cursor-pointer');
+sidebarButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (window.innerWidth < 1024) { // 只在手机/平板端下生效
+      closeMobileSidebar();
+    }
+  });
+});
