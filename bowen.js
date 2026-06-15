@@ -1,4 +1,6 @@
-// bowen.js
+// ==========================================
+// 🚀 BOWEN.js - 全局交互、状态管理与背景音乐
+// ==========================================
 
 // 📅 基础文章数据库：加入标准规范的时间戳 (用于现实时间精准自动换算“几周前”)
 const projects = [
@@ -45,7 +47,7 @@ const projects = [
   },
   {
     title: "人类正在退出人类",
-    desc: "当智能Agent与自动化脚脚本当道，我们在游戏里甚至连走格子都不需要再亲自参与。这是对玩家双手的解放，还是人类逐步退出精神娱乐主导权的温水煮青蛙？从赛博空洞的生成机制，深度反思数字文明对人脑原生创造力的侵蚀。",
+    desc: "当智能Agent与自动化脚脚当道，我们在游戏里甚至连走格子都不需要再亲自参与。这是对玩家双手的解放，还是人类逐步退出精神娱乐主导权的温水柱青蛙？从赛博空洞的生成机制，深度反思数字文明对人脑原生创造力的侵蚀。",
     link: "modal",
     image: "images/骑士梦1.jpg",
     publishDate: "2026-04-15", 
@@ -77,26 +79,22 @@ const projects = [
   }
 ];
 
-// ⏳ 现实时间核心算法：计算绝对时间差并转换为精确的现实“几周前/几个月前”
+// ⏳ 现实时间核心算法
 function getRelativeTimeString(dateStr) {
   const now = new Date("2026-06-15T18:00:00"); 
   const past = new Date(dateStr);
   const diffMs = now - past;
-
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   if (diffDays <= 0) return "今天";
   if (diffDays < 7) return `${diffDays}天前`;
-  
   const diffWeeks = Math.floor(diffDays / 7);
   if (diffWeeks < 4) return `${diffWeeks}周前`;
-
   const diffMonths = Math.floor(diffDays / 30);
   if (diffMonths < 12) return `${diffMonths}个月前`;
-
   return `${Math.floor(diffMonths / 12)}年前`;
 }
 
-// 🏛️ 中间主视图切换
+// 🏛️ 中间主视图切换 DOM 声明
 const homeView = document.getElementById('home-view');
 const articleView = document.getElementById('article-view');
 const viewTitle = document.getElementById('view-title');
@@ -110,27 +108,23 @@ const btnBackHome = document.getElementById('btn-back-home');
 
 function showArticleContent(article) {
   if (!homeView || !articleView || !viewTitle || !viewDesc || !viewImage) return;
-
   viewTitle.textContent = article.title;
   viewDesc.textContent = article.desc;
   viewImage.src = article.image;
-
   const pureText = article.desc.replace(/\s+/g, ''); 
   const wordCount = pureText.length;
   const readMinutes = Math.max(1, Math.ceil(wordCount / 400)); 
-
   if (viewWordCount) viewWordCount.textContent = wordCount.toLocaleString();
   if (viewReadTime) viewReadTime.textContent = readMinutes;
   if (viewClickCount) viewClickCount.textContent = article.views;
-
   const now = new Date();
   if (viewRealTime) {
     viewRealTime.textContent = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
   }
-
   homeView.classList.add('hidden');
   articleView.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  history.pushState({ view: 'article' }, "");
 }
 
 function showHomeList() {
@@ -139,8 +133,13 @@ function showHomeList() {
   homeView.classList.remove('hidden');
 }
 
-if (btnBackHome) btnBackHome.addEventListener('click', showHomeList);
-
+if (btnBackHome) {
+  btnBackHome.addEventListener('click', () => {
+    if (!articleView.classList.contains('hidden')) {
+      history.back();
+    }
+  });
+}
 
 // 🎠 1. 顶部大 banner 轮播图逻辑
 const carouselContainer = document.getElementById('carousel-container');
@@ -184,9 +183,11 @@ if (carouselContainer && carouselTitle && carouselDots) {
     timer = setInterval(() => { updateCarousel((currentIndex + 1) % bannerProjects.length); }, 3500);
   }
 
-  carouselWrapper.addEventListener('mouseenter', () => clearInterval(timer));
-  carouselWrapper.addEventListener('mouseleave', startAutoPlay);
-  carouselWrapper.addEventListener('click', () => showArticleContent(bannerProjects[currentIndex]));
+  if (carouselWrapper) {
+    carouselWrapper.addEventListener('mouseenter', () => clearInterval(timer));
+    carouselWrapper.addEventListener('mouseleave', startAutoPlay);
+    carouselWrapper.addEventListener('click', () => showArticleContent(bannerProjects[currentIndex]));
+  }
 
   updateCarousel(0);
   startAutoPlay();
@@ -226,7 +227,7 @@ if (sigSlider) {
   updateSignature(0); startSigAutoPlay();
 }
 
-// 📑 3. 右侧侧边栏“最近更新”
+// 🏛️ 3. 右侧侧边栏“最近更新”选项卡
 const sidebarData = {
   new: projects.slice(1, 9),
   hot: [projects[4], projects[2], projects[7], projects[0], projects[6], projects[1], projects[3], projects[5]],
@@ -273,7 +274,7 @@ if (tabs.new && tabs.hot && tabs.best) {
 renderSidebarList('new');
 
 
-// 📑 4. 下方主卡片列表渲染（✨ 核心逻辑：占1/3大面积，且保持极其微小的精致外边距缝隙）
+// 📑 4. 下方主卡片列表渲染
 const container = document.getElementById('projects-container');
 const mainListProjects = [projects[0], projects[1], projects[4], projects[6], projects[8]];
 
@@ -282,11 +283,7 @@ if (container) {
   mainListProjects.forEach((p) => {
     const card = document.createElement('div');
     const borderClass = p.isTop ? "border-sky-200 bg-sky-50/10" : "border-zinc-200";
-    
-    // flex 布局，指定固定高度
     card.className = `bg-white rounded-xl overflow-hidden border hover:shadow-md transition-shadow duration-300 cursor-pointer flex flex-row h-32 sm:h-36 ${borderClass} group`;
-    
-    // “原创”浮动角标：放到图片容器内部
     const originalTagHtml = `<span class="absolute top-2 left-2 z-20 text-[9px] bg-sky-500 text-white font-black px-1.5 py-0.5 rounded shadow-xs select-none">原创</span>`;
     const topTagHtml = p.isTop ? `<span class="text-[10px] bg-red-100 text-red-600 px-1 py-0.2 rounded font-black mr-1 shrink-0">置顶</span>` : '';
 
@@ -295,13 +292,8 @@ if (container) {
         ${originalTagHtml}
         <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover rounded-lg border border-zinc-100/40 opacity-85 group-hover:opacity-100 transition-opacity duration-300">
       </div>
-      
       <div class="w-2/3 p-3 flex flex-col justify-between flex-grow min-w-0 relative">
-        
-        <div class="absolute top-3 right-3 text-[10px] sm:text-xs text-zinc-400 font-normal select-none tracking-wide">
-          ${p.lang}
-        </div>
-
+        <div class="absolute top-3 right-3 text-[10px] sm:text-xs text-zinc-400 font-normal select-none tracking-wide">${p.lang}</div>
         <div class="space-y-1 pr-14"> 
           <div class="flex items-center">
             ${topTagHtml}
@@ -309,37 +301,27 @@ if (container) {
           </div>
           <p class="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed font-normal">${p.desc}</p>
         </div>
-        
         <div class="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs text-zinc-400 font-bold border-t border-zinc-50/50 pt-1.5 select-none">
-          
           <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md tracking-tight">${getRelativeTimeString(p.publishDate)}</span>
-          
           <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md flex items-center space-x-0.5">
             <svg class="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span>${p.views}</span>
           </span>
-          
           <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md flex items-center space-x-0.5">
             <svg class="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.92 1.78c-.072.083-.105.195-.088.307.017.111.087.206.188.258a4.912 4.912 0 002.393.616c.72 0 1.408-.155 2.03-.435.53-.24 1.144-.24 1.657.013.791.39 1.666.616 2.583.616z"/></svg>
             <span>${p.comments}</span>
           </span>
-
           <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md flex items-center space-x-0.5">
             <svg class="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.801 0 1.55.496 1.858 1.24.234.565.623 1.01 1.181 1.233.742.296 1.228.993 1.228 1.792V19.5a1.5 1.5 0 01-1.5 1.5H6.622a4.584 4.584 0 01-3.653-1.786l-1.028-1.37a1.5 1.5 0 01.39-2.183l1.522-1.015A4.817 4.817 0 016.633 10.5zm0 0V4.5A1.5 1.5 0 018.133 3h1.5a1.5 1.5 0 011.5 1.5V9a1.5 1.5 0 01-1.5 1.5h-3z"/></svg>
             <span>${p.likes || 0}</span>
           </span>
-
           <span class="bg-sky-50 text-sky-600 border border-sky-100 px-2 py-0.5 rounded-md font-bold tracking-wide flex items-center space-x-1">
-            <svg class="w-3 h-3 text-sky-500 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M4 4h7v7H4zm0 9h7v7H4zm9-9h7v7h-7zm0 9h7v7h-7z"/>
-            </svg>
+            <svg class="w-3 h-3 text-sky-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h7v7H4zm0 9h7v7H4zm9-9h7v7h-7zm0 9h7v7h-7z"/></svg>
             <span>来自 ${p.category}</span>
           </span>
-
         </div>
       </div>
     `;
-    
     card.addEventListener('click', () => showArticleContent(p));
     container.appendChild(card);
   });
@@ -348,14 +330,18 @@ if (container) {
 const btnMingdian = document.getElementById('btn-mingdian');
 if(btnMingdian) {
   btnMingdian.addEventListener('click', () => {
-    showHomeList();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!articleView.classList.contains('hidden')) {
+      history.back();
+    } else {
+      showHomeList();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   });
 }
 
 // 🎆 5. 全局背景点击喷射 ZZZ 特效
 document.addEventListener('click', (e) => {
-  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next') || e.target.closest('#article-view') || e.target.closest('input')) return;
+  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next') || e.target.closest('#article-view') || e.target.closest('input') || e.target.closest('#music-toggle')) return;
   const zzzIcon = document.createElement('img');
   zzzIcon.src = "images/ZZZ.jpg"; 
   zzzIcon.className = "click-effect";
@@ -369,128 +355,123 @@ document.addEventListener('click', (e) => {
   setTimeout(() => zzzIcon.remove(), 800);
 });
 
+
 // ==========================================
-// 📱 专门修复移动端手机左侧边栏打不开了的点击交互代码
+// 📱 手机侧边栏抽屉与全屏物理返回键机制
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-  const mobileMenuToggle = document.getElementById("mobile-menu-toggle"); // 汉堡按钮
-  const mobileMenuClose = document.getElementById("mobile-menu-close");   // 菜单内有关闭X按钮
-  const sidebarMenu = document.getElementById("sidebar-menu");           // 侧边栏本体
-  const sidebarOverlay = document.getElementById("sidebar-overlay");     // 遮罩层
+  const mobileMenuToggle = document.getElementById("mobile-menu-toggle"); 
+  const mobileMenuClose = document.getElementById("mobile-menu-close");   
+  const sidebarMenu = document.getElementById("sidebar-menu");           
+  const sidebarOverlay = document.getElementById("sidebar-overlay");     
 
-  // 打开侧边栏函数
   function openMobileSidebar() {
     if (sidebarMenu && sidebarOverlay) {
-      // 移除往左隐藏的类，加入位移归零的类
       sidebarMenu.classList.remove("-translate-x-full");
       sidebarMenu.classList.add("translate-x-0");
-      // 显示遮罩层
       sidebarOverlay.classList.remove("hidden");
-      // 防止手机端遮罩层穿透滚动
       document.body.classList.add("overflow-hidden");
+      history.pushState({ view: 'sidebar' }, "");
     }
   }
 
-  // 关闭侧边栏函数
   function closeMobileSidebar() {
     if (sidebarMenu && sidebarOverlay) {
-      // 恢复往左隐藏
       sidebarMenu.classList.remove("translate-x-0");
       sidebarMenu.classList.add("-translate-x-full");
-      // 隐藏遮罩层
       sidebarOverlay.classList.add("hidden");
-      // 恢复页面正常滚动
       document.body.classList.remove("overflow-hidden");
     }
   }
 
-  // 1. 点击左上角三条杠汉堡按钮 -> 打开
   if (mobileMenuToggle) {
     mobileMenuToggle.addEventListener("click", (e) => {
-      e.stopPropagation(); // 阻止冒泡
+      e.preventDefault(); e.stopPropagation();
       openMobileSidebar();
     });
   }
 
-  // 2. 点击侧边栏内部的 X 关闭按钮 -> 关闭
   if (mobileMenuClose) {
-    mobileMenuClose.addEventListener("click", closeMobileSidebar);
+    mobileMenuClose.addEventListener("click", () => {
+      if (sidebarMenu.classList.contains("translate-x-0")) history.back();
+    });
   }
-
-  // 3. 点击菜单外面的空白遮罩区域 -> 自动关闭
   if (sidebarOverlay) {
-    sidebarOverlay.addEventListener("click", closeMobileSidebar);
-  }
-
-  // 4. 优化：点击菜单内部任意一个导航项时，也自动收起侧边栏
-  if (sidebarMenu) {
-    const menuItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button");
-    menuItems.forEach(item => {
-      item.addEventListener("click", () => {
-        // 如果是在手机小屏幕状态下，点击后就关掉侧边栏
-        if (window.innerWidth < 1024) { 
-          closeMobileSidebar();
-        }
-      });
-    });
-  }
-});
-
-// ==========================================
-// 📱 完美修复手机侧边栏抽屉的核心脚本
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-  const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
-  const mobileMenuClose = document.getElementById("mobile-menu-close");
-  const sidebarMenu = document.getElementById("sidebar-menu");
-  const sidebarOverlay = document.getElementById("sidebar-overlay");
-
-  function openMobileSidebar() {
-    if (sidebarMenu && sidebarOverlay) {
-      // 1. 移出屏幕外侧类，换入位移归零显现
-      sidebarMenu.classList.remove("-translate-x-full");
-      sidebarMenu.classList.add("translate-x-0");
-      // 2. 揭开并激活半透明遮罩
-      sidebarOverlay.classList.remove("hidden");
-      // 3. 锁定底部主页面滚动线
-      document.body.classList.add("overflow-hidden");
-    }
-  }
-
-  function closeMobileSidebar() {
-    if (sidebarMenu && sidebarOverlay) {
-      // 1. 顺滑收回至屏幕外部
-      sidebarMenu.classList.remove("translate-x-0");
-      sidebarMenu.classList.add("-translate-x-full");
-      // 2. 封锁遮罩层
-      sidebarOverlay.classList.add("hidden");
-      // 3. 解除主页面滚动锁定
-      document.body.classList.remove("overflow-hidden");
-    }
-  }
-
-  // 汉堡图标点击触发
-  if (mobileMenuToggle) {
-    mobileMenuToggle.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openMobileSidebar();
+    sidebarOverlay.addEventListener("click", () => {
+      if (sidebarMenu.classList.contains("translate-x-0")) history.back();
     });
   }
 
-  // 关闭 X 号触发
-  if (mobileMenuClose) { mobileMenuClose.addEventListener("click", closeMobileSidebar); }
-
-  // 点击外部阴影空白处自动收起
-  if (sidebarOverlay) { sidebarOverlay.addEventListener("click", closeMobileSidebar); }
-
-  // 点击侧边栏内任意单项自动跳转并合上
   if (sidebarMenu) {
     const clickableItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button");
     clickableItems.forEach(item => {
       item.addEventListener("click", () => {
-        if (window.innerWidth < 1024) { closeMobileSidebar(); }
+        if (window.innerWidth < 1024 && sidebarMenu.classList.contains("translate-x-0")) { 
+          history.back(); 
+        }
       });
     });
   }
+
+  window.addEventListener("popstate", (event) => {
+    if (sidebarMenu && sidebarMenu.classList.contains("translate-x-0")) {
+      closeMobileSidebar();
+    } 
+    else if (articleView && !articleView.classList.contains("hidden")) {
+      showHomeList();
+    }
+  });
+
+  // ==========================================
+  // 🎵 音乐控制模块 (资源对准修改)
+  // ==========================================
+  const audio = document.getElementById('bgm');
+  const musicToggle = document.getElementById('music-toggle');
+  const musicIcon = document.getElementById('music-icon');
+  
+  // 绑定专属图像资源路径
+  const IMG_PLAY = "images/音乐打开键.jpg"; 
+  const IMG_MUTE = "images/音乐关闭键.jpg"; 
+
+  let isPlaying = false;
+
+  function playMusic() {
+    if (!audio) return;
+    audio.play().then(() => {
+      isPlaying = true;
+      if (musicIcon) musicIcon.src = IMG_PLAY;
+    }).catch(err => {
+      console.log("现代浏览器默认拦截了音频自动挂载，已激活自动捕获监听器...");
+    });
+  }
+
+  function pauseMusic() {
+    if (!audio) return;
+    audio.pause();
+    isPlaying = false;
+    if (musicIcon) musicIcon.src = IMG_MUTE;
+  }
+
+  playMusic();
+
+  if (musicToggle) {
+    musicToggle.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      if (isPlaying) {
+        pauseMusic();
+      } else {
+        playMusic();
+      }
+    });
+  }
+
+  document.addEventListener('click', function autoPlayHelper() {
+    if (!isPlaying && audio) {
+      audio.play().then(() => {
+        isPlaying = true;
+        if (musicIcon) musicIcon.src = IMG_PLAY;
+        document.removeEventListener('click', autoPlayHelper);
+      }).catch(() => {});
+    }
+  }, { once: true });
 });
