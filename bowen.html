@@ -27,10 +27,10 @@
     </div>
   </div>
   
-  <header class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-200 px-4 md:px-8 py-3 shadow-sm">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-zinc-200 px-4 md:px-8 py-3 shadow-sm">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2">
-        <button id="mobile-menu-toggle" class="lg:hidden p-1.5 mr-1 rounded-md text-zinc-600 hover:bg-zinc-100 transition focus:outline-none cursor-pointer">
+        <button id="mobile-menu-toggle" class="lg:hidden p-2 -ml-1 rounded-md text-zinc-600 hover:bg-zinc-100 transition focus:outline-none cursor-pointer">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
         </button>
         <span class="text-xl font-black tracking-wider text-sky-600">&lt;/&gt; BOWEN</span>
@@ -42,11 +42,11 @@
     </div>
   </header>
 
-  <div id="sidebar-overlay" class="fixed inset-0 bg-transparent z-40 hidden lg:hidden"></div>
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden transition-opacity duration-300"></div>
 
   <main class="max-w-7xl mx-auto px-2 md:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-5 relative z-10">
     
-    <aside id="sidebar-menu" class="fixed inset-y-0 left-0 w-3/5 bg-white p-5 border-r border-zinc-200 transition-transform duration-300 transform -translate-x-full z-50 overflow-y-auto lg:sticky lg:top-20 lg:self-start lg:flex lg:col-span-2 lg:w-auto lg:p-0 lg:border-none lg:transform-none lg:overflow-visible flex-col space-y-2 select-none">
+    <aside id="sidebar-menu" class="fixed inset-y-0 left-0 w-3/5 max-w-[260px] bg-white p-5 border-r border-zinc-200 transition-transform duration-300 transform -translate-x-full z-50 overflow-y-auto lg:sticky lg:top-20 lg:self-start lg:flex lg:col-span-2 lg:w-auto lg:p-0 lg:border-none lg:transform-none lg:overflow-visible flex-col space-y-2 select-none">
       <div class="flex items-center justify-between mb-4 pb-2 border-b border-zinc-100 lg:hidden">
         <span class="font-black text-sky-600 text-sm">导航菜单</span>
         <button id="mobile-menu-close" class="text-zinc-400 hover:text-zinc-600 p-1">
@@ -78,7 +78,7 @@
       <div class="w-full flex items-center justify-between px-5 py-3 text-zinc-600 font-medium hover:text-sky-600 hover:bg-white/60 rounded-xl transition cursor-pointer text-sm">
         <div class="flex items-center space-x-4">
           <span class="text-base flex items-center">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
           </span>
           <span class="tracking-wide">工巧</span>
         </div>
@@ -140,7 +140,7 @@
       
       <div id="home-view" class="space-y-5">
         <div id="carousel-wrapper" class="relative w-full h-48 sm:h-72 rounded-xl overflow-hidden shadow-md group border border-zinc-100 bg-zinc-200 cursor-pointer">
-          <div id="carousel-container" class="flex h-full transition-transform duration-500 ease-in-out"></div>
+          <div id="carousel-container" class="flex w-[1000%] h-full transition-transform duration-500 ease-in-out"></div>
           <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10 text-white pointer-events-none">
             <h2 id="carousel-title" class="text-base sm:text-xl font-bold tracking-wide truncate">正在加载...</h2>
           </div>
@@ -148,7 +148,7 @@
         </div>
 
         <div class="w-full flex items-center space-x-2 h-14 select-none">
-          <div class="bg-white/95 rounded-none px-4 border border-zinc-200 shadow-xs flex items-center shrink-0 h-14">
+          <div class="bg-white/95 rounded-none px-4 border border-zinc-200 border-r-0 shadow-xs flex items-center shrink-0 h-14">
             <div class="flex items-center space-x-2.5">
               <img src="images/要炸了孩子们.jpg" alt="头像" class="w-8 h-8 rounded-full border border-zinc-200 object-cover shadow-sm">
               <div class="flex flex-col justify-center">
@@ -157,17 +157,17 @@
               </div>
             </div>
           </div>
-          <div class="bg-white/95 rounded-none px-4 border border-zinc-200 shadow-xs flex items-center flex-grow min-w-0 h-14 overflow-hidden relative">
-            <div class="bg-white/95 rounded-none px-4 border border-zinc-200 shadow-xs flex items-center flex-grow min-w-0 h-14 overflow-hidden relative">
+          <div class="bg-white/95 rounded-none px-4 border-y border-zinc-200 shadow-xs flex items-center flex-grow min-w-0 h-14 overflow-hidden relative">
+            <div class="flex-grow min-w-0 h-14 relative overflow-hidden">
               <div id="signature-slider" class="absolute left-0 right-0 top-0 flex flex-col transition-transform duration-500 ease-in-out"></div>
             </div>
           </div>
-          <div class="w-12 h-14 flex flex-col justify-between shrink-0 gap-1">
-            <button id="sig-prev" class="w-full h-[26px] flex items-center justify-center bg-white/95 rounded-none border border-zinc-200 shadow-xs hover:bg-zinc-50 text-zinc-500 hover:text-sky-500 transition-colors cursor-pointer">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
+          <div class="w-12 h-14 flex flex-col justify-between shrink-0 gap-1 bg-white/95 border border-zinc-200 border-l-0 shadow-xs p-1">
+            <button id="sig-prev" class="w-full h-[22px] flex items-center justify-center bg-zinc-50 rounded-xs text-zinc-500 hover:text-sky-500 hover:bg-zinc-100 transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
             </button>
-            <button id="sig-next" class="w-full h-[26px] flex items-center justify-center bg-white/95 rounded-none border border-zinc-200 shadow-xs hover:bg-zinc-50 text-zinc-500 hover:text-sky-500 transition-colors cursor-pointer">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            <button id="sig-next" class="w-full h-[22px] flex items-center justify-center bg-zinc-50 rounded-xs text-zinc-500 hover:text-sky-500 hover:bg-zinc-100 transition-colors cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
             </button>
           </div>
         </div>
@@ -227,7 +227,6 @@
     </section>
 
     <aside class="col-span-1 lg:col-span-3 space-y-4">
-      
       <div class="flex items-center space-x-2 select-none">
         <div class="flex-grow flex bg-white border border-zinc-200 rounded-md overflow-hidden shadow-xs h-9 items-center px-2">
           <input type="text" placeholder="上下文检索" class="w-full bg-transparent text-zinc-600 text-xs outline-none font-medium px-1">
@@ -258,7 +257,6 @@
             <span id="tab-best" class="cursor-pointer transition-all pb-0.5 border-b-2 border-transparent text-zinc-400 hover:text-sky-500">精选</span>
           </div>
         </div>
-        
         <ol id="sidebar-list" class="space-y-3 text-xs"></ol>
       </div>
 
@@ -284,62 +282,22 @@
 
       <div class="bg-[#fcfcfd] rounded-xl p-5 border border-zinc-200/80 shadow-xs select-none relative">
         <div class="flex items-center justify-between mb-5">
-          <button class="w-7 h-7 flex items-center justify-center bg-zinc-100 rounded-md text-zinc-600 hover:bg-zinc-200/80 transition text-sm font-bold">
-            &lt;
-          </button>
-          <div class="text-sm font-black text-zinc-700 tracking-wide">
-            2026 年 6 月 15 日
-          </div>
-          <button class="w-7 h-7 flex items-center justify-center bg-zinc-100 rounded-md text-zinc-600 hover:bg-zinc-200/80 transition text-sm font-bold">
-            &gt;
-          </button>
+          <button class="w-7 h-7 flex items-center justify-center bg-zinc-100 rounded-md text-zinc-600 hover:bg-zinc-200/80 transition text-sm font-bold">&lt;</button>
+          <div class="text-sm font-black text-zinc-700 tracking-wide">2026 年 6 月 15 日</div>
+          <button class="w-7 h-7 flex items-center justify-center bg-zinc-100 rounded-md text-zinc-600 hover:bg-zinc-200/80 transition text-sm font-bold">&gt;</button>
         </div>
         <div class="grid grid-cols-7 text-center text-zinc-600 font-medium text-xs mb-3">
           <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
         </div>
-        
         <div class="grid grid-cols-7 text-center text-xs font-medium calendar-row-gap content-center text-zinc-700">
-          <div class="text-zinc-300 py-1.5">1</div>
-          <div class="text-zinc-300 py-1.5">2</div>
-          <div class="text-zinc-300 py-1.5">3</div>
-          <div class="text-zinc-300 py-1.5">4</div>
-          <div class="text-zinc-300 py-1.5">5</div>
-          <div class="text-zinc-300 py-1.5">6</div>
-          <div class="py-1.5">7</div>
-          
-          <div class="py-1.5">8</div>
-          <div class="py-1.5">9</div>
-          <div class="py-1.5">10</div>
-          <div class="py-1.5">11</div>
-          <div class="py-1.5">12</div>
-          <div class="py-1.5">13</div>
-          <div class="py-1.5">14</div>
-          
+          <div class="text-zinc-300 py-1.5">1</div><div class="text-zinc-300 py-1.5">2</div><div class="text-zinc-300 py-1.5">3</div><div class="text-zinc-300 py-1.5">4</div><div class="text-zinc-300 py-1.5">5</div><div class="text-zinc-300 py-1.5">6</div><div class="py-1.5">7</div>
+          <div class="py-1.5">8</div><div class="py-1.5">9</div><div class="py-1.5">10</div><div class="py-1.5">11</div><div class="py-1.5">12</div><div class="py-1.5">13</div><div class="py-1.5">14</div>
           <div class="flex items-center justify-center py-1">
             <span class="w-7 h-7 rounded-full bg-zinc-200/90 text-zinc-800 font-bold flex items-center justify-center text-xs shadow-xs">15</span>
           </div>
-          <div class="py-1.5">16</div>
-          <div class="py-1.5">17</div>
-          <div class="py-1.5">18</div>
-          <div class="py-1.5">19</div>
-          <div class="py-1.5">20</div>
-          <div class="py-1.5">21</div>
-          
-          <div class="py-1.5">22</div>
-          <div class="py-1.5">23</div>
-          <div class="py-1.5">24</div>
-          <div class="py-1.5">25</div>
-          <div class="py-1.5">26</div>
-          <div class="py-1.5">27</div>
-          <div class="py-1.5">28</div>
-          
-          <div class="py-1.5">29</div>
-          <div class="py-1.5">30</div>
-          <div class="text-zinc-300 py-1.5">1</div>
-          <div class="text-zinc-300 py-1.5">2</div>
-          <div class="text-zinc-300 py-1.5">3</div>
-          <div class="text-zinc-300 py-1.5">4</div>
-          <div class="text-zinc-300 py-1.5">5</div>
+          <div class="py-1.5">16</div><div class="py-1.5">17</div><div class="py-1.5">18</div><div class="py-1.5">19</div><div class="py-1.5">20</div><div class="py-1.5">21</div>
+          <div class="py-1.5">22</div><div class="py-1.5">23</div><div class="py-1.5">24</div><div class="py-1.5">25</div><div class="py-1.5">26</div><div class="py-1.5">27</div><div class="py-1.5">28</div>
+          <div class="py-1.5">29</div><div class="py-1.5">30</div><div class="text-zinc-300 py-1.5">1</div><div class="text-zinc-300 py-1.5">2</div><div class="text-zinc-300 py-1.5">3</div><div class="text-zinc-300 py-1.5">4</div><div class="text-zinc-300 py-1.5">5</div>
         </div>
       </div>
     </aside>

@@ -435,3 +435,62 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// ==========================================
+// 📱 完美修复手机侧边栏抽屉的核心脚本
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+  const mobileMenuClose = document.getElementById("mobile-menu-close");
+  const sidebarMenu = document.getElementById("sidebar-menu");
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+
+  function openMobileSidebar() {
+    if (sidebarMenu && sidebarOverlay) {
+      // 1. 移出屏幕外侧类，换入位移归零显现
+      sidebarMenu.classList.remove("-translate-x-full");
+      sidebarMenu.classList.add("translate-x-0");
+      // 2. 揭开并激活半透明遮罩
+      sidebarOverlay.classList.remove("hidden");
+      // 3. 锁定底部主页面滚动线
+      document.body.classList.add("overflow-hidden");
+    }
+  }
+
+  function closeMobileSidebar() {
+    if (sidebarMenu && sidebarOverlay) {
+      // 1. 顺滑收回至屏幕外部
+      sidebarMenu.classList.remove("translate-x-0");
+      sidebarMenu.classList.add("-translate-x-full");
+      // 2. 封锁遮罩层
+      sidebarOverlay.classList.add("hidden");
+      // 3. 解除主页面滚动锁定
+      document.body.classList.remove("overflow-hidden");
+    }
+  }
+
+  // 汉堡图标点击触发
+  if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openMobileSidebar();
+    });
+  }
+
+  // 关闭 X 号触发
+  if (mobileMenuClose) { mobileMenuClose.addEventListener("click", closeMobileSidebar); }
+
+  // 点击外部阴影空白处自动收起
+  if (sidebarOverlay) { sidebarOverlay.addEventListener("click", closeMobileSidebar); }
+
+  // 点击侧边栏内任意单项自动跳转并合上
+  if (sidebarMenu) {
+    const clickableItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button");
+    clickableItems.forEach(item => {
+      item.addEventListener("click", () => {
+        if (window.innerWidth < 1024) { closeMobileSidebar(); }
+      });
+    });
+  }
+});
