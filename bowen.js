@@ -368,3 +368,70 @@ document.addEventListener('click', (e) => {
   document.body.appendChild(zzzIcon);
   setTimeout(() => zzzIcon.remove(), 800);
 });
+
+// ==========================================
+// 📱 专门修复移动端手机左侧边栏打不开了的点击交互代码
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const mobileMenuToggle = document.getElementById("mobile-menu-toggle"); // 汉堡按钮
+  const mobileMenuClose = document.getElementById("mobile-menu-close");   // 菜单内有关闭X按钮
+  const sidebarMenu = document.getElementById("sidebar-menu");           // 侧边栏本体
+  const sidebarOverlay = document.getElementById("sidebar-overlay");     // 遮罩层
+
+  // 打开侧边栏函数
+  function openMobileSidebar() {
+    if (sidebarMenu && sidebarOverlay) {
+      // 移除往左隐藏的类，加入位移归零的类
+      sidebarMenu.classList.remove("-translate-x-full");
+      sidebarMenu.classList.add("translate-x-0");
+      // 显示遮罩层
+      sidebarOverlay.classList.remove("hidden");
+      // 防止手机端遮罩层穿透滚动
+      document.body.classList.add("overflow-hidden");
+    }
+  }
+
+  // 关闭侧边栏函数
+  function closeMobileSidebar() {
+    if (sidebarMenu && sidebarOverlay) {
+      // 恢复往左隐藏
+      sidebarMenu.classList.remove("translate-x-0");
+      sidebarMenu.classList.add("-translate-x-full");
+      // 隐藏遮罩层
+      sidebarOverlay.classList.add("hidden");
+      // 恢复页面正常滚动
+      document.body.classList.remove("overflow-hidden");
+    }
+  }
+
+  // 1. 点击左上角三条杠汉堡按钮 -> 打开
+  if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.stopPropagation(); // 阻止冒泡
+      openMobileSidebar();
+    });
+  }
+
+  // 2. 点击侧边栏内部的 X 关闭按钮 -> 关闭
+  if (mobileMenuClose) {
+    mobileMenuClose.addEventListener("click", closeMobileSidebar);
+  }
+
+  // 3. 点击菜单外面的空白遮罩区域 -> 自动关闭
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", closeMobileSidebar);
+  }
+
+  // 4. 优化：点击菜单内部任意一个导航项时，也自动收起侧边栏
+  if (sidebarMenu) {
+    const menuItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button");
+    menuItems.forEach(item => {
+      item.addEventListener("click", () => {
+        // 如果是在手机小屏幕状态下，点击后就关掉侧边栏
+        if (window.innerWidth < 1024) { 
+          closeMobileSidebar();
+        }
+      });
+    });
+  }
+});
