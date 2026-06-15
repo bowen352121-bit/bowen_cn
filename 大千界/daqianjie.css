@@ -1,0 +1,457 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    color-scheme: light;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: #e9e9e9;
+    color: #333;
+    font-family: Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    border: 0;
+    background: none;
+    font: inherit;
+}
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 76px;
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 2px solid #0988e8;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.04);
+}
+
+.header-inner {
+    width: min(1296px, calc(100% - 56px));
+    height: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    align-items: center;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #0787ed;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.brand-mark {
+    font-size: 29px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.brand-text {
+    font-size: 29px;
+}
+
+.site-slogan {
+    justify-self: start;
+    color: #0787ed;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.header-actions {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 36px;
+}
+
+.header-actions button {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    color: #8f8f8f;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: 700;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.header-actions button:hover {
+    color: #0787ed;
+    transform: translateY(-1px);
+}
+
+.hero {
+    position: relative;
+    height: 402px;
+    overflow: hidden;
+    background: #1e7aa4;
+}
+
+.hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 45%;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+}
+
+.channel-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    height: 59px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    background: rgba(0, 134, 211, 0.74);
+    color: rgba(255, 255, 255, 0.52);
+    font-weight: 800;
+    font-size: 17px;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 8px 20px rgba(0, 88, 145, 0.12);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.hero:hover .channel-nav,
+.channel-nav:focus-within {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.channel-nav a {
+    position: relative;
+    min-width: 110px;
+    height: 100%;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.channel-nav a + a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 22px;
+    width: 1px;
+    height: 15px;
+    background: rgba(255, 255, 255, 0.34);
+}
+
+.channel-nav span {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.channel-nav a:hover {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.channel-nav .active {
+    color: #1687d7;
+}
+
+.channel-nav .active::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    bottom: 12px;
+    z-index: -1;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+}
+
+.hero-copy {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    top: 52%;
+    width: min(920px, calc(100% - 40px));
+    transform: translate(-50%, -50%);
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.28);
+}
+
+.hero-copy h1 {
+    font-size: clamp(40px, 3.4vw, 52px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.hero-copy p {
+    margin-top: 31px;
+    display: inline-flex;
+    align-items: center;
+    gap: 22px;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.photo-section {
+    position: relative;
+    min-height: calc(100vh - 478px);
+    padding: 120px 0 70px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(232, 232, 232, 0.93) 80px),
+        #e7e7e7;
+    overflow: hidden;
+}
+
+.photo-section::before {
+    content: "move(sky, sky, sky) { if (!opts) return; } function move(obj, sky, isDrop, opts) { this.css({ left: rand(0, width), top: rand(0, height) }); }";
+    position: absolute;
+    inset: 22px -80px auto -80px;
+    color: rgba(190, 190, 190, 0.18);
+    font-size: 17px;
+    font-family: Consolas, "Courier New", monospace;
+    font-weight: 700;
+    line-height: 4.4;
+    transform: rotate(-1deg);
+    user-select: none;
+    pointer-events: none;
+}
+
+.code-text {
+    position: absolute;
+    color: rgba(190, 190, 190, 0.18);
+    font-family: Consolas, "Courier New", monospace;
+    font-weight: 700;
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+}
+
+.code-left {
+    left: -50px;
+    top: 32px;
+    font-size: 18px;
+}
+
+.code-right {
+    right: -20px;
+    top: 86px;
+    font-size: 17px;
+}
+
+.gallery {
+    position: relative;
+    z-index: 2;
+    width: min(1318px, calc(100% - 80px));
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 80px;
+    align-items: start;
+}
+
+.photo-card {
+    position: relative;
+    height: 286px;
+    padding: 14px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.72), 0 16px 38px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+
+.photo-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.12);
+}
+
+.photo-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+    cursor: zoom-in;
+}
+
+.card-tool {
+    position: absolute;
+    z-index: 3;
+    top: 29px;
+    right: 25px;
+    width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.78);
+    color: #6d7984;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.preview {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 28px;
+    background: rgba(0, 0, 0, 0.88);
+}
+
+.preview.show {
+    display: flex;
+}
+
+.preview img {
+    max-width: 94vw;
+    max-height: 92vh;
+    object-fit: contain;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+#close {
+    position: absolute;
+    top: 18px;
+    right: 36px;
+    color: #fff;
+    font-size: 48px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+@media (max-width: 1180px) {
+    .header-inner {
+        grid-template-columns: 200px 1fr 160px;
+    }
+
+    .channel-nav {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 0 18px;
+    }
+
+    .channel-nav a {
+        min-width: max-content;
+    }
+
+    .gallery {
+        gap: 34px;
+    }
+}
+
+@media (max-width: 900px) {
+    .site-header {
+        height: 68px;
+    }
+
+    .header-inner {
+        width: calc(100% - 28px);
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+    }
+
+    .site-slogan {
+        display: none;
+    }
+
+    .header-actions {
+        gap: 18px;
+    }
+
+    .brand-mark,
+    .brand-text {
+        font-size: 25px;
+    }
+
+    .hero {
+        height: 360px;
+    }
+
+    .gallery {
+        width: min(680px, calc(100% - 38px));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .header-actions button:nth-child(1),
+    .header-actions button:nth-child(2) {
+        display: none;
+    }
+
+    .hero {
+        height: 320px;
+    }
+
+    .channel-nav {
+        height: 52px;
+        font-size: 15px;
+    }
+
+    .hero-copy {
+        top: 58%;
+    }
+
+    .hero-copy h1 {
+        font-size: 32px;
+    }
+
+    .hero-copy p {
+        margin-top: 22px;
+        gap: 14px;
+        font-size: 16px;
+    }
+
+    .photo-section {
+        padding-top: 62px;
+    }
+
+    .gallery {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+}

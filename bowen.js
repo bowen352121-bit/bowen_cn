@@ -475,3 +475,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, { once: true });
 });
+
+// ========================================================
+// 🌌 大千界专属传送通道：点击时直接穿梭进入独立文件夹子页面
+// ========================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const btnDaqianjie = document.getElementById('btn-daqianjie');
+  if (btnDaqianjie) {
+    btnDaqianjie.addEventListener('click', (e) => {
+      e.stopPropagation(); // 阻止多余的冒泡特效
+      // 丝滑穿梭至你建好的大千界独立子文件
+      window.location.href = '大千界/daqianjie.html';
+    });
+  }
+});
