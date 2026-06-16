@@ -1,0 +1,155 @@
+/* 薇薇安分类页 — surmon.me/category/code 风格 */
+
+/* 分类横幅 */
+.wwa-category-hero {
+  position: relative;
+  height: 168px;
+  border-radius: var(--sm-radius);
+  overflow: hidden;
+  box-shadow: var(--sm-shadow);
+  background: #1a2233;
+}
+
+.wwa-category-code {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(0, 149, 255, 0.08) 0%, transparent 50%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 22px,
+      rgba(255, 255, 255, 0.03) 22px,
+      rgba(255, 255, 255, 0.03) 23px
+    );
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  opacity: 0.9;
+}
+
+.wwa-category-code::before {
+  content: "const view = document.querySelector('.category');\nfunction move(sky, opts) { if (!opts) return; }\nexport default { name: 'Vivian', render() {} };\nimport { ref, computed } from 'vue';\n// 广行饶益，利乐有情\nasync function fetchData() { return await api.get(); }";
+  position: absolute;
+  inset: 12px 16px;
+  white-space: pre-wrap;
+  font-size: 10px;
+  line-height: 1.65;
+  color: rgba(130, 180, 220, 0.35);
+  overflow: hidden;
+  filter: blur(0.3px);
+}
+
+.wwa-category-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 15, 25, 0.35) 0%,
+    rgba(10, 15, 25, 0.55) 100%
+  );
+}
+
+.wwa-category-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.wwa-category-icon {
+  font-size: 28px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.15em;
+  font-family: "Consolas", monospace;
+}
+
+.wwa-category-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+.wwa-category-sep {
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 4px;
+  font-weight: 300;
+}
+
+/* 标签云 — 带图标药丸 */
+.wwa-tags-cloud {
+  gap: 8px;
+  padding: 14px 12px;
+}
+
+.wwa-tags-cloud .sm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: #f5f6f8;
+  border: 1px solid transparent;
+}
+
+.wwa-tags-cloud .sm-tag:hover {
+  border-color: rgba(0, 149, 255, 0.15);
+}
+
+.wwa-tag-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--sm-accent);
+  flex-shrink: 0;
+}
+
+.wwa-tag-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* 加载更多按钮格式 */
+#btn-load-more {
+  gap: 6px;
+}
+
+#load-more-text {
+  color: var(--sm-muted);
+  font-weight: 600;
+}
+
+@media (max-width: 1023px) {
+  .wwa-category-hero {
+    height: 140px;
+    border-radius: 10px;
+  }
+
+  .wwa-category-icon {
+    font-size: 22px;
+  }
+
+  .wwa-category-title {
+    font-size: 13px;
+  }
+
+  .wwa-tags-cloud {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .wwa-tags-cloud .sm-tag {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}

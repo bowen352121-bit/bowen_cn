@@ -19,7 +19,7 @@ const projects = [
     link: "modal", 
     image: "images/jqlzy.jpg",
     publishDate: "2026-06-01", // 2周前
-    views: "659", comments: 0, likes: 13, category: "學梦寺", lang: "简体中文"
+    views: "659", comments: 0, likes: 13, category: "薇薇安", lang: "简体中文"
   },
   {
     title: "肘法",
@@ -411,6 +411,8 @@ document.addEventListener('click', (e) => {
 // 📱 手机侧边栏抽屉
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.remove("mobile-sidebar-open");
+
   const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
   const mobileMenuClose = document.getElementById("mobile-menu-close");
   const sidebarMenu = document.getElementById("sidebar-menu");
@@ -498,6 +500,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnJueyouqing = document.getElementById("btn-jueyouqing");
   if (btnJueyouqing) {
     btnJueyouqing.addEventListener("click", () => {
+      window.BowenMusic?.saveMusicTime();
+      if (isMobile()) closeMobileSidebar();
+    });
+  }
+
+  const btnWeian = document.getElementById("btn-weian");
+  if (btnWeian) {
+    btnWeian.addEventListener("click", () => {
       window.BowenMusic?.saveMusicTime();
       if (isMobile()) closeMobileSidebar();
     });

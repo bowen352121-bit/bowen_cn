@@ -25,11 +25,23 @@
   --sm-sidebar-height-ratio: 0.9;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   background-color: var(--sm-bg);
   color: var(--sm-text);
   overflow-x: clip;
+  margin: 0;
+  width: 100%;
 }
 
 /* 🧼 侧边栏列表 */
@@ -197,17 +209,16 @@ body {
   margin-bottom: 0 !important;
 }
 
-#sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) {
+#sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) {
   color: var(--sm-accent) !important;
   background: var(--sm-nav-hover-bg) !important;
 }
 
-#sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) .sm-nav-icon {
+#sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) .sm-nav-icon {
   color: var(--sm-accent) !important;
 }
 
-#sidebar-menu #btn-mingdian,
-#sidebar-menu #btn-mingdian.is-active {
+#sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) {
   color: var(--sm-accent) !important;
   font-weight: 600 !important;
   background: #ffffff !important;
@@ -215,13 +226,11 @@ body {
   border-radius: 10px !important;
 }
 
-#sidebar-menu #btn-mingdian .sm-nav-icon,
-#sidebar-menu #btn-mingdian.is-active .sm-nav-icon {
+#sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) .sm-nav-icon {
   color: var(--sm-accent) !important;
 }
 
-#sidebar-menu #btn-mingdian:hover,
-#sidebar-menu #btn-mingdian.is-active:hover {
+#sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new):hover {
   color: var(--sm-accent) !important;
   background: #ffffff !important;
 }
@@ -309,16 +318,16 @@ body {
   box-sizing: border-box;
 }
 
-.sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) {
+.sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) {
   color: var(--sm-accent);
   background: var(--sm-nav-hover-bg);
 }
 
-.sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) .sm-nav-icon {
+.sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) .sm-nav-icon {
   color: var(--sm-accent);
 }
 
-#btn-mingdian.is-active {
+.sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) {
   color: var(--sm-accent);
   font-weight: 600;
   background: #ffffff;
@@ -348,7 +357,7 @@ body {
   color: inherit;
 }
 
-#btn-mingdian.is-active .sm-nav-icon {
+.sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) .sm-nav-icon {
   color: var(--sm-accent);
 }
 
@@ -1541,20 +1550,19 @@ body {
     color: rgba(255, 255, 255, 0.88) !important;
   }
 
-  #sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian),
-  #sidebar-menu > button:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian),
-  #sidebar-menu > a:hover:not(.sm-nav-hot):not(.sm-nav-new) {
+  #sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active),
+  #sidebar-menu > button:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active),
+  #sidebar-menu > a:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) {
     background: rgba(255, 255, 255, 0.06) !important;
     color: #fff !important;
   }
 
-  #sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) .sm-nav-icon,
-  #sidebar-menu > button:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) .sm-nav-icon {
+  #sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) .sm-nav-icon,
+  #sidebar-menu > button:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) .sm-nav-icon {
     color: #fff !important;
   }
 
-  #sidebar-menu #btn-mingdian,
-  #sidebar-menu #btn-mingdian.is-active {
+  #sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) {
     color: var(--sm-accent) !important;
     background: #ebebeb !important;
     box-shadow: none !important;
@@ -1562,13 +1570,11 @@ body {
     font-weight: 600 !important;
   }
 
-  #sidebar-menu #btn-mingdian .sm-nav-icon,
-  #sidebar-menu #btn-mingdian.is-active .sm-nav-icon {
+  #sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) .sm-nav-icon {
     color: var(--sm-accent) !important;
   }
 
-  #sidebar-menu #btn-mingdian:hover,
-  #sidebar-menu #btn-mingdian.is-active:hover {
+  #sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new):hover {
     background: #ebebeb !important;
     color: var(--sm-accent) !important;
   }
@@ -1619,6 +1625,7 @@ body {
   body.mobile-sidebar-open {
     overflow: hidden;
     touch-action: none;
+    padding-right: 0 !important;
   }
 
   #widget-column { margin-top: 0; }
