@@ -88,7 +88,22 @@ body {
   .scroll-text-reverse { animation-duration: 18s; }
 }
 @media (max-width: 1023px) {
-  .scroll-container { display: none; }
+  body > .fixed.inset-0 {
+    opacity: 0.18 !important;
+  }
+  .scroll-container {
+    display: flex;
+    width: 200%;
+  }
+  .scroll-container:nth-of-type(1) { top: 6% !important; }
+  .scroll-container:nth-of-type(2) { top: 26% !important; }
+  .scroll-container:nth-of-type(3) { top: 46% !important; }
+  .scroll-container .scroll-text,
+  .scroll-container .scroll-text-reverse {
+    font-size: 1.1rem !important;
+    line-height: 1.2;
+    letter-spacing: -0.02em !important;
+  }
 }
 
 /* 🎆 点击爆发 ZZZ.jpg 特效 */
@@ -537,6 +552,16 @@ body {
 
 #carousel-title {
   display: none;
+}
+
+@media (max-width: 1023px) {
+  #carousel-title {
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+    max-height: 2.7em;
+    overflow: hidden;
+  }
 }
 
 /* ---- 近时 / 一念 签名栏 ---- */
@@ -1439,7 +1464,22 @@ body {
   }
 
   .sm-meta-cat {
-    display: none;
+    display: inline-flex;
+    margin-left: auto;
+    font-size: 10px;
+  }
+
+  .sm-tab {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+  }
+
+  #widget-column {
+    gap: 10px;
   }
 
   /* ---- 手机侧栏抽屉：surmon 深色 ---- */

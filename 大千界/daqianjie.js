@@ -79,6 +79,23 @@ function initHeroCarousel() {
     if (heroBanner) {
         heroBanner.addEventListener("mouseenter", () => clearInterval(timer));
         heroBanner.addEventListener("mouseleave", startAutoPlay);
+
+        let touchStartX = 0;
+        heroBanner.addEventListener("touchstart", (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            clearInterval(timer);
+        }, { passive: true });
+        heroBanner.addEventListener("touchend", (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (Math.abs(dx) >= 40) {
+                if (dx < 0) {
+                    updateHero((currentIndex + 1) % slides.length);
+                } else {
+                    updateHero((currentIndex - 1 + slides.length) % slides.length);
+                }
+            }
+            startAutoPlay();
+        }, { passive: true });
     }
 }
 

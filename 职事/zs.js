@@ -92,6 +92,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  window.matchMedia("(max-width: 1023px)").addEventListener("change", (e) => {
+    if (!e.matches) closeMobileSidebar();
+  });
+
   window.BowenMusic?.bindToggle(
     document.getElementById("music-toggle"),
     document.getElementById("music-icon"),

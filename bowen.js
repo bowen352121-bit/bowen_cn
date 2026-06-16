@@ -217,6 +217,22 @@ if (carouselContainer && carouselTitle && carouselDots) {
     carouselWrapper.addEventListener('mouseenter', () => clearInterval(timer));
     carouselWrapper.addEventListener('mouseleave', startAutoPlay);
     carouselWrapper.addEventListener('click', () => showArticleContent(bannerProjects[currentIndex]));
+
+    let touchStartX = 0;
+    carouselWrapper.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    carouselWrapper.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(dx) < 40) return;
+      clearInterval(timer);
+      if (dx < 0) {
+        updateCarousel((currentIndex + 1) % bannerProjects.length);
+      } else {
+        updateCarousel((currentIndex - 1 + bannerProjects.length) % bannerProjects.length);
+      }
+      startAutoPlay();
+    }, { passive: true });
   }
 
   updateCarousel(0);
@@ -292,11 +308,13 @@ function renderSidebarList(type) {
 }
 if (tabs.new && tabs.hot && tabs.best) {
   Object.keys(tabs).forEach((key) => {
-    tabs[key].addEventListener('mouseenter', () => {
+    const activate = () => {
       Object.keys(tabs).forEach((k) => tabs[k].classList.remove('is-active'));
       tabs[key].classList.add('is-active');
       renderSidebarList(key);
-    });
+    };
+    tabs[key].addEventListener('mouseenter', activate);
+    tabs[key].addEventListener('click', activate);
   });
 }
 renderSidebarList('new');
@@ -381,7 +399,6 @@ if(btnMingdian) {
 // 🎆 5. 全局背景点击喷射 ZZZ 特效
 document.addEventListener('click', (e) => {
   if (
-    window.matchMedia("(max-width: 1023px)").matches ||
     e.target.closest('#sig-prev') ||
     e.target.closest('#sig-next') ||
     e.target.closest('#article-view') ||
@@ -533,6 +550,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (articleView && !articleView.classList.contains("hidden")) {
       showHomeList();
     }
+  });
+
+  window.matchMedia("(max-width: 1023px)").addEventListener("change", (e) => {
+    if (!e.matches) closeMobileSidebar();
   });
 
   // ==========================================

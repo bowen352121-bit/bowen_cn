@@ -525,8 +525,41 @@ button {
 }
 
 @media (max-width: 1023px) {
+    .hero {
+        overflow: visible;
+        height: auto;
+    }
+
+    .hero-banner {
+        height: 12rem;
+    }
+
     .channel-nav {
-        display: none !important;
+        display: flex !important;
+        position: sticky;
+        top: var(--site-header-h);
+        z-index: 45;
+        opacity: 1 !important;
+        transform: none !important;
+        pointer-events: auto !important;
+        justify-content: flex-start;
+        padding: 0 10px;
+        height: 48px;
+        font-size: 14px;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .hero:hover .channel-nav,
+    .channel-nav:focus-within,
+    .channel-nav.is-open {
+        opacity: 1 !important;
+        transform: none !important;
+        pointer-events: auto !important;
+    }
+
+    .channel-nav a {
+        min-width: max-content;
+        padding: 0 12px;
     }
 }
 

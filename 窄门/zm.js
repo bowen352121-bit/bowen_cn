@@ -309,11 +309,13 @@ function renderSidebarList(type) {
 
 if (tabs.new && tabs.hot && tabs.best) {
   Object.keys(tabs).forEach((key) => {
-    tabs[key].addEventListener("mouseenter", () => {
+    const activate = () => {
       Object.keys(tabs).forEach((k) => tabs[k].classList.remove("is-active"));
       tabs[key].classList.add("is-active");
       renderSidebarList(key);
-    });
+    };
+    tabs[key].addEventListener("mouseenter", activate);
+    tabs[key].addEventListener("click", activate);
   });
 }
 
@@ -396,6 +398,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (articleView && !articleView.classList.contains("hidden")) {
       showCategoryList();
     }
+  });
+
+  window.matchMedia("(max-width: 1023px)").addEventListener("change", (e) => {
+    if (!e.matches) closeMobileSidebar();
   });
 
   window.BowenMusic?.bindToggle(
