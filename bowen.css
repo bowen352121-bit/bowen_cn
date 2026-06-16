@@ -91,3 +91,37 @@ body {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* 手机侧栏：用 left 代替 transform，修复 iOS 点击区域错位 */
+@media (max-width: 1023px) {
+  #sidebar-menu {
+    transform: none !important;
+    -webkit-transform: none !important;
+    transition-property: left !important;
+    transition-duration: 300ms;
+    transition-timing-function: ease;
+    left: -100%;
+    z-index: 60;
+  }
+
+  #sidebar-menu.translate-x-0 {
+    left: 0 !important;
+  }
+
+  #sidebar-menu.-translate-x-full {
+    left: -100% !important;
+  }
+
+  #sidebar-overlay:not(.hidden) {
+    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  #btn-daqianjie {
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}

@@ -468,29 +468,28 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========================================================
-// 🌌 大千界：侧栏点击可靠跳转（手机 + 桌面）
+// 🌌 大千界：侧栏点击可靠跳转（修复 iOS 触摸）
 // ========================================================
 document.addEventListener("DOMContentLoaded", () => {
   const btnDaqianjie = document.getElementById("btn-daqianjie");
-  const sidebarMenu = document.getElementById("sidebar-menu");
-  const sidebarOverlay = document.getElementById("sidebar-overlay");
-
   if (!btnDaqianjie) return;
 
-  btnDaqianjie.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const targetUrl = btnDaqianjie.getAttribute("href");
+  let navigating = false;
 
-    window.BowenMusic?.saveMusicTime();
+  function goToDaqianjie(event) {
+    if (navigating) return;
+    navigating = true;
 
-    if (sidebarMenu?.classList.contains("translate-x-0")) {
-      sidebarMenu.classList.remove("translate-x-0");
-      sidebarMenu.classList.add("-translate-x-full");
-      sidebarOverlay?.classList.add("hidden");
-      document.body.classList.remove("overflow-hidden");
-      history.replaceState(null, "");
+    if (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
     }
 
-    window.location.href = btnDaqianjie.href;
-  });
+    window.BowenMusic?.saveMusicTime();
+    window.location.assign(targetUrl);
+  }
+
+  btnDaqianjie.addEventListener("touchend", goToDaqianjie, { capture: true, passive: false });
+  btnDaqianjie.addEventListener("click", goToDaqianjie, { capture: true });
 });
