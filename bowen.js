@@ -27,7 +27,7 @@ const projects = [
     link: "modal",
     image: "images/ZZZ3.0.3.jpg",
     publishDate: "2026-05-25", // 3周前
-    views: "1.05k", comments: 6, likes: 8, category: "不二门", lang: "简体中文"
+    views: "1.05k", comments: 6, likes: 8, category: "窄门", lang: "简体中文"
   },
   {
     title: "你就是不敢",
@@ -67,7 +67,7 @@ const projects = [
     link: "modal",
     image: "images/hyphae1.jpg",
     publishDate: "2026-03-10", 
-    views: "1.13k", comments: 0, likes: 2, category: "工巧", lang: "简体中文"
+    views: "1.13k", comments: 0, likes: 2, category: "职事", lang: "简体中文"
   },
   { 
     title: "基于 Cloudflare 生态的 AI Agent 实践", 
@@ -508,6 +508,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnWeian = document.getElementById("btn-weian");
   if (btnWeian) {
     btnWeian.addEventListener("click", () => {
+      window.BowenMusic?.saveMusicTime();
+      if (isMobile()) closeMobileSidebar();
+    });
+  }
+
+  const btnZhaimen = document.getElementById("btn-zhaimen");
+  if (btnZhaimen) {
+    btnZhaimen.addEventListener("click", () => {
+      window.BowenMusic?.saveMusicTime();
+      if (isMobile()) closeMobileSidebar();
+    });
+  }
+
+  const btnZhishi = document.getElementById("btn-zhishi");
+  if (btnZhishi) {
+    btnZhishi.addEventListener("click", () => {
       window.BowenMusic?.saveMusicTime();
       if (isMobile()) closeMobileSidebar();
     });

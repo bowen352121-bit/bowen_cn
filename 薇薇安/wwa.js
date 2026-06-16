@@ -331,6 +331,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnDaqianjie = document.getElementById("btn-daqianjie");
   const btnJueyouqing = document.getElementById("btn-jueyouqing");
   const btnMingdian = document.getElementById("btn-mingdian");
+  const btnZhaimen = document.getElementById("btn-zhaimen");
+  const btnZhishi = document.getElementById("btn-zhishi");
 
   const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
 
@@ -384,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  [btnDaqianjie, btnJueyouqing, btnMingdian].forEach((link) => {
+  [btnDaqianjie, btnJueyouqing, btnMingdian, btnZhaimen, btnZhishi].forEach((link) => {
     link?.addEventListener("click", () => {
       window.BowenMusic?.saveMusicTime();
       if (isMobile()) closeMobileSidebar();

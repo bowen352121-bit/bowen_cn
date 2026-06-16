@@ -1,0 +1,134 @@
+/* 窄门分类页 — surmon.me/category/insight 风格 */
+
+.zm-category-hero {
+  position: relative;
+  height: 168px;
+  border-radius: var(--sm-radius);
+  overflow: hidden;
+  box-shadow: var(--sm-shadow);
+  background: #1f1a16;
+}
+
+.zm-category-bg {
+  position: absolute;
+  inset: -8px;
+  background-image: url("../images/骑士梦1.jpg");
+  background-size: cover;
+  background-position: center 30%;
+  filter: blur(3px) brightness(0.42) saturate(0.85);
+  transform: scale(1.06);
+}
+
+.zm-category-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 22, 14, 0.55) 0%,
+    rgba(45, 32, 20, 0.72) 50%,
+    rgba(20, 16, 12, 0.65) 100%
+  );
+}
+
+.zm-category-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.zm-category-icon {
+  font-size: 30px;
+  font-weight: 300;
+  color: rgba(255, 235, 210, 0.95);
+  line-height: 1;
+}
+
+.zm-category-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 248, 240, 0.96);
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+}
+
+.zm-category-sep {
+  color: rgba(255, 235, 210, 0.4);
+  margin: 0 6px;
+  font-weight: 300;
+}
+
+.zm-tags-cloud {
+  gap: 8px;
+  padding: 14px 12px;
+}
+
+.zm-tags-cloud .sm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: #f5f6f8;
+  border: 1px solid transparent;
+}
+
+.zm-tags-cloud .sm-tag:hover {
+  border-color: rgba(0, 149, 255, 0.15);
+}
+
+.zm-tag-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--sm-accent);
+  flex-shrink: 0;
+}
+
+.zm-tag-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+#btn-load-more {
+  gap: 6px;
+}
+
+#load-more-text {
+  color: var(--sm-muted);
+  font-weight: 600;
+}
+
+@media (max-width: 1023px) {
+  .zm-category-hero {
+    height: 140px;
+    border-radius: 10px;
+  }
+
+  .zm-category-icon {
+    font-size: 24px;
+  }
+
+  .zm-category-title {
+    font-size: 13px;
+  }
+
+  .zm-tags-cloud {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .zm-tags-cloud .sm-tag {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}

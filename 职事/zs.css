@@ -1,0 +1,200 @@
+/* 职事 — GitHub Profile README 预览页 */
+
+.zs-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 24px;
+}
+
+.zs-intro {
+  width: 100%;
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+}
+
+.zs-profile-card {
+  width: 100%;
+  max-width: 760px;
+  background: #0d1117;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 28px 32px 32px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+}
+
+.zs-profile-card:hover {
+  border-color: #58a6ff;
+  box-shadow: 0 8px 32px rgba(88, 166, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.zs-profile-card:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 3px;
+}
+
+.zs-profile-title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.zs-profile-subtitle {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #c9d1d9;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.zs-wave {
+  display: inline-block;
+  animation: zs-wave 1.8s ease-in-out infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes zs-wave {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-8deg); }
+  45% { transform: rotate(14deg); }
+  60% { transform: rotate(0deg); }
+}
+
+.zs-social-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  color: #8b949e;
+}
+
+.zs-social-row svg {
+  width: 20px;
+  height: 20px;
+}
+
+.zs-profile-body {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #c9d1d9;
+}
+
+.zs-profile-body p {
+  margin-bottom: 10px;
+}
+
+.zs-profile-body strong {
+  color: #f0f6fc;
+  font-weight: 600;
+}
+
+.zs-profile-body a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.zs-profile-body a:hover {
+  text-decoration: underline;
+}
+
+.zs-lang-title {
+  margin-top: 22px;
+  margin-bottom: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+.zs-lang-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zs-lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  font-size: 12px;
+  color: #c9d1d9;
+}
+
+.zs-lang-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.zs-lang-dot--js { background: #f1e05a; }
+.zs-lang-dot--html { background: #e34c26; }
+.zs-lang-dot--vue { background: #41b883; }
+.zs-lang-dot--css { background: #1572b6; }
+
+.zs-github-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: #238636;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.zs-github-btn:hover {
+  background: #2ea043;
+  transform: translateY(-1px);
+}
+
+.zs-github-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.zs-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+@media (max-width: 1023px) {
+  .zs-profile-card {
+    padding: 22px 18px 24px;
+    border-radius: 10px;
+  }
+
+  .zs-profile-title {
+    font-size: 1.35rem;
+  }
+
+  .zs-profile-subtitle {
+    font-size: 1rem;
+  }
+
+  .zs-profile-body {
+    font-size: 14px;
+  }
+}
