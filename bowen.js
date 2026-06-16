@@ -342,6 +342,7 @@ if(btnMingdian) {
 // 🎆 5. 全局背景点击喷射 ZZZ 特效
 document.addEventListener('click', (e) => {
   if (
+    window.matchMedia("(max-width: 1023px)").matches ||
     e.target.closest('#sig-prev') ||
     e.target.closest('#sig-next') ||
     e.target.closest('#article-view') ||
@@ -374,25 +375,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
   const mobileMenuClose = document.getElementById("mobile-menu-close");
   const sidebarMenu = document.getElementById("sidebar-menu");
-  const sidebarOverlay = document.getElementById("sidebar-overlay");
   const btnDaqianjie = document.getElementById("btn-daqianjie");
 
   const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
 
+  function handleOutsidePointer(event) {
+    if (!sidebarMenu?.classList.contains("is-open")) return;
+    if (sidebarMenu.contains(event.target)) return;
+    if (mobileMenuToggle?.contains(event.target)) return;
+    closeMobileSidebar();
+  }
+
   function openMobileSidebar() {
-    if (!sidebarMenu || !sidebarOverlay || !isMobile()) return;
+    if (!sidebarMenu || !isMobile()) return;
     sidebarMenu.classList.add("is-open");
-    sidebarOverlay.classList.remove("hidden");
-    sidebarOverlay.setAttribute("aria-hidden", "false");
     document.body.classList.add("mobile-sidebar-open");
+    document.addEventListener("pointerdown", handleOutsidePointer, { capture: true });
   }
 
   function closeMobileSidebar() {
-    if (!sidebarMenu || !sidebarOverlay) return;
+    if (!sidebarMenu) return;
     sidebarMenu.classList.remove("is-open");
-    sidebarOverlay.classList.add("hidden");
-    sidebarOverlay.setAttribute("aria-hidden", "true");
     document.body.classList.remove("mobile-sidebar-open");
+    document.removeEventListener("pointerdown", handleOutsidePointer, { capture: true });
   }
 
   if (mobileMenuToggle) {
@@ -415,23 +420,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (sidebarOverlay) {
-    sidebarOverlay.addEventListener("click", closeMobileSidebar);
-  }
-
   if (sidebarMenu) {
-    sidebarMenu.querySelectorAll("div.cursor-pointer, button:not(#btn-mingdian)").forEach((item) => {
-      item.addEventListener("click", () => {
-        if (isMobile() && sidebarMenu.classList.contains("is-open")) {
-          closeMobileSidebar();
-        }
-      });
+    sidebarMenu.addEventListener("click", (e) => {
+      const item = e.target.closest("div.cursor-pointer, button:not(#btn-mingdian):not(#mobile-menu-close)");
+      if (item && isMobile() && sidebarMenu.classList.contains("is-open")) {
+        closeMobileSidebar();
+      }
     });
   }
 
   if (btnDaqianjie) {
     btnDaqianjie.addEventListener("click", () => {
       window.BowenMusic?.saveMusicTime();
+      if (isMobile()) closeMobileSidebar();
     });
   }
 
@@ -439,6 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnJueyouqing) {
     btnJueyouqing.addEventListener("click", () => {
       window.BowenMusic?.saveMusicTime();
+      if (isMobile()) closeMobileSidebar();
     });
   }
 
