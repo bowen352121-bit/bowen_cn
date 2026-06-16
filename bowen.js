@@ -378,136 +378,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnDaqianjie = document.getElementById("btn-daqianjie");
 
   const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const SIDEBAR_OPEN_MS = 260;
-  const SIDEBAR_CLOSE_MS = 220;
-  let sidebarRafId = null;
-
-  function easeOutExpo(t) {
-    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-  }
-
-  function easeInExpo(t) {
-    return t === 0 ? 0 : Math.pow(2, 10 * (t - 1));
-  }
-
-  function getSidebarWidth() {
-    return sidebarMenu?.offsetWidth || 260;
-  }
-
-  function parseTranslateX(matrix) {
-    if (!matrix || matrix === "none") return null;
-    if (matrix.startsWith("matrix3d")) {
-      const values = matrix.slice(9, -1).split(",").map((v) => parseFloat(v.trim()));
-      return values[12];
-    }
-    if (matrix.startsWith("matrix")) {
-      const values = matrix.slice(7, -1).split(",").map((v) => parseFloat(v.trim()));
-      return values[4];
-    }
-    return null;
-  }
-
-  function getSidebarOffsetX() {
-    if (!sidebarMenu) return -getSidebarWidth();
-    const inline = sidebarMenu.style.transform;
-    if (inline) {
-      const match = inline.match(/translate3d\(([-\d.]+)px/);
-      if (match) return parseFloat(match[1]);
-    }
-    const parsed = parseTranslateX(getComputedStyle(sidebarMenu).transform);
-    if (parsed !== null) return parsed;
-    return sidebarMenu.classList.contains("is-open") ? 0 : -getSidebarWidth();
-  }
-
-  function setSidebarOffsetX(px) {
-    if (!sidebarMenu) return;
-    sidebarMenu.style.transform = `translate3d(${px}px, 0, 0)`;
-  }
-
-  function cancelSidebarRaf() {
-    if (sidebarRafId) {
-      cancelAnimationFrame(sidebarRafId);
-      sidebarRafId = null;
-    }
-  }
-
-  function prepSidebarLayer() {
-    if (!sidebarMenu || !isMobile()) return;
-    sidebarMenu.classList.add("is-layer-ready");
-  }
-
-  function clearSidebarInlineTransform() {
-    if (!sidebarMenu) return;
-    sidebarMenu.style.removeProperty("transform");
-  }
-
-  function finishSidebarState(open) {
-    if (!sidebarMenu) return;
-    cancelSidebarRaf();
-    clearSidebarInlineTransform();
-    sidebarMenu.classList.toggle("is-open", open);
-    sidebarMenu.classList.remove("is-animating", "is-layer-ready");
-    sidebarMenu.setAttribute("aria-hidden", open ? "false" : "true");
-    document.body.classList.remove("mobile-sidebar-animating");
-    if (open) {
-      document.body.classList.add("mobile-sidebar-open");
-    } else {
-      document.body.classList.remove("mobile-sidebar-open");
-    }
-  }
-
-  function runSidebarAnim(open) {
-    if (!sidebarMenu || !isMobile()) return Promise.resolve();
-
-    cancelSidebarRaf();
-
-    if (prefersReducedMotion) {
-      sidebarMenu.classList.add("is-animating");
-      finishSidebarState(open);
-      return Promise.resolve();
-    }
-
-    const width = getSidebarWidth();
-    const fromX = getSidebarOffsetX();
-    const toX = open ? 0 : -width;
-    const duration = open ? SIDEBAR_OPEN_MS : SIDEBAR_CLOSE_MS;
-    const ease = open ? easeOutExpo : easeInExpo;
-
-    sidebarMenu.classList.add("is-animating", "is-layer-ready");
-    document.body.classList.add("mobile-sidebar-animating");
-    document.body.classList.remove("mobile-sidebar-open");
-
-    if (open) {
-      sidebarMenu.classList.remove("is-open");
-    } else {
-      sidebarMenu.classList.add("is-open");
-    }
-
-    setSidebarOffsetX(fromX);
-
-    const start = performance.now();
-
-    return new Promise((resolve) => {
-      const tick = (now) => {
-        const progress = Math.min((now - start) / duration, 1);
-        const eased = ease(progress);
-        const x = fromX + (toX - fromX) * eased;
-        setSidebarOffsetX(x);
-
-        if (progress < 1) {
-          sidebarRafId = requestAnimationFrame(tick);
-          return;
-        }
-
-        sidebarRafId = null;
-        finishSidebarState(open);
-        resolve();
-      };
-
-      sidebarRafId = requestAnimationFrame(tick);
-    });
-  }
 
   function handleOutsidePointer(event) {
     if (!sidebarMenu?.classList.contains("is-open")) return;
@@ -518,49 +388,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openMobileSidebar() {
     if (!sidebarMenu || !isMobile()) return;
-    if (sidebarMenu.classList.contains("is-open") && !sidebarMenu.classList.contains("is-animating")) return;
+    if (sidebarMenu.classList.contains("is-open")) return;
 
-    prepSidebarLayer();
+    sidebarMenu.classList.add("is-open");
+    sidebarMenu.setAttribute("aria-hidden", "false");
+    document.body.classList.add("mobile-sidebar-open");
     document.addEventListener("pointerdown", handleOutsidePointer, { capture: true });
-    runSidebarAnim(true);
   }
 
   function closeMobileSidebar() {
     if (!sidebarMenu) return;
-    if (!sidebarMenu.classList.contains("is-open") && !sidebarMenu.classList.contains("is-animating")) return;
+    if (!sidebarMenu.classList.contains("is-open")) return;
 
+    sidebarMenu.classList.remove("is-open");
+    sidebarMenu.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("mobile-sidebar-open");
     document.removeEventListener("pointerdown", handleOutsidePointer, { capture: true });
-    runSidebarAnim(false);
   }
 
   if (sidebarMenu && isMobile()) {
     sidebarMenu.setAttribute("aria-hidden", "true");
-    requestAnimationFrame(() => {
-      sidebarMenu.classList.add("is-layer-ready");
-      void sidebarMenu.offsetWidth;
-      requestAnimationFrame(() => {
-        if (!sidebarMenu.classList.contains("is-open") && !sidebarMenu.classList.contains("is-animating")) {
-          sidebarMenu.classList.remove("is-layer-ready");
-        }
-      });
-    });
   } else if (sidebarMenu) {
     sidebarMenu.removeAttribute("aria-hidden");
   }
 
   if (mobileMenuToggle) {
-    mobileMenuToggle.addEventListener("pointerdown", prepSidebarLayer, { passive: true });
-    mobileMenuToggle.addEventListener("touchstart", prepSidebarLayer, { passive: true });
-
     mobileMenuToggle.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (sidebarMenu.classList.contains("is-animating")) {
-        const opening = !sidebarMenu.classList.contains("is-open");
-        if (opening) closeMobileSidebar();
-        else openMobileSidebar();
-        return;
-      }
       if (sidebarMenu.classList.contains("is-open")) {
         closeMobileSidebar();
       } else {
