@@ -89,7 +89,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 手机侧栏：WAAPI 合成层滑动，高刷屏 120Hz 丝滑 */
+/* 手机侧栏：rAF 逐帧像素滑动，跟满屏幕刷新率 */
 @media (max-width: 1023px) {
   #layout-shell {
     position: relative;
@@ -105,12 +105,12 @@ body {
     left: 0 !important;
     width: min(60vw, 260px);
     max-width: 260px;
-    transform: translate3d(-100%, 0, 0.01px);
-    -webkit-transform: translate3d(-100%, 0, 0.01px);
+    transform: translate3d(-100%, 0, 0);
+    -webkit-transform: translate3d(-100%, 0, 0);
     transition: none !important;
     -webkit-transition: none !important;
     pointer-events: none;
-    contain: layout style paint;
+    contain: paint;
     isolation: isolate;
     -webkit-overflow-scrolling: touch;
     backface-visibility: hidden;
@@ -119,13 +119,14 @@ body {
   }
 
   .sidebar-drawer.is-open:not(.is-animating) {
-    transform: translate3d(0, 0, 0.01px);
-    -webkit-transform: translate3d(0, 0, 0.01px);
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
     pointer-events: auto;
   }
 
   .sidebar-drawer.is-animating {
     pointer-events: none;
+    overflow: hidden;
   }
 
   .sidebar-drawer.is-open.is-animating {
@@ -156,18 +157,15 @@ body {
     touch-action: none;
   }
 
-  /* 无 WAAPI 时的 CSS 降级 */
-  .sidebar-drawer.use-css-slide {
-    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    -webkit-transition: -webkit-transform 0.34s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  body.mobile-sidebar-animating header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #fff !important;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  @media (max-width: 1023px) {
-    .sidebar-drawer.use-css-slide {
-      transition-duration: 0.01ms !important;
-    }
+  body.mobile-sidebar-animating #main-content {
+    content-visibility: hidden;
+    pointer-events: none;
   }
 }
 

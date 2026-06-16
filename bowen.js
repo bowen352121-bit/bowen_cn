@@ -378,14 +378,59 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnDaqianjie = document.getElementById("btn-daqianjie");
 
   const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
-  const SIDEBAR_OPEN_MS = 340;
-  const SIDEBAR_CLOSE_MS = 300;
-  const SIDEBAR_OPEN_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
-  const SIDEBAR_CLOSE_EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
-  const SIDEBAR_CLOSED = "translate3d(-100%, 0, 0.01px)";
-  const SIDEBAR_OPENED = "translate3d(0, 0, 0.01px)";
-  const supportsWaapi = typeof sidebarMenu?.animate === "function";
-  let activeSidebarAnim = null;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SIDEBAR_OPEN_MS = 260;
+  const SIDEBAR_CLOSE_MS = 220;
+  let sidebarRafId = null;
+
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function easeInExpo(t) {
+    return t === 0 ? 0 : Math.pow(2, 10 * (t - 1));
+  }
+
+  function getSidebarWidth() {
+    return sidebarMenu?.offsetWidth || 260;
+  }
+
+  function parseTranslateX(matrix) {
+    if (!matrix || matrix === "none") return null;
+    if (matrix.startsWith("matrix3d")) {
+      const values = matrix.slice(9, -1).split(",").map((v) => parseFloat(v.trim()));
+      return values[12];
+    }
+    if (matrix.startsWith("matrix")) {
+      const values = matrix.slice(7, -1).split(",").map((v) => parseFloat(v.trim()));
+      return values[4];
+    }
+    return null;
+  }
+
+  function getSidebarOffsetX() {
+    if (!sidebarMenu) return -getSidebarWidth();
+    const inline = sidebarMenu.style.transform;
+    if (inline) {
+      const match = inline.match(/translate3d\(([-\d.]+)px/);
+      if (match) return parseFloat(match[1]);
+    }
+    const parsed = parseTranslateX(getComputedStyle(sidebarMenu).transform);
+    if (parsed !== null) return parsed;
+    return sidebarMenu.classList.contains("is-open") ? 0 : -getSidebarWidth();
+  }
+
+  function setSidebarOffsetX(px) {
+    if (!sidebarMenu) return;
+    sidebarMenu.style.transform = `translate3d(${px}px, 0, 0)`;
+  }
+
+  function cancelSidebarRaf() {
+    if (sidebarRafId) {
+      cancelAnimationFrame(sidebarRafId);
+      sidebarRafId = null;
+    }
+  }
 
   function prepSidebarLayer() {
     if (!sidebarMenu || !isMobile()) return;
@@ -397,78 +442,71 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebarMenu.style.removeProperty("transform");
   }
 
-  function getSidebarTransform() {
-    if (!sidebarMenu) return SIDEBAR_CLOSED;
-    const matrix = getComputedStyle(sidebarMenu).transform;
-    if (matrix && matrix !== "none") return matrix;
-    return sidebarMenu.classList.contains("is-open") ? SIDEBAR_OPENED : SIDEBAR_CLOSED;
-  }
-
   function finishSidebarState(open) {
     if (!sidebarMenu) return;
-    sidebarMenu.getAnimations().forEach((anim) => anim.cancel());
+    cancelSidebarRaf();
     clearSidebarInlineTransform();
     sidebarMenu.classList.toggle("is-open", open);
     sidebarMenu.classList.remove("is-animating", "is-layer-ready");
     sidebarMenu.setAttribute("aria-hidden", open ? "false" : "true");
+    document.body.classList.remove("mobile-sidebar-animating");
+    if (open) {
+      document.body.classList.add("mobile-sidebar-open");
+    } else {
+      document.body.classList.remove("mobile-sidebar-open");
+    }
   }
 
   function runSidebarAnim(open) {
     if (!sidebarMenu || !isMobile()) return Promise.resolve();
 
-    if (activeSidebarAnim) {
-      activeSidebarAnim.cancel();
-      activeSidebarAnim = null;
+    cancelSidebarRaf();
+
+    if (prefersReducedMotion) {
+      sidebarMenu.classList.add("is-animating");
+      finishSidebarState(open);
+      return Promise.resolve();
     }
 
-    const target = open ? SIDEBAR_OPENED : SIDEBAR_CLOSED;
-    const from = getSidebarTransform();
+    const width = getSidebarWidth();
+    const fromX = getSidebarOffsetX();
+    const toX = open ? 0 : -width;
+    const duration = open ? SIDEBAR_OPEN_MS : SIDEBAR_CLOSE_MS;
+    const ease = open ? easeOutExpo : easeInExpo;
 
     sidebarMenu.classList.add("is-animating", "is-layer-ready");
+    document.body.classList.add("mobile-sidebar-animating");
+    document.body.classList.remove("mobile-sidebar-open");
+
     if (open) {
       sidebarMenu.classList.remove("is-open");
     } else {
       sidebarMenu.classList.add("is-open");
     }
 
-    if (!supportsWaapi) {
-      sidebarMenu.classList.add("use-css-slide");
-      sidebarMenu.classList.toggle("is-open", !open);
-      clearSidebarInlineTransform();
-      void sidebarMenu.offsetWidth;
-      return new Promise((resolve) => {
-        const onEnd = (event) => {
-          if (event.target !== sidebarMenu || event.propertyName !== "transform") return;
-          sidebarMenu.removeEventListener("transitionend", onEnd);
-          finishSidebarState(open);
-          resolve();
-        };
-        sidebarMenu.addEventListener("transitionend", onEnd);
-        requestAnimationFrame(() => {
-          sidebarMenu.classList.toggle("is-open", open);
-        });
-      });
-    }
+    setSidebarOffsetX(fromX);
 
-    activeSidebarAnim = sidebarMenu.animate(
-      [{ transform: from }, { transform: target }],
-      {
-        duration: open ? SIDEBAR_OPEN_MS : SIDEBAR_CLOSE_MS,
-        easing: open ? SIDEBAR_OPEN_EASE : SIDEBAR_CLOSE_EASE,
-        fill: "forwards",
-      }
-    );
+    const start = performance.now();
 
-    return activeSidebarAnim.finished
-      .then(() => {
-        if (activeSidebarAnim) activeSidebarAnim.cancel();
-        activeSidebarAnim = null;
+    return new Promise((resolve) => {
+      const tick = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = ease(progress);
+        const x = fromX + (toX - fromX) * eased;
+        setSidebarOffsetX(x);
+
+        if (progress < 1) {
+          sidebarRafId = requestAnimationFrame(tick);
+          return;
+        }
+
+        sidebarRafId = null;
         finishSidebarState(open);
-      })
-      .catch(() => {
-        activeSidebarAnim = null;
-        finishSidebarState(open);
-      });
+        resolve();
+      };
+
+      sidebarRafId = requestAnimationFrame(tick);
+    });
   }
 
   function handleOutsidePointer(event) {
@@ -483,9 +521,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sidebarMenu.classList.contains("is-open") && !sidebarMenu.classList.contains("is-animating")) return;
 
     prepSidebarLayer();
-    requestAnimationFrame(() => {
-      document.body.classList.add("mobile-sidebar-open");
-    });
     document.addEventListener("pointerdown", handleOutsidePointer, { capture: true });
     runSidebarAnim(true);
   }
@@ -494,18 +529,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!sidebarMenu) return;
     if (!sidebarMenu.classList.contains("is-open") && !sidebarMenu.classList.contains("is-animating")) return;
 
-    document.body.classList.remove("mobile-sidebar-open");
     document.removeEventListener("pointerdown", handleOutsidePointer, { capture: true });
     runSidebarAnim(false);
   }
 
-  if (sidebarMenu) {
-    if (isMobile()) {
-      sidebarMenu.setAttribute("aria-hidden", "true");
-      if (!supportsWaapi) sidebarMenu.classList.add("use-css-slide");
-    } else {
-      sidebarMenu.removeAttribute("aria-hidden");
-    }
+  if (sidebarMenu && isMobile()) {
+    sidebarMenu.setAttribute("aria-hidden", "true");
+    requestAnimationFrame(() => {
+      sidebarMenu.classList.add("is-layer-ready");
+      void sidebarMenu.offsetWidth;
+      requestAnimationFrame(() => {
+        if (!sidebarMenu.classList.contains("is-open") && !sidebarMenu.classList.contains("is-animating")) {
+          sidebarMenu.classList.remove("is-layer-ready");
+        }
+      });
+    });
+  } else if (sidebarMenu) {
+    sidebarMenu.removeAttribute("aria-hidden");
   }
 
   if (mobileMenuToggle) {
