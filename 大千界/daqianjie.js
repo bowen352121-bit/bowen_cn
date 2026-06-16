@@ -148,40 +148,9 @@ document.addEventListener("DOMContentLoaded", () => {
     initHeroCarousel();
     renderGallery();
 
-    const siteMusic = window.BowenMusic?.init();
-    const musicToggle = document.getElementById("music-toggle");
-    const musicIcon = document.getElementById("music-icon");
-    const IMG_PLAY = "../images/音乐打开键.jpg";
-    const IMG_MUTE = "../images/音乐关闭键.jpg";
-    let isPlaying = siteMusic?.isMusicEnabled() ?? false;
-
-    function setMusicIcon(playing) {
-        if (musicIcon) musicIcon.src = playing ? IMG_PLAY : IMG_MUTE;
-    }
-
-    function playMusic() {
-        if (!siteMusic) return;
-        siteMusic.enableMusic();
-        siteMusic.playMusic().then((started) => {
-            isPlaying = started;
-            setMusicIcon(started);
-        });
-    }
-
-    function pauseMusic() {
-        if (!siteMusic) return;
-        siteMusic.pauseMusic();
-        isPlaying = false;
-        setMusicIcon(false);
-    }
-
-    setMusicIcon(isPlaying);
-
-    if (musicToggle) {
-        musicToggle.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (isPlaying) pauseMusic();
-            else playMusic();
-        });
-    }
+    window.BowenMusic?.bindToggle(
+        document.getElementById("music-toggle"),
+        document.getElementById("music-icon"),
+        { play: "../images/音乐打开键.jpg", mute: "../images/音乐关闭键.jpg" }
+    );
 });
