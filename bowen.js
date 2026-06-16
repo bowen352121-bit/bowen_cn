@@ -403,9 +403,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (sidebarMenu) {
-    const clickableItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button");
+    const clickableItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button, a.cursor-pointer");
     clickableItems.forEach(item => {
       item.addEventListener("click", () => {
+        if (item.id === "btn-daqianjie" || item.closest("#btn-daqianjie")) return;
         if (window.innerWidth < 1024 && sidebarMenu.classList.contains("translate-x-0")) { 
           history.back(); 
         }
@@ -460,7 +461,6 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem(MUSIC_ENABLED_KEY, "true");
       setMusicIcon(true);
     }).catch(() => {
-      setMusicIcon(false);
       console.log("浏览器拦截了自动播放，点击页面后会继续尝试播放。");
     });
   }
@@ -479,10 +479,16 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("beforeunload", saveMusicTime);
   }
 
-  if (localStorage.getItem(MUSIC_ENABLED_KEY) === "false") {
+  const musicEnabled = localStorage.getItem(MUSIC_ENABLED_KEY);
+  if (musicEnabled === null) {
+    localStorage.setItem(MUSIC_ENABLED_KEY, "true");
+  }
+
+  if (musicEnabled === "false") {
     setMusicIcon(false);
   } else {
-    playMusic();
+    setMusicIcon(true);
+    setTimeout(playMusic, 1000);
   }
 
   if (musicToggle) {
@@ -510,9 +516,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnDaqianjie = document.getElementById('btn-daqianjie');
   if (btnDaqianjie) {
     btnDaqianjie.addEventListener('click', (e) => {
-      e.stopPropagation(); // 阻止多余的冒泡特效
-      // 丝滑穿梭至你建好的大千界独立子文件
-      window.location.href = '大千界/daqianjie.html';
-    });
+      e.stopPropagation();
+      if (window.innerWidth < 1024) {
+        e.preventDefault();
+        window.location.assign(btnDaqianjie.href);
+      }
+    }, true);
   }
 });

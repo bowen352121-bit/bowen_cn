@@ -64,7 +64,11 @@ function tryPlaySharedMusic() {
 }
 
 if (bgm) {
-    tryPlaySharedMusic();
+    if (localStorage.getItem(MUSIC_ENABLED_KEY) === null) {
+        localStorage.setItem(MUSIC_ENABLED_KEY, "true");
+    }
+
+    setTimeout(tryPlaySharedMusic, 1000);
     bgm.addEventListener("timeupdate", saveMusicTime);
     window.addEventListener("beforeunload", saveMusicTime);
 }
