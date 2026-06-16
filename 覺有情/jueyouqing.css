@@ -348,14 +348,17 @@ button {
     object-fit: cover;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
     .channel-nav {
-        justify-content: flex-start;
-        padding: 0 12px;
-        font-size: 14px;
-        height: 48px;
+        display: none !important;
     }
 
+    .hero-copy {
+        top: 50%;
+    }
+}
+
+@media (max-width: 960px) {
     .hero-banner {
         height: 220px;
     }

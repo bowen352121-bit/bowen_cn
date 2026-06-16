@@ -513,6 +513,12 @@ button {
     }
 }
 
+@media (max-width: 1023px) {
+    .channel-nav {
+        display: none !important;
+    }
+}
+
 @media (max-width: 900px) {
     .site-slogan {
         display: none;
@@ -524,22 +530,6 @@ button {
 
     .hero {
         height: 12rem;
-    }
-
-    .channel-nav {
-        opacity: 1;
-        transform: none;
-        pointer-events: auto;
-        justify-content: flex-start;
-        overflow-x: auto;
-        padding: 0 12px;
-        height: 48px;
-        font-size: 14px;
-    }
-
-    .channel-nav a {
-        min-width: max-content;
-        padding: 0 14px;
     }
 
     .gallery {

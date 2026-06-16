@@ -350,7 +350,8 @@ document.addEventListener('click', (e) => {
     e.target.closest('#sidebar-menu') ||
     e.target.closest('#sidebar-overlay') ||
     e.target.closest('#mobile-menu-toggle') ||
-    e.target.closest('#mobile-menu-close')
+    e.target.closest('#mobile-menu-close') ||
+    document.body.classList.contains('mobile-sidebar-open')
   ) return;
   const zzzIcon = document.createElement('img');
   zzzIcon.src = "images/ZZZ.jpg"; 
