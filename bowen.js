@@ -425,70 +425,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   // 🎵 全站音乐控制模块
   // ==========================================
-  const audio = document.getElementById('bgm');
+  const siteMusic = window.BowenMusic?.init();
   const musicToggle = document.getElementById('music-toggle');
   const musicIcon = document.getElementById('music-icon');
   const IMG_PLAY = "images/音乐打开键.jpg";
   const IMG_MUTE = "images/音乐关闭键.jpg";
-  const MUSIC_ENABLED_KEY = "bowenMusicEnabled";
-  const MUSIC_TIME_KEY = "bowenMusicTime";
 
-  let isPlaying = false;
-
-  function saveMusicTime() {
-    if (audio && Number.isFinite(audio.currentTime)) {
-      localStorage.setItem(MUSIC_TIME_KEY, String(audio.currentTime));
-    }
-  }
+  let isPlaying = siteMusic?.isMusicEnabled() ?? false;
 
   function setMusicIcon(playing) {
     if (musicIcon) musicIcon.src = playing ? IMG_PLAY : IMG_MUTE;
   }
 
-  function restoreMusicTime() {
-    const savedTime = Number(localStorage.getItem(MUSIC_TIME_KEY));
-    if (audio && Number.isFinite(savedTime) && savedTime > 0) {
-      audio.currentTime = savedTime;
-    }
-  }
-
   function playMusic() {
-    if (!audio) return;
-    restoreMusicTime();
-    audio.play().then(() => {
-      isPlaying = true;
-      localStorage.setItem(MUSIC_ENABLED_KEY, "true");
-      setMusicIcon(true);
-    }).catch(() => {
-      console.log("浏览器拦截了自动播放，点击页面后会继续尝试播放。");
+    if (!siteMusic) return;
+    siteMusic.enableMusic();
+    siteMusic.playMusic().then((started) => {
+      isPlaying = started;
+      setMusicIcon(started);
     });
   }
 
   function pauseMusic() {
-    if (!audio) return;
-    saveMusicTime();
-    audio.pause();
+    if (!siteMusic) return;
+    siteMusic.pauseMusic();
     isPlaying = false;
-    localStorage.setItem(MUSIC_ENABLED_KEY, "false");
     setMusicIcon(false);
   }
 
-  if (audio) {
-    audio.addEventListener("timeupdate", saveMusicTime);
-    window.addEventListener("beforeunload", saveMusicTime);
-  }
-
-  const musicEnabled = localStorage.getItem(MUSIC_ENABLED_KEY);
-  if (musicEnabled === null) {
-    localStorage.setItem(MUSIC_ENABLED_KEY, "true");
-  }
-
-  if (musicEnabled === "false") {
-    setMusicIcon(false);
-  } else {
-    setMusicIcon(true);
-    setTimeout(playMusic, 1000);
-  }
+  setMusicIcon(isPlaying);
 
   if (musicToggle) {
     musicToggle.addEventListener('click', (e) => {
@@ -500,16 +465,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
-  document.addEventListener('click', function autoPlayHelper() {
-    if (!isPlaying && audio && localStorage.getItem(MUSIC_ENABLED_KEY) !== "false") {
-      playMusic();
-    }
-  }, { once: true });
 });
 
 // ========================================================
-// 🌌 大千界：手机侧栏点击后直接跳转子页面
+// 🌌 大千界：侧栏点击可靠跳转（手机 + 桌面）
 // ========================================================
 document.addEventListener("DOMContentLoaded", () => {
   const btnDaqianjie = document.getElementById("btn-daqianjie");
@@ -518,8 +477,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!btnDaqianjie) return;
 
-  btnDaqianjie.addEventListener("click", () => {
-    if (window.innerWidth >= 1024) return;
+  btnDaqianjie.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    window.BowenMusic?.saveMusicTime();
 
     if (sidebarMenu?.classList.contains("translate-x-0")) {
       sidebarMenu.classList.remove("translate-x-0");
@@ -528,5 +490,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.classList.remove("overflow-hidden");
       history.replaceState(null, "");
     }
+
+    window.location.href = btnDaqianjie.href;
   });
 });
