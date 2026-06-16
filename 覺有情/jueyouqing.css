@@ -8,13 +8,22 @@ html {
     color-scheme: light;
 }
 
+:root {
+    --site-header-h: 4rem;
+}
+
 body {
     min-height: 100vh;
     overflow-x: hidden;
-    padding-top: 4rem;
+    padding-top: var(--site-header-h);
     background: #f4f6f9;
     color: #333;
     font-family: system-ui, -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+main {
+    margin: 0;
+    padding: 0;
 }
 
 a {
@@ -35,15 +44,17 @@ button {
     left: 0;
     right: 0;
     z-index: 50;
-    padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid #e4e4e7;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    height: var(--site-header-h);
+    padding: 0 1rem;
+    background: #fff;
+    border-bottom: none;
+    box-shadow: 0 1px 0 #e4e4e7;
     backdrop-filter: blur(12px);
 }
 
 .header-inner {
     max-width: 80rem;
+    height: 100%;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -154,8 +165,19 @@ button {
     font-weight: 800;
     font-size: 16px;
     overflow-x: auto;
+    opacity: 0;
+    transform: translateY(-100%);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+}
+
+.hero:hover .channel-nav,
+.channel-nav:focus-within {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
 }
 
 .channel-nav::-webkit-scrollbar {
@@ -350,6 +372,11 @@ button {
 
 @media (max-width: 1023px) {
     .channel-nav {
+        display: none !important;
+    }
+
+    .hero:hover .channel-nav,
+    .channel-nav:focus-within {
         display: none !important;
     }
 

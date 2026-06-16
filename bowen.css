@@ -89,7 +89,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 手机侧栏：GPU 滑动，无遮罩阴影 */
+/* 手机侧栏：WAAPI 合成层滑动，高刷屏 120Hz 丝滑 */
 @media (max-width: 1023px) {
   #layout-shell {
     position: relative;
@@ -105,23 +105,40 @@ body {
     left: 0 !important;
     width: min(60vw, 260px);
     max-width: 260px;
-    transform: translate3d(-105%, 0, 0) !important;
-    -webkit-transform: translate3d(-105%, 0, 0) !important;
-    transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1);
-    pointer-events: auto;
+    transform: translate3d(-100%, 0, 0.01px);
+    -webkit-transform: translate3d(-100%, 0, 0.01px);
+    transition: none !important;
+    -webkit-transition: none !important;
+    pointer-events: none;
+    contain: layout style paint;
+    isolation: isolate;
     -webkit-overflow-scrolling: touch;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     box-shadow: none;
   }
 
-  .sidebar-drawer.is-open {
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
+  .sidebar-drawer.is-open:not(.is-animating) {
+    transform: translate3d(0, 0, 0.01px);
+    -webkit-transform: translate3d(0, 0, 0.01px);
+    pointer-events: auto;
+  }
+
+  .sidebar-drawer.is-animating {
+    pointer-events: none;
+  }
+
+  .sidebar-drawer.is-open.is-animating {
+    pointer-events: auto;
+  }
+
+  .sidebar-drawer.is-layer-ready,
+  .sidebar-drawer.is-animating {
+    will-change: transform;
   }
 
   .sidebar-drawer .transition {
-    transition: none;
+    transition: none !important;
   }
 
   #btn-daqianjie,
@@ -137,6 +154,20 @@ body {
   body.mobile-sidebar-open {
     overflow: hidden;
     touch-action: none;
+  }
+
+  /* 无 WAAPI 时的 CSS 降级 */
+  .sidebar-drawer.use-css-slide {
+    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    -webkit-transition: -webkit-transform 0.34s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @media (max-width: 1023px) {
+    .sidebar-drawer.use-css-slide {
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
