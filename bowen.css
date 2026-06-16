@@ -78,50 +78,48 @@ body {
   row-gap: 10px;
 }
 
-/* 🌟 已追加：配合 JavaScript 做手机抽屉展开的控制类 */
-.sidebar-open {
-  transform: translateX(0) !important;
-}
-.overlay-show {
-  display: block !important;
-  opacity: 1 !important;
-}
-
 .touch-manipulation {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 手机侧栏：用 left 代替 transform，修复 iOS 点击区域错位 */
+/* 手机侧栏：left 滑动 + 遮罩只盖住右侧，侧栏与遮罩同级避免被挡住 */
 @media (max-width: 1023px) {
-  #sidebar-menu {
-    transform: none !important;
-    -webkit-transform: none !important;
-    transition-property: left !important;
-    transition-duration: 300ms;
-    transition-timing-function: ease;
-    left: -100%;
-    z-index: 60;
+  #layout-shell {
+    position: relative;
   }
 
-  #sidebar-menu.translate-x-0 {
+  .sidebar-drawer {
+    transform: none !important;
+    -webkit-transform: none !important;
+    left: calc(-1 * min(60vw, 260px));
+    transition: left 0.2s ease-out;
+    will-change: left;
+    pointer-events: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-drawer.is-open {
     left: 0 !important;
   }
 
-  #sidebar-menu.-translate-x-full {
-    left: -100% !important;
-  }
-
-  #sidebar-overlay:not(.hidden) {
+  #sidebar-overlay {
+    left: min(60vw, 260px);
+    background: rgba(0, 0, 0, 0.12);
     pointer-events: auto;
-    background: rgba(0, 0, 0, 0.08);
   }
 
   #btn-daqianjie {
+    display: block;
     position: relative;
-    z-index: 2;
+    z-index: 1;
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
+  }
+
+  body.mobile-sidebar-open .scroll-text,
+  body.mobile-sidebar-open .scroll-text-reverse {
+    animation-play-state: paused;
   }
 }

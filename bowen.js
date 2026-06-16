@@ -341,7 +341,17 @@ if(btnMingdian) {
 
 // 🎆 5. 全局背景点击喷射 ZZZ 特效
 document.addEventListener('click', (e) => {
-  if(e.target.closest('#sig-prev') || e.target.closest('#sig-next') || e.target.closest('#article-view') || e.target.closest('input') || e.target.closest('#music-toggle')) return;
+  if (
+    e.target.closest('#sig-prev') ||
+    e.target.closest('#sig-next') ||
+    e.target.closest('#article-view') ||
+    e.target.closest('input') ||
+    e.target.closest('#music-toggle') ||
+    e.target.closest('#sidebar-menu') ||
+    e.target.closest('#sidebar-overlay') ||
+    e.target.closest('#mobile-menu-toggle') ||
+    e.target.closest('#mobile-menu-close')
+  ) return;
   const zzzIcon = document.createElement('img');
   zzzIcon.src = "images/ZZZ.jpg"; 
   zzzIcon.className = "click-effect";
@@ -357,67 +367,67 @@ document.addEventListener('click', (e) => {
 
 
 // ==========================================
-// 📱 手机侧边栏抽屉与全屏物理返回键机制
+// 📱 手机侧边栏抽屉
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-  const mobileMenuToggle = document.getElementById("mobile-menu-toggle"); 
-  const mobileMenuClose = document.getElementById("mobile-menu-close");   
-  const sidebarMenu = document.getElementById("sidebar-menu");           
-  const sidebarOverlay = document.getElementById("sidebar-overlay");     
+  const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+  const mobileMenuClose = document.getElementById("mobile-menu-close");
+  const sidebarMenu = document.getElementById("sidebar-menu");
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+  const btnDaqianjie = document.getElementById("btn-daqianjie");
+
+  const isMobile = () => window.matchMedia("(max-width: 1023px)").matches;
 
   function openMobileSidebar() {
-    if (sidebarMenu && sidebarOverlay) {
-      sidebarMenu.classList.remove("-translate-x-full");
-      sidebarMenu.classList.add("translate-x-0");
-      sidebarOverlay.classList.remove("hidden");
-      document.body.classList.add("overflow-hidden");
-      history.pushState({ view: 'sidebar' }, "");
-    }
+    if (!sidebarMenu || !sidebarOverlay || !isMobile()) return;
+    sidebarMenu.classList.add("is-open");
+    sidebarOverlay.classList.remove("hidden");
+    sidebarOverlay.setAttribute("aria-hidden", "false");
+    document.body.classList.add("mobile-sidebar-open");
   }
 
   function closeMobileSidebar() {
-    if (sidebarMenu && sidebarOverlay) {
-      sidebarMenu.classList.remove("translate-x-0");
-      sidebarMenu.classList.add("-translate-x-full");
-      sidebarOverlay.classList.add("hidden");
-      document.body.classList.remove("overflow-hidden");
-    }
+    if (!sidebarMenu || !sidebarOverlay) return;
+    sidebarMenu.classList.remove("is-open");
+    sidebarOverlay.classList.add("hidden");
+    sidebarOverlay.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("mobile-sidebar-open");
   }
 
   if (mobileMenuToggle) {
     mobileMenuToggle.addEventListener("click", (e) => {
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
       openMobileSidebar();
     });
   }
 
   if (mobileMenuClose) {
-    mobileMenuClose.addEventListener("click", () => {
-      if (sidebarMenu.classList.contains("translate-x-0")) history.back();
-    });
+    mobileMenuClose.addEventListener("click", closeMobileSidebar);
   }
+
   if (sidebarOverlay) {
-    sidebarOverlay.addEventListener("click", () => {
-      if (sidebarMenu.classList.contains("translate-x-0")) history.back();
-    });
+    sidebarOverlay.addEventListener("click", closeMobileSidebar);
   }
 
   if (sidebarMenu) {
-    const clickableItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button:not(#btn-mingdian)");
-    clickableItems.forEach(item => {
+    sidebarMenu.querySelectorAll("div.cursor-pointer, button:not(#btn-mingdian)").forEach((item) => {
       item.addEventListener("click", () => {
-        if (window.innerWidth < 1024 && sidebarMenu.classList.contains("translate-x-0")) {
-          history.back();
+        if (isMobile() && sidebarMenu.classList.contains("is-open")) {
+          closeMobileSidebar();
         }
       });
     });
   }
 
-  window.addEventListener("popstate", (event) => {
-    if (sidebarMenu && sidebarMenu.classList.contains("translate-x-0")) {
-      closeMobileSidebar();
-    } 
-    else if (articleView && !articleView.classList.contains("hidden")) {
+  if (btnDaqianjie) {
+    btnDaqianjie.addEventListener("click", () => {
+      window.BowenMusic?.saveMusicTime();
+    });
+  }
+
+  window.addEventListener("popstate", () => {
+    if (articleView && !articleView.classList.contains("hidden")) {
       showHomeList();
     }
   });
@@ -465,31 +475,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
-
-// ========================================================
-// 🌌 大千界：侧栏点击可靠跳转（修复 iOS 触摸）
-// ========================================================
-document.addEventListener("DOMContentLoaded", () => {
-  const btnDaqianjie = document.getElementById("btn-daqianjie");
-  if (!btnDaqianjie) return;
-
-  const targetUrl = btnDaqianjie.getAttribute("href");
-  let navigating = false;
-
-  function goToDaqianjie(event) {
-    if (navigating) return;
-    navigating = true;
-
-    if (event) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }
-
-    window.BowenMusic?.saveMusicTime();
-    window.location.assign(targetUrl);
-  }
-
-  btnDaqianjie.addEventListener("touchend", goToDaqianjie, { capture: true, passive: false });
-  btnDaqianjie.addEventListener("click", goToDaqianjie, { capture: true });
 });
