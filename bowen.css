@@ -1584,6 +1584,14 @@ body {
     padding: 11px 16px !important;
     min-height: 44px !important;
     font-size: 15px !important;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #sidebar-menu a.sm-nav-item {
+    display: flex;
+    text-decoration: none;
   }
 
   #sidebar-menu .sm-nav-icon {
