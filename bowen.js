@@ -403,12 +403,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (sidebarMenu) {
-    const clickableItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button, a.cursor-pointer");
+    const clickableItems = sidebarMenu.querySelectorAll("div.cursor-pointer, button:not(#btn-mingdian)");
     clickableItems.forEach(item => {
       item.addEventListener("click", () => {
-        if (item.id === "btn-daqianjie" || item.closest("#btn-daqianjie")) return;
-        if (window.innerWidth < 1024 && sidebarMenu.classList.contains("translate-x-0")) { 
-          history.back(); 
+        if (window.innerWidth < 1024 && sidebarMenu.classList.contains("translate-x-0")) {
+          history.back();
         }
       });
     });
@@ -510,17 +509,24 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========================================================
-// 🌌 大千界专属传送通道：点击时直接穿梭进入独立文件夹子页面
+// 🌌 大千界：手机侧栏点击后直接跳转子页面
 // ========================================================
 document.addEventListener("DOMContentLoaded", () => {
-  const btnDaqianjie = document.getElementById('btn-daqianjie');
-  if (btnDaqianjie) {
-    btnDaqianjie.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (window.innerWidth < 1024) {
-        e.preventDefault();
-        window.location.assign(btnDaqianjie.href);
-      }
-    }, true);
-  }
+  const btnDaqianjie = document.getElementById("btn-daqianjie");
+  const sidebarMenu = document.getElementById("sidebar-menu");
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+
+  if (!btnDaqianjie) return;
+
+  btnDaqianjie.addEventListener("click", () => {
+    if (window.innerWidth >= 1024) return;
+
+    if (sidebarMenu?.classList.contains("translate-x-0")) {
+      sidebarMenu.classList.remove("translate-x-0");
+      sidebarMenu.classList.add("-translate-x-full");
+      sidebarOverlay?.classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+      history.replaceState(null, "");
+    }
+  });
 });

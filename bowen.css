@@ -86,3 +86,8 @@ body {
   display: block !important;
   opacity: 1 !important;
 }
+
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
