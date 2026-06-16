@@ -1312,17 +1312,7 @@ body {
   }
 
   .sm-featured-thumbs {
-    gap: 6px;
-    padding: 0 1px;
-    justify-content: flex-start;
-  }
-
-  .sm-featured-thumb {
-    flex: 0 0 54px;
-    width: 54px;
-    height: 54px;
-    border-radius: 6px;
-    border-width: 1.5px;
+    display: none !important;
   }
 
   .sm-thread-bar {
