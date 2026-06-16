@@ -339,24 +339,86 @@ button {
     justify-content: center;
     align-items: center;
     padding: 28px;
-    background: rgba(0, 0, 0, 0.88);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(10px);
 }
 
 .preview.show {
     display: flex;
 }
 
-.preview img {
-    max-width: 94vw;
-    max-height: 92vh;
-    object-fit: contain;
+.preview-card {
+    position: relative;
+    width: min(640px, 92vw);
+    padding: 22px 22px 18px;
+    border-radius: 14px;
+    background: #fff;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.preview-camera {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    z-index: 2;
+    width: 22px;
+    height: 22px;
+    color: #8a96a3;
+    pointer-events: none;
+}
+
+.preview-camera svg {
+    width: 100%;
+    height: 100%;
+}
+
+.preview-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #111;
+    line-height: 0;
+}
+
+.preview-frame img {
+    display: block;
+    width: 100%;
+    max-height: 72vh;
+    object-fit: contain;
+    background: #111;
+}
+
+.preview-date {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+}
+
+.preview-tag {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    z-index: 2;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65);
+    pointer-events: none;
 }
 
 #close {
     position: absolute;
     top: 18px;
     right: 36px;
+    z-index: 101;
     color: #fff;
     font-size: 48px;
     line-height: 1;
@@ -514,5 +576,29 @@ button {
         font-size: 40px;
         width: 44px;
         height: 44px;
+    }
+
+    .preview-card {
+        width: min(520px, 94vw);
+        padding: 16px 16px 14px;
+    }
+
+    .preview-camera {
+        top: 24px;
+        left: 24px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .preview-date {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+    }
+
+    .preview-tag {
+        left: 10px;
+        bottom: 10px;
+        font-size: 13px;
     }
 }

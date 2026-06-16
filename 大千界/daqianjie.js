@@ -1,34 +1,96 @@
-const imgs = document.querySelectorAll(".photo-card img");
+const PHOTOS = [
+    { file: "fj1.jpg", addedAt: "2026-06-16T04:35:41" },
+    { file: "fj2.jpg", addedAt: "2026-06-16T04:35:48" },
+    { file: "zhe1.jpg", addedAt: "2026-06-16T04:36:09" },
+    { file: "CH.jpg", addedAt: "2026-06-16T15:34:08" },
+    { file: "CH2.jpg", addedAt: "2026-06-16T15:34:25" },
+    { file: "CH3.jpg", addedAt: "2026-06-16T15:34:37" },
+    { file: "CH4.jpg", addedAt: "2026-06-16T15:34:46" },
+    { file: "CH5.jpg", addedAt: "2026-06-16T15:35:02" },
+    { file: "CH6.jpg", addedAt: "2026-06-16T15:35:08" },
+    { file: "CH7.jpg", addedAt: "2026-06-16T15:35:14" },
+    { file: "CH8.jpg", addedAt: "2026-06-16T15:35:19" },
+    { file: "CH9.jpg", addedAt: "2026-06-16T15:35:25" },
+    { file: "CH10.jpg", addedAt: "2026-06-16T15:35:32" },
+    { file: "CH11.jpg", addedAt: "2026-06-16T15:35:38" }
+];
+
+const gallery = document.getElementById("gallery");
 const preview = document.getElementById("preview");
 const previewImg = document.getElementById("previewImg");
+const previewDate = document.getElementById("previewDate");
 const closeBtn = document.getElementById("close");
 
-function openPreview(src, alt) {
+function getDayPeriod(hour) {
+    if (hour >= 0 && hour < 6) return "凌晨";
+    if (hour >= 6 && hour < 12) return "上午";
+    if (hour >= 12 && hour < 18) return "下午";
+    return "晚上";
+}
+
+function formatAddedDate(dateStr) {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const period = getDayPeriod(date.getHours());
+    return `${year}/${month}/${day} ${period}`;
+}
+
+function renderGallery() {
+    if (!gallery) return;
+
+    gallery.innerHTML = PHOTOS.map((photo) => {
+        const src = `../dqjimages/${photo.file}`;
+        const label = photo.file.replace(/\.[^.]+$/, "");
+        return `
+            <article class="photo-card">
+                <button class="card-tool" type="button" title="摄影">▣</button>
+                <img
+                    src="${src}"
+                    alt="大千界摄影作品 ${label}"
+                    data-added="${photo.addedAt}"
+                    loading="lazy"
+                >
+            </article>
+        `;
+    }).join("");
+
+    gallery.querySelectorAll(".photo-card img").forEach((img) => {
+        img.addEventListener("click", () => {
+            openPreview(img.src, img.alt, img.dataset.added);
+        });
+    });
+}
+
+function openPreview(src, alt, addedAt) {
     previewImg.src = src;
     previewImg.alt = alt || "图片预览";
+    previewDate.textContent = formatAddedDate(addedAt);
     preview.classList.add("show");
     preview.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
 }
 
 function closePreview() {
     preview.classList.remove("show");
     preview.setAttribute("aria-hidden", "true");
     previewImg.removeAttribute("src");
+    previewDate.textContent = "";
+    document.body.style.overflow = "";
 }
 
-imgs.forEach((img) => {
-    img.addEventListener("click", () => {
-        openPreview(img.src, img.alt);
+if (closeBtn) {
+    closeBtn.addEventListener("click", closePreview);
+}
+
+if (preview) {
+    preview.addEventListener("click", (event) => {
+        if (event.target === preview) {
+            closePreview();
+        }
     });
-});
-
-closeBtn.addEventListener("click", closePreview);
-
-preview.addEventListener("click", (event) => {
-    if (event.target === preview) {
-        closePreview();
-    }
-});
+}
 
 document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && preview.classList.contains("show")) {
@@ -37,5 +99,6 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+    renderGallery();
     window.BowenMusic?.init();
 });
