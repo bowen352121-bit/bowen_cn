@@ -146,26 +146,53 @@ const carouselContainer = document.getElementById('carousel-container');
 const carouselTitle = document.getElementById('carousel-title');
 const carouselDots = document.getElementById('carousel-dots');
 const carouselWrapper = document.getElementById('carousel-wrapper');
+const featuredThumbs = document.getElementById('featured-thumbs');
 
 let currentIndex = 0;
 let timer = null;
 const bannerProjects = projects.slice(0, 5);
 
+const iconClock = '<svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+const iconEye = '<svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>';
+const iconComment = '<svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>';
+const iconLike = '<svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>';
+
 if (carouselContainer && carouselTitle && carouselDots) {
   carouselContainer.innerHTML = '';
   carouselDots.innerHTML = '';
+  if (featuredThumbs) featuredThumbs.innerHTML = '';
   carouselContainer.style.width = `${bannerProjects.length * 100}%`;
 
   bannerProjects.forEach((p, idx) => {
     const slide = document.createElement('div');
+    slide.className = "carousel-slide";
     slide.style.width = `${100 / bannerProjects.length}%`;
-    slide.className = "h-full shrink-0 bg-zinc-800 relative overflow-hidden";
     slide.innerHTML = `<img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">`;
     carouselContainer.appendChild(slide);
 
     const dot = document.createElement('span');
-    dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${idx === 0 ? 'bg-sky-500 w-4' : 'bg-white/50'}`;
+    dot.className = idx === 0 ? 'is-active' : '';
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearInterval(timer);
+      updateCarousel(idx);
+      startAutoPlay();
+    });
     carouselDots.appendChild(dot);
+
+    if (featuredThumbs) {
+      const thumb = document.createElement('button');
+      thumb.type = 'button';
+      thumb.className = `sm-featured-thumb${idx === 0 ? ' is-active' : ''}`;
+      thumb.innerHTML = `<img src="${p.image}" alt="${p.title}">`;
+      thumb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearInterval(timer);
+        updateCarousel(idx);
+        startAutoPlay();
+      });
+      featuredThumbs.appendChild(thumb);
+    }
   });
 
   function updateCarousel(index) {
@@ -173,13 +200,16 @@ if (carouselContainer && carouselTitle && carouselDots) {
     const offset = -currentIndex * (100 / bannerProjects.length);
     carouselContainer.style.transform = `translate3d(${offset}%, 0, 0)`;
     carouselTitle.textContent = bannerProjects[currentIndex].title;
-    const dots = carouselDots.querySelectorAll('span');
-    dots.forEach((dot, dIdx) => {
-      dot.className = dIdx === currentIndex ? "w-2 h-2 rounded-full bg-sky-500 w-4 transition-all duration-300" : "w-2 h-2 rounded-full bg-white/50 transition-all duration-300";
+    carouselDots.querySelectorAll('span').forEach((dot, dIdx) => {
+      dot.classList.toggle('is-active', dIdx === currentIndex);
+    });
+    featuredThumbs?.querySelectorAll('.sm-featured-thumb').forEach((thumb, tIdx) => {
+      thumb.classList.toggle('is-active', tIdx === currentIndex);
     });
   }
 
   function startAutoPlay() {
+    clearInterval(timer);
     timer = setInterval(() => { updateCarousel((currentIndex + 1) % bannerProjects.length); }, 3500);
   }
 
@@ -198,13 +228,12 @@ const signatures = ["孩子们别忘了骑士梦的最初梦想", "孩子们你�
 const sigSlider = document.getElementById('signature-slider');
 const sigPrev = document.getElementById('sig-prev');
 const sigNext = document.getElementById('sig-next');
-let sigIndex = 0; let sigTimer = null; const FIXED_ROW_HEIGHT = 56;
+let sigIndex = 0; let sigTimer = null; const FIXED_ROW_HEIGHT = 52;
 
 if (sigSlider) {
   sigSlider.innerHTML = '';
   signatures.forEach((text) => {
     const item = document.createElement('div');
-    item.className = "h-14 w-full text-xs sm:text-sm font-bold text-zinc-700 tracking-wide truncate";
     item.style.lineHeight = `${FIXED_ROW_HEIGHT}px`;
     item.textContent = text;
     sigSlider.appendChild(item);
@@ -240,21 +269,20 @@ function renderSidebarList(type) {
   if (!sidebarList) return; sidebarList.innerHTML = '';
   sidebarData[type].forEach((article, idx) => {
     const li = document.createElement('li');
-    li.className = "flex items-start space-x-2.5 group cursor-pointer border-b border-zinc-100/40 pb-2 last:border-0";
-    let badgeClass = "text-zinc-400 font-normal";
-    if (idx === 0) badgeClass = "bg-blue-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
-    if (idx === 1) badgeClass = "bg-emerald-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
-    if (idx === 2) badgeClass = "bg-orange-500 text-white font-bold rounded-sm w-4 h-4 text-center text-[10px] flex items-center justify-center";
-    const badgeHtml = idx < 3 ? `<div class="${badgeClass}">${idx + 1}</div>` : `<div class="w-4 text-center text-zinc-400 font-semibold text-[11px]">${idx + 1}.</div>`;
+    let badgeHtml;
+    if (idx === 0) badgeHtml = `<span class="sm-rank-badge sm-rank-1">1</span>`;
+    else if (idx === 1) badgeHtml = `<span class="sm-rank-badge sm-rank-2">2</span>`;
+    else if (idx === 2) badgeHtml = `<span class="sm-rank-badge sm-rank-3">3</span>`;
+    else badgeHtml = `<span class="sm-rank-n">${idx + 1}.</span>`;
 
     li.innerHTML = `
       ${badgeHtml}
-      <div class="flex-grow min-w-0 flex flex-col space-y-0.5">
-        <span class="text-zinc-700 font-medium group-hover:text-sky-600 transition truncate tracking-wide">${article.title}</span>
-        <div class="flex items-center text-[10px] text-zinc-400 font-normal space-x-2 select-none">
-          <span class="tracking-tight">${getRelativeTimeString(article.publishDate)}</span>
-          <span class="flex items-center">👁 ${article.views}</span>
-          <span class="flex items-center">💬 ${article.comments}</span>
+      <div class="min-w-0 flex-1">
+        <div class="sm-rank-title">${article.title}</div>
+        <div class="sm-rank-meta">
+          <span>${getRelativeTimeString(article.publishDate)}</span>
+          <span>${article.views}</span>
+          <span>${article.comments}</span>
         </div>
       </div>
     `;
@@ -265,8 +293,8 @@ function renderSidebarList(type) {
 if (tabs.new && tabs.hot && tabs.best) {
   Object.keys(tabs).forEach((key) => {
     tabs[key].addEventListener('mouseenter', () => {
-      Object.keys(tabs).forEach((k) => tabs[k].className = "cursor-pointer transition-all pb-0.5 border-b-2 border-transparent text-zinc-400 hover:text-sky-500");
-      tabs[key].className = "cursor-pointer transition-all pb-0.5 border-b-2 border-sky-600 text-sky-600 font-black";
+      Object.keys(tabs).forEach((k) => tabs[k].classList.remove('is-active'));
+      tabs[key].classList.add('is-active');
       renderSidebarList(key);
     });
   });
@@ -276,54 +304,59 @@ renderSidebarList('new');
 
 // 📑 4. 下方主卡片列表渲染
 const container = document.getElementById('projects-container');
-const mainListProjects = [projects[0], projects[1], projects[4], projects[6], projects[8]];
+const btnLoadMore = document.getElementById('btn-load-more');
+const articleTotal = document.getElementById('article-total');
+const PAGE_SIZE = 5;
+let visibleCount = PAGE_SIZE;
+
+function buildArticleCard(p) {
+  const card = document.createElement('article');
+  card.className = 'sm-article-card';
+  const pinHtml = p.isTop ? `<span class="sm-pin">置顶</span>` : '';
+  const ribbonClass = p.title.includes('Cloudflare') ? 'sm-ribbon sm-ribbon-og' : 'sm-ribbon';
+
+  card.innerHTML = `
+    <div class="sm-article-thumb">
+      <span class="${ribbonClass}">原创</span>
+      <img src="${p.image}" alt="${p.title}">
+    </div>
+    <div class="sm-article-body">
+      <span class="sm-article-lang">${p.lang === '简体中文' ? '中文' : p.lang}</span>
+      <h4 class="sm-article-title">${pinHtml}${p.title}</h4>
+      <p class="sm-article-desc">${p.desc}</p>
+      <div class="sm-article-meta">
+        <span class="sm-meta-item">${iconClock}${getRelativeTimeString(p.publishDate)}</span>
+        <span class="sm-meta-item">${iconEye}${p.views}</span>
+        <span class="sm-meta-item">${iconComment}${p.comments}</span>
+        <span class="sm-meta-item">${iconLike}${p.likes || 0}</span>
+        <span class="sm-meta-cat">${p.category}</span>
+      </div>
+    </div>
+  `;
+  card.addEventListener('click', () => showArticleContent(p));
+  return card;
+}
+
+function renderArticleList() {
+  if (!container) return;
+  container.innerHTML = '';
+  projects.slice(0, visibleCount).forEach((p) => {
+    container.appendChild(buildArticleCard(p));
+  });
+  if (articleTotal) articleTotal.textContent = projects.length;
+  if (btnLoadMore) {
+    btnLoadMore.style.display = visibleCount >= projects.length ? 'none' : 'flex';
+  }
+}
 
 if (container) {
-  container.innerHTML = ''; 
-  mainListProjects.forEach((p) => {
-    const card = document.createElement('div');
-    const borderClass = p.isTop ? "border-sky-200 bg-sky-50/10" : "border-zinc-200";
-    card.className = `bg-white rounded-xl overflow-hidden border hover:shadow-md transition-shadow duration-300 cursor-pointer flex flex-row h-32 sm:h-36 ${borderClass} group`;
-    const originalTagHtml = `<span class="absolute top-2 left-2 z-20 text-[9px] bg-sky-500 text-white font-black px-1.5 py-0.5 rounded shadow-xs select-none">原创</span>`;
-    const topTagHtml = p.isTop ? `<span class="text-[10px] bg-red-100 text-red-600 px-1 py-0.2 rounded font-black mr-1 shrink-0">置顶</span>` : '';
+  renderArticleList();
+}
 
-    card.innerHTML = `
-      <div class="w-1/3 h-full shrink-0 overflow-hidden relative select-none p-1.5 flex items-center justify-center">
-        ${originalTagHtml}
-        <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover rounded-lg border border-zinc-100/40 opacity-85 group-hover:opacity-100 transition-opacity duration-300">
-      </div>
-      <div class="w-2/3 p-3 flex flex-col justify-between flex-grow min-w-0 relative">
-        <div class="absolute top-3 right-3 text-[10px] sm:text-xs text-zinc-400 font-normal select-none tracking-wide">${p.lang}</div>
-        <div class="space-y-1 pr-14"> 
-          <div class="flex items-center">
-            ${topTagHtml}
-            <h4 class="text-sm sm:text-base font-black text-zinc-800 tracking-wide truncate group-hover:text-sky-600 transition-colors duration-200">${p.title}</h4>
-          </div>
-          <p class="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed font-normal">${p.desc}</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs text-zinc-400 font-bold border-t border-zinc-50/50 pt-1.5 select-none">
-          <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md tracking-tight">${getRelativeTimeString(p.publishDate)}</span>
-          <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md flex items-center space-x-0.5">
-            <svg class="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span>${p.views}</span>
-          </span>
-          <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md flex items-center space-x-0.5">
-            <svg class="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.92 1.78c-.072.083-.105.195-.088.307.017.111.087.206.188.258a4.912 4.912 0 002.393.616c.72 0 1.408-.155 2.03-.435.53-.24 1.144-.24 1.657.013.791.39 1.666.616 2.583.616z"/></svg>
-            <span>${p.comments}</span>
-          </span>
-          <span class="bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md flex items-center space-x-0.5">
-            <svg class="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.801 0 1.55.496 1.858 1.24.234.565.623 1.01 1.181 1.233.742.296 1.228.993 1.228 1.792V19.5a1.5 1.5 0 01-1.5 1.5H6.622a4.584 4.584 0 01-3.653-1.786l-1.028-1.37a1.5 1.5 0 01.39-2.183l1.522-1.015A4.817 4.817 0 016.633 10.5zm0 0V4.5A1.5 1.5 0 018.133 3h1.5a1.5 1.5 0 011.5 1.5V9a1.5 1.5 0 01-1.5 1.5h-3z"/></svg>
-            <span>${p.likes || 0}</span>
-          </span>
-          <span class="bg-sky-50 text-sky-600 border border-sky-100 px-2 py-0.5 rounded-md font-bold tracking-wide flex items-center space-x-1">
-            <svg class="w-3 h-3 text-sky-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h7v7H4zm0 9h7v7H4zm9-9h7v7h-7zm0 9h7v7h-7z"/></svg>
-            <span>来自 ${p.category}</span>
-          </span>
-        </div>
-      </div>
-    `;
-    card.addEventListener('click', () => showArticleContent(p));
-    container.appendChild(card);
+if (btnLoadMore) {
+  btnLoadMore.addEventListener('click', () => {
+    visibleCount = Math.min(visibleCount + PAGE_SIZE, projects.length);
+    renderArticleList();
   });
 }
 
@@ -434,7 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (sidebarMenu) {
     sidebarMenu.addEventListener("click", (e) => {
-      const item = e.target.closest("div.cursor-pointer, button:not(#btn-mingdian):not(#mobile-menu-close)");
+      const item = e.target.closest(".sm-nav-item:not(#btn-mingdian), .sm-nav-item.sm-nav-hot");
       if (item && isMobile() && sidebarMenu.classList.contains("is-open")) {
         closeMobileSidebar();
       }
