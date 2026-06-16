@@ -17,7 +17,7 @@ const projects = [
     title: "想清楚再干", 
     desc: "孩子们我的电队怎会如此…… 现在加入骑士团还来得及吗…… 经过核心机制全方位评测，在当前高压环境下，队伍的整体输出轴和充能效率面临前所未有的考验。建议少安庸躁，想清楚再决定培养资源的投入，骑士团的大门永远为你敞开。", 
     link: "modal", 
-    image: "images/ZZZ3.0.2.jpg",
+    image: "images/jqlzy.jpg",
     publishDate: "2026-06-01", // 2周前
     views: "659", comments: 0, likes: 13, category: "學梦寺", lang: "简体中文"
   },
@@ -423,40 +423,71 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================
-  // 🎵 音乐控制模块 (资源对准修改)
+  // 🎵 全站音乐控制模块
   // ==========================================
   const audio = document.getElementById('bgm');
   const musicToggle = document.getElementById('music-toggle');
   const musicIcon = document.getElementById('music-icon');
-  
-  // 绑定专属图像资源路径
-  const IMG_PLAY = "images/音乐打开键.jpg"; 
-  const IMG_MUTE = "images/音乐关闭键.jpg"; 
+  const IMG_PLAY = "images/音乐打开键.jpg";
+  const IMG_MUTE = "images/音乐关闭键.jpg";
+  const MUSIC_ENABLED_KEY = "bowenMusicEnabled";
+  const MUSIC_TIME_KEY = "bowenMusicTime";
 
   let isPlaying = false;
 
+  function saveMusicTime() {
+    if (audio && Number.isFinite(audio.currentTime)) {
+      localStorage.setItem(MUSIC_TIME_KEY, String(audio.currentTime));
+    }
+  }
+
+  function setMusicIcon(playing) {
+    if (musicIcon) musicIcon.src = playing ? IMG_PLAY : IMG_MUTE;
+  }
+
+  function restoreMusicTime() {
+    const savedTime = Number(localStorage.getItem(MUSIC_TIME_KEY));
+    if (audio && Number.isFinite(savedTime) && savedTime > 0) {
+      audio.currentTime = savedTime;
+    }
+  }
+
   function playMusic() {
     if (!audio) return;
+    restoreMusicTime();
     audio.play().then(() => {
       isPlaying = true;
-      if (musicIcon) musicIcon.src = IMG_PLAY;
-    }).catch(err => {
-      console.log("现代浏览器默认拦截了音频自动挂载，已激活自动捕获监听器...");
+      localStorage.setItem(MUSIC_ENABLED_KEY, "true");
+      setMusicIcon(true);
+    }).catch(() => {
+      setMusicIcon(false);
+      console.log("浏览器拦截了自动播放，点击页面后会继续尝试播放。");
     });
   }
 
   function pauseMusic() {
     if (!audio) return;
+    saveMusicTime();
     audio.pause();
     isPlaying = false;
-    if (musicIcon) musicIcon.src = IMG_MUTE;
+    localStorage.setItem(MUSIC_ENABLED_KEY, "false");
+    setMusicIcon(false);
   }
 
-  playMusic();
+  if (audio) {
+    audio.addEventListener("timeupdate", saveMusicTime);
+    window.addEventListener("beforeunload", saveMusicTime);
+  }
+
+  if (localStorage.getItem(MUSIC_ENABLED_KEY) === "false") {
+    setMusicIcon(false);
+  } else {
+    playMusic();
+  }
 
   if (musicToggle) {
     musicToggle.addEventListener('click', (e) => {
-      e.stopPropagation(); 
+      e.stopPropagation();
       if (isPlaying) {
         pauseMusic();
       } else {
@@ -466,12 +497,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.addEventListener('click', function autoPlayHelper() {
-    if (!isPlaying && audio) {
-      audio.play().then(() => {
-        isPlaying = true;
-        if (musicIcon) musicIcon.src = IMG_PLAY;
-        document.removeEventListener('click', autoPlayHelper);
-      }).catch(() => {});
+    if (!isPlaying && audio && localStorage.getItem(MUSIC_ENABLED_KEY) !== "false") {
+      playMusic();
     }
   }, { once: true });
 });

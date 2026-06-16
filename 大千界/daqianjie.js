@@ -35,3 +35,36 @@ document.addEventListener("keydown", (event) => {
         closePreview();
     }
 });
+
+const bgm = document.getElementById("bgm");
+const MUSIC_ENABLED_KEY = "bowenMusicEnabled";
+const MUSIC_TIME_KEY = "bowenMusicTime";
+
+function saveMusicTime() {
+    if (bgm && Number.isFinite(bgm.currentTime)) {
+        localStorage.setItem(MUSIC_TIME_KEY, String(bgm.currentTime));
+    }
+}
+
+function tryPlaySharedMusic() {
+    if (!bgm || localStorage.getItem(MUSIC_ENABLED_KEY) === "false") return;
+
+    const savedTime = Number(localStorage.getItem(MUSIC_TIME_KEY));
+    if (Number.isFinite(savedTime) && savedTime > 0) {
+        bgm.currentTime = savedTime;
+    }
+
+    bgm.play().catch(() => {
+        document.addEventListener("click", () => {
+            if (localStorage.getItem(MUSIC_ENABLED_KEY) !== "false") {
+                bgm.play().catch(() => {});
+            }
+        }, { once: true });
+    });
+}
+
+if (bgm) {
+    tryPlaySharedMusic();
+    bgm.addEventListener("timeupdate", saveMusicTime);
+    window.addEventListener("beforeunload", saveMusicTime);
+}

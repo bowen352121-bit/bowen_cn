@@ -11,6 +11,7 @@ html {
 body {
     min-height: 100vh;
     overflow-x: hidden;
+    padding-top: 70px;
     background: #e9e9e9;
     color: #333;
     font-family: Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
@@ -28,72 +29,63 @@ button {
 }
 
 .site-header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 30;
-    height: 76px;
-    background: rgba(255, 255, 255, 0.96);
-    border-bottom: 2px solid #0988e8;
-    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.04);
+    height: 70px;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid #e4e4e7;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(12px);
 }
 
 .header-inner {
-    width: min(1296px, calc(100% - 56px));
+    width: min(1280px, calc(100% - 32px));
     height: 100%;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 220px 1fr 220px;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    color: #0787ed;
-    font-weight: 400;
+    gap: 10px;
+    color: #0284c7;
+    font-weight: 900;
     line-height: 1;
+    letter-spacing: 0.04em;
 }
 
 .brand-mark {
-    font-size: 29px;
-    font-weight: 700;
+    font-size: 27px;
+    font-weight: 900;
     letter-spacing: 0;
 }
 
 .brand-text {
-    font-size: 29px;
+    font-size: 27px;
 }
 
 .site-slogan {
-    justify-self: start;
-    color: #0787ed;
-    font-size: 17px;
-    font-weight: 700;
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid #d4d4d8;
+    color: #71717a;
+    font-size: 13px;
+    font-weight: 500;
 }
 
-.header-actions {
-    justify-self: end;
-    display: flex;
-    align-items: center;
-    gap: 36px;
+.brand + .site-slogan {
+    margin-right: auto;
 }
 
-.header-actions button {
-    width: 22px;
-    height: 22px;
-    display: grid;
-    place-items: center;
-    color: #8f8f8f;
-    cursor: pointer;
-    font-size: 17px;
-    font-weight: 700;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.header-actions button:hover {
-    color: #0787ed;
-    transform: translateY(-1px);
+.header-spacer {
+    width: 52px;
+    height: 1px;
 }
 
 .hero {
@@ -109,7 +101,7 @@ button {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 45%;
+    object-position: center top;
 }
 
 .hero::after {
@@ -364,10 +356,6 @@ button {
 }
 
 @media (max-width: 1180px) {
-    .header-inner {
-        grid-template-columns: 200px 1fr 160px;
-    }
-
     .channel-nav {
         justify-content: flex-start;
         overflow-x: auto;
@@ -385,12 +373,15 @@ button {
 
 @media (max-width: 900px) {
     .site-header {
-        height: 68px;
+        height: 64px;
+    }
+
+    body {
+        padding-top: 64px;
     }
 
     .header-inner {
         width: calc(100% - 28px);
-        grid-template-columns: 1fr auto;
         gap: 16px;
     }
 
@@ -398,13 +389,9 @@ button {
         display: none;
     }
 
-    .header-actions {
-        gap: 18px;
-    }
-
     .brand-mark,
     .brand-text {
-        font-size: 25px;
+        font-size: 24px;
     }
 
     .hero {
@@ -418,8 +405,7 @@ button {
 }
 
 @media (max-width: 560px) {
-    .header-actions button:nth-child(1),
-    .header-actions button:nth-child(2) {
+    .header-spacer {
         display: none;
     }
 
