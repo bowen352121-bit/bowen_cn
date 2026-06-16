@@ -51,12 +51,18 @@
 
   <div id="layout-shell" class="mx-auto px-3 md:px-4 relative">
 
-    <div id="sidebar-overlay" class="fixed inset-y-0 right-0 z-[55] hidden lg:hidden" aria-hidden="true"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 z-[55] lg:hidden" aria-hidden="true"></div>
 
     <aside id="sidebar-menu" class="sidebar-drawer fixed inset-y-0 left-0 w-3/5 max-w-[280px] z-[80] overflow-y-auto flex flex-col lg:sticky lg:top-20 lg:self-start lg:inset-auto lg:overflow-visible lg:z-auto">
-      <div class="flex items-center justify-between mb-4 pb-2 border-b border-zinc-100 lg:hidden">
-        <span class="font-black text-sky-600 text-sm">导航菜单</span>
-        <button id="mobile-menu-close" class="text-zinc-400 hover:text-zinc-600 p-1">
+      <div class="sm-drawer-head lg:hidden">
+        <div class="sm-drawer-brand">
+          <img src="images/要炸了孩子们.jpg" alt="BOWEN" class="sm-drawer-avatar">
+          <div class="sm-drawer-brand-text">
+            <div class="sm-drawer-title">BOWEN</div>
+            <div class="sm-drawer-subtitle">孩子们骑士梦怎会如此......</div>
+          </div>
+        </div>
+        <button id="mobile-menu-close" class="sm-drawer-close" aria-label="关闭菜单">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
@@ -105,7 +111,7 @@
           </span>
         </a>
 
-        <button type="button" class="sm-nav-item">
+        <button type="button" class="sm-nav-item sm-nav-accent">
           <span class="sm-nav-left">
             <span class="sm-nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.174c-.053-.413-.03-.836.07-1.238 1.26-5.022 5.672-8.18 10.743-7.234 4.195.782 7.243 4.1 7.746 8.353.04.343.04.69 0 1.032-.503 4.253-3.551 7.571-7.746 8.353-5.071.946-9.483-2.212-10.743-7.234a4.12 4.12 0 01-.07-1.238z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h.008v.008H12V7.5zM12 12h.008v.008H12V12zM12 16.5h.008v.008H12v-.008z" /></svg></span>
             <span>狂浪生</span>

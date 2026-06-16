@@ -314,15 +314,21 @@ function buildArticleCard(p) {
   card.className = 'sm-article-card';
   const pinHtml = p.isTop ? `<span class="sm-pin">置顶</span>` : '';
   const ribbonClass = p.title.includes('Cloudflare') ? 'sm-ribbon sm-ribbon-og' : 'sm-ribbon';
+  const featuredHtml = p.isTop ? '<span class="sm-ribbon-featured">精选</span>' : '';
 
   card.innerHTML = `
     <div class="sm-article-thumb">
-      <span class="${ribbonClass}">原创</span>
+      <div class="sm-article-badges">
+        <span class="${ribbonClass}">原创</span>
+        ${featuredHtml}
+      </div>
       <img src="${p.image}" alt="${p.title}">
     </div>
     <div class="sm-article-body">
-      <span class="sm-article-lang">${p.lang === '简体中文' ? '中文' : p.lang}</span>
-      <h4 class="sm-article-title">${pinHtml}${p.title}</h4>
+      <div class="sm-article-head">
+        <h4 class="sm-article-title">${pinHtml}${p.title}</h4>
+        <span class="sm-article-lang">${p.lang === '简体中文' ? '中文' : p.lang}</span>
+      </div>
       <p class="sm-article-desc">${p.desc}</p>
       <div class="sm-article-meta">
         <span class="sm-meta-item">${iconClock}${getRelativeTimeString(p.publishDate)}</span>
@@ -419,12 +425,15 @@ document.addEventListener("DOMContentLoaded", () => {
     closeMobileSidebar();
   }
 
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+
   function openMobileSidebar() {
     if (!sidebarMenu || !isMobile()) return;
     if (sidebarMenu.classList.contains("is-open")) return;
 
     sidebarMenu.classList.add("is-open");
     sidebarMenu.setAttribute("aria-hidden", "false");
+    sidebarOverlay?.setAttribute("aria-hidden", "false");
     document.body.classList.add("mobile-sidebar-open");
     document.addEventListener("pointerdown", handleOutsidePointer, { capture: true });
   }
@@ -435,6 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     sidebarMenu.classList.remove("is-open");
     sidebarMenu.setAttribute("aria-hidden", "true");
+    sidebarOverlay?.setAttribute("aria-hidden", "true");
     document.body.classList.remove("mobile-sidebar-open");
     document.removeEventListener("pointerdown", handleOutsidePointer, { capture: true });
   }
@@ -463,6 +473,10 @@ document.addEventListener("DOMContentLoaded", () => {
       e.stopPropagation();
       closeMobileSidebar();
     });
+  }
+
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", closeMobileSidebar);
   }
 
   if (sidebarMenu) {

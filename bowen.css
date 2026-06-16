@@ -676,6 +676,31 @@ body {
   letter-spacing: 0.05em;
 }
 
+.sm-article-badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.sm-article-badges .sm-ribbon {
+  position: static;
+}
+
+.sm-ribbon-featured {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  padding: 1px 5px;
+  letter-spacing: 0.05em;
+}
+
 .sm-ribbon-og {
   background: #27ae60;
 }
@@ -690,10 +715,15 @@ body {
   position: relative;
 }
 
+.sm-article-head {
+  position: relative;
+  min-width: 0;
+}
+
 .sm-article-lang {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: 0;
+  right: 0;
   font-size: 10px;
   color: var(--sm-muted);
   background: #f5f5f5;
@@ -789,15 +819,6 @@ body {
 }
 
 .sm-pin {
-  font-size: 10px;
-  color: #e74c3c;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  padding: 0 4px;
-  border-radius: 1px;
-  margin-right: 4px;
-  font-weight: 700;
-}
   font-size: 10px;
   color: #e74c3c;
   background: #fef2f2;
@@ -1289,43 +1310,6 @@ body {
     padding: 0 10px;
   }
 
-  .sm-article-card {
-    min-height: 96px;
-    border-radius: 10px;
-  }
-
-  .sm-article-card:hover {
-    transform: none;
-  }
-
-  .sm-article-thumb {
-    width: 96px;
-    padding: 6px;
-  }
-
-  .sm-article-body {
-    padding: 8px 10px 8px;
-  }
-
-  .sm-article-title {
-    font-size: 13px;
-    line-height: 1.35;
-    padding-right: 32px;
-  }
-
-  .sm-article-desc {
-    font-size: 11px;
-    -webkit-line-clamp: 1;
-    margin-top: 4px;
-  }
-
-  .sm-article-meta {
-    gap: 5px;
-    font-size: 10px;
-    padding-top: 4px;
-    margin-top: 4px;
-  }
-
   .sm-load-more {
     padding: 12px;
     font-size: 11px;
@@ -1352,7 +1336,117 @@ body {
     margin-top: 8px !important;
   }
 
-  #sidebar-overlay { display: none !important; }
+  /* ---- 手机文章卡片：surmon 竖版 ---- */
+  #projects-container {
+    gap: 12px !important;
+  }
+
+  .sm-article-card {
+    flex-direction: column;
+    min-height: auto;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  .sm-article-card:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .sm-article-thumb {
+    width: 100%;
+    padding: 0;
+    aspect-ratio: 16 / 9;
+    background: #e8e8e8;
+  }
+
+  .sm-article-thumb img {
+    border-radius: 0;
+    height: 100%;
+  }
+
+  .sm-article-badges {
+    top: 10px;
+    right: 10px;
+    left: auto;
+    align-items: flex-end;
+  }
+
+  .sm-article-badges .sm-ribbon,
+  .sm-ribbon-featured {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+
+  .sm-article-body {
+    padding: 12px 14px 10px;
+  }
+
+  .sm-article-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    padding-right: 0;
+  }
+
+  .sm-article-lang {
+    position: static;
+    flex-shrink: 0;
+    background: transparent;
+    color: #bbb;
+    padding: 2px 0 0;
+    font-size: 11px;
+  }
+
+  .sm-article-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+    padding-right: 0;
+    -webkit-line-clamp: 2;
+  }
+
+  .sm-article-desc {
+    font-size: 12px;
+    color: #888;
+    -webkit-line-clamp: 2;
+    margin-top: 8px;
+  }
+
+  .sm-article-meta {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 0;
+    font-size: 11px;
+    color: #bbb;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .sm-meta-cat {
+    display: none;
+  }
+
+  /* ---- 手机侧栏抽屉：surmon 深色 ---- */
+  #sidebar-overlay {
+    opacity: 0;
+    pointer-events: none;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transition: opacity 0.3s ease;
+  }
+
+  body.mobile-sidebar-open #sidebar-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
 
   .sidebar-drawer {
     position: fixed !important;
@@ -1360,17 +1454,159 @@ body {
     bottom: 0;
     left: 0 !important;
     right: auto !important;
-    width: min(72vw, 280px);
-    max-width: 280px;
+    width: min(70vw, 300px);
+    max-width: 300px;
     z-index: 80;
     transform: translate3d(-100%, 0, 0);
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     pointer-events: none;
     overflow-y: auto;
-    background: #fff !important;
-    padding: 16px !important;
-    border-right: 1px solid var(--sm-border);
-    box-shadow: 2px 0 16px rgba(15, 23, 42, 0.06);
+    background: #343a40 !important;
+    padding: 0 !important;
+    border-right: none;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    border-radius: 0 !important;
+  }
+
+  .sm-drawer-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 18px 16px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .sm-drawer-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .sm-drawer-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--sm-accent);
+    flex-shrink: 0;
+  }
+
+  .sm-drawer-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+
+  .sm-drawer-subtitle {
+    font-size: 12px;
+    color: #6eb5ff;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  .sm-drawer-close {
+    color: rgba(255, 255, 255, 0.45);
+    padding: 4px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .sm-drawer-close:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  #sidebar-menu .sm-nav-list {
+    padding: 6px 0 16px;
+    gap: 0;
+  }
+
+  #sidebar-menu .sm-nav-item,
+  #sidebar-menu > button,
+  #sidebar-menu > a {
+    color: rgba(255, 255, 255, 0.92) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 11px 16px !important;
+    min-height: 44px !important;
+    font-size: 15px !important;
+  }
+
+  #sidebar-menu .sm-nav-icon {
+    color: rgba(255, 255, 255, 0.88) !important;
+  }
+
+  #sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian),
+  #sidebar-menu > button:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian),
+  #sidebar-menu > a:hover:not(.sm-nav-hot):not(.sm-nav-new) {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #fff !important;
+  }
+
+  #sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) .sm-nav-icon,
+  #sidebar-menu > button:hover:not(.sm-nav-hot):not(.sm-nav-new):not(#btn-mingdian) .sm-nav-icon {
+    color: #fff !important;
+  }
+
+  #sidebar-menu #btn-mingdian,
+  #sidebar-menu #btn-mingdian.is-active {
+    color: var(--sm-accent) !important;
+    background: #ebebeb !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    font-weight: 600 !important;
+  }
+
+  #sidebar-menu #btn-mingdian .sm-nav-icon,
+  #sidebar-menu #btn-mingdian.is-active .sm-nav-icon {
+    color: var(--sm-accent) !important;
+  }
+
+  #sidebar-menu #btn-mingdian:hover,
+  #sidebar-menu #btn-mingdian.is-active:hover {
+    background: #ebebeb !important;
+    color: var(--sm-accent) !important;
+  }
+
+  #sidebar-menu .sm-nav-divider {
+    background: rgba(255, 255, 255, 0.1);
+    margin: 4px 16px;
+  }
+
+  #sidebar-menu .sm-nav-hot,
+  #sidebar-menu .sm-nav-hot .sm-nav-left,
+  #sidebar-menu .sm-nav-hot .sm-nav-icon {
+    color: #ff6b6b !important;
+  }
+
+  #sidebar-menu .sm-nav-hot:hover {
+    background: rgba(255, 107, 107, 0.08) !important;
+  }
+
+  #sidebar-menu .sm-nav-new .sm-nav-label {
+    background: linear-gradient(90deg, #0095ff, #00c8ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  #sidebar-menu .sm-nav-external {
+    color: rgba(255, 255, 255, 0.45) !important;
+  }
+
+  #sidebar-menu .sm-nav-accent,
+  #sidebar-menu .sm-nav-accent .sm-nav-icon {
+    color: #6eb5ff !important;
+  }
+
+  #sidebar-menu .sm-nav-accent:hover {
+    background: rgba(110, 181, 255, 0.08) !important;
+    color: #8ec8ff !important;
   }
 
   .sidebar-drawer.is-open {
