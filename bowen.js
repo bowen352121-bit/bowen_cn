@@ -434,6 +434,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const btnJueyouqing = document.getElementById("btn-jueyouqing");
+  if (btnJueyouqing) {
+    btnJueyouqing.addEventListener("click", () => {
+      window.BowenMusic?.saveMusicTime();
+    });
+  }
+
   window.addEventListener("popstate", () => {
     if (articleView && !articleView.classList.contains("hidden")) {
       showHomeList();
