@@ -28,13 +28,58 @@ function getDayPeriod(hour) {
     return "晚上";
 }
 
-function formatAddedDate(dateStr) {
+function formatCardDate(dateStr) {
     const date = new Date(dateStr);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
-    const period = getDayPeriod(date.getHours());
-    return `${year}/${month}/${day} ${period}`;
+    return `${year}/${month}/${day}`;
+}
+
+function formatAddedDate(dateStr) {
+    const date = new Date(dateStr);
+    return `${formatCardDate(dateStr)} ${getDayPeriod(date.getHours())}`;
+}
+
+function initHeroCarousel() {
+    const track = document.getElementById("hero-carousel-track");
+    const heroDate = document.getElementById("hero-date");
+    const heroBanner = document.getElementById("hero-banner");
+    if (!track || !heroDate) return;
+
+    const slides = PHOTOS.slice(0, 8);
+    let currentIndex = 0;
+    let timer = null;
+
+    track.innerHTML = slides.map((photo) => {
+        const src = `../dqjimages/${photo.file}`;
+        return `
+            <div class="hero-slide">
+                <img src="${src}" alt="大千界横幅 ${photo.file}" loading="eager">
+            </div>
+        `;
+    }).join("");
+
+    function updateHero(index) {
+        currentIndex = index;
+        track.style.transform = `translate3d(-${currentIndex * 100}%, 0, 0)`;
+        heroDate.textContent = formatCardDate(slides[currentIndex].addedAt);
+    }
+
+    function startAutoPlay() {
+        clearInterval(timer);
+        timer = setInterval(() => {
+            updateHero((currentIndex + 1) % slides.length);
+        }, 3500);
+    }
+
+    updateHero(0);
+    startAutoPlay();
+
+    if (heroBanner) {
+        heroBanner.addEventListener("mouseenter", () => clearInterval(timer));
+        heroBanner.addEventListener("mouseleave", startAutoPlay);
+    }
 }
 
 function renderGallery() {
@@ -46,6 +91,7 @@ function renderGallery() {
         return `
             <article class="photo-card">
                 <button class="card-tool" type="button" title="摄影">▣</button>
+                <span class="card-date">${formatCardDate(photo.addedAt)}</span>
                 <img
                     src="${src}"
                     alt="大千界摄影作品 ${label}"
@@ -99,6 +145,43 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+    initHeroCarousel();
     renderGallery();
-    window.BowenMusic?.init();
+
+    const siteMusic = window.BowenMusic?.init();
+    const musicToggle = document.getElementById("music-toggle");
+    const musicIcon = document.getElementById("music-icon");
+    const IMG_PLAY = "../images/音乐打开键.jpg";
+    const IMG_MUTE = "../images/音乐关闭键.jpg";
+    let isPlaying = siteMusic?.isMusicEnabled() ?? false;
+
+    function setMusicIcon(playing) {
+        if (musicIcon) musicIcon.src = playing ? IMG_PLAY : IMG_MUTE;
+    }
+
+    function playMusic() {
+        if (!siteMusic) return;
+        siteMusic.enableMusic();
+        siteMusic.playMusic().then((started) => {
+            isPlaying = started;
+            setMusicIcon(started);
+        });
+    }
+
+    function pauseMusic() {
+        if (!siteMusic) return;
+        siteMusic.pauseMusic();
+        isPlaying = false;
+        setMusicIcon(false);
+    }
+
+    setMusicIcon(isPlaying);
+
+    if (musicToggle) {
+        musicToggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (isPlaying) pauseMusic();
+            else playMusic();
+        });
+    }
 });

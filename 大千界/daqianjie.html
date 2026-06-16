@@ -11,23 +11,24 @@
 <body>
     <header class="site-header">
         <div class="header-inner">
-            <a class="brand" href="../bowen.html" aria-label="返回首页">
-                <span class="brand-mark">&lt;/&gt;</span>
-                <span class="brand-text">BOWEN</span>
-            </a>
+            <div class="header-left">
+                <a class="brand" href="../bowen.html" aria-label="返回首页">
+                    <span class="brand-text">&lt;/&gt; BOWEN</span>
+                </a>
+                <span class="site-slogan">孩子们骑士梦怎会如此......</span>
+            </div>
 
-            <p class="site-slogan">孩子们骑士梦怎会如此......</p>
-
-            <div class="header-spacer" aria-hidden="true"></div>
+            <div class="header-right">
+                <img src="../images/要炸了孩子们.jpg" alt="头像" class="header-avatar">
+                <button id="music-toggle" class="music-toggle" type="button" title="播放/暂停音乐">
+                    <img id="music-icon" src="../images/音乐打开键.jpg" alt="Music">
+                </button>
+            </div>
         </div>
     </header>
 
     <main>
         <section class="hero">
-            <video class="hero-image" autoplay muted loop playsinline preload="auto" poster="../dqjimages/zhe1.jpg" aria-label="大千界横幅视频">
-                <source src="../media/哥伦比娅.mp4" type="video/mp4">
-            </video>
-
             <nav class="channel-nav" aria-label="频道导航">
                 <a class="home-link" href="../bowen.html"><span>⌂</span>明殿</a>
                 <a href="../bowen.html"><span>&lt;&gt;</span>無夢寺</a>
@@ -40,13 +41,10 @@
                 <a href="#"><span>♥</span>隨喜</a>
             </nav>
 
-            <div class="hero-copy">
-                <h1>大千界</h1>
-                <p>
-                    <span>摄影</span>
-                    <span class="divider"></span>
-                    <span>记录</span>
-                </p>
+            <div class="hero-banner" id="hero-banner">
+                <div class="hero-carousel-track" id="hero-carousel-track"></div>
+                <button class="card-tool hero-card-tool" type="button" title="摄影" aria-hidden="true">▣</button>
+                <span class="card-date hero-date" id="hero-date"></span>
             </div>
         </section>
 

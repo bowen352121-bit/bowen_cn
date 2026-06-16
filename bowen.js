@@ -398,12 +398,20 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileMenuToggle.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      openMobileSidebar();
+      if (sidebarMenu.classList.contains("is-open")) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
     });
   }
 
   if (mobileMenuClose) {
-    mobileMenuClose.addEventListener("click", closeMobileSidebar);
+    mobileMenuClose.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMobileSidebar();
+    });
   }
 
   if (sidebarOverlay) {
