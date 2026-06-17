@@ -75,7 +75,7 @@ const articles = [
     views: "4.51k", comments: 1, likes: 17, lang: "简体中文"
   },
   {
-    title: "找工作",
+    title: "问了吗？",
     desc: "寻伯乐。",
     image: "../images/ZZZzhe.jpg",
     publishDate: "2022-03-01",
