@@ -1,0 +1,55 @@
+[
+  {
+    "id": "seed-1",
+    "parentId": null,
+    "author": "BOWEN",
+    "avatar": "../images/要炸了孩子们.jpg",
+    "role": "博主",
+    "location": "中国",
+    "browser": "Chrome",
+    "content": "景教开张，欢迎诸君来此留言。一言既定，万念同归。",
+    "likes": 8,
+    "createdAt": "2026-06-10T10:00:00.000Z",
+    "provider": "seed"
+  },
+  {
+    "id": "seed-2",
+    "parentId": null,
+    "author": "访客甲",
+    "avatar": "../jj_images/guest-default.svg",
+    "role": "",
+    "location": "香港",
+    "browser": "Safari",
+    "content": "路过打卡，页面很有意境。",
+    "likes": 2,
+    "createdAt": "2026-06-12T14:30:00.000Z",
+    "provider": "seed"
+  },
+  {
+    "id": "seed-3",
+    "parentId": "seed-2",
+    "author": "BOWEN",
+    "avatar": "../images/要炸了孩子们.jpg",
+    "role": "博主",
+    "location": "中国",
+    "browser": "Chrome",
+    "content": "回复#seed-2访客甲：欢迎常来坐坐 ✨",
+    "likes": 1,
+    "createdAt": "2026-06-12T16:00:00.000Z",
+    "provider": "seed",
+    "replyTo": "访客甲"
+  },
+  {
+    "id": "seed-4",
+    "parentId": null,
+    "author": "leon",
+    "avatar": "../jj_images/guest-default.svg",
+    "role": "",
+    "location": "深圳",
+    "browser": "Edge",
+    "content": "能登录 Google 或 GitHub 留言吗？期待！",
+    "likes": 3,
+    "createdAt": "2026-06-15T09:20:00.000Z",
+    "provider": "seed"
+  }
+]

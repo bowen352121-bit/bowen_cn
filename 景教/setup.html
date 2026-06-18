@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>景教 · Firebase 配置向导</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, "Microsoft YaHei", sans-serif;
+      background: #f4f6f9;
+      color: #333;
+      line-height: 1.6;
+      padding: 2rem 1rem 4rem;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .sub { color: #666; font-size: 0.875rem; margin-bottom: 2rem; }
+    .step {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .step h2 { font-size: 1rem; margin-bottom: 0.75rem; color: #0284c7; }
+    .step ol, .step ul { padding-left: 1.25rem; font-size: 0.875rem; }
+    .step li { margin: 0.35rem 0; }
+    code, pre {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.8125rem;
+      background: #f4f4f5;
+      border-radius: 4px;
+    }
+    code { padding: 0.1rem 0.35rem; }
+    pre {
+      padding: 0.75rem;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin: 0.75rem 0 0.25rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font: inherit;
+    }
+    input:focus { outline: none; border-color: #0095ff; }
+    .btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    button, .btn-link {
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      background: #fff;
+      text-decoration: none;
+      color: inherit;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-primary { background: #0095ff; color: #fff; border-color: #0095ff; }
+    .btn-primary:hover { background: #0078d4; }
+    button:hover, .btn-link:hover { background: #f8fafc; }
+    .btn-primary:hover { background: #0078d4; }
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      display: none;
+    }
+    .status.ok { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .status.err { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .back { margin-top: 2rem; font-size: 0.875rem; }
+    .back a { color: #0095ff; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>景教留言板 · Firebase 配置</h1>
+    <p class="sub">按步骤完成配置后，访客即可用 Google / GitHub 登录留言。</p>
+
+    <div class="step">
+      <h2>步骤 1 · 创建 Firebase 项目</h2>
+      <ol>
+        <li>打开 <a href="https://console.firebase.google.com/" target="_blank" rel="noopener">Firebase 控制台</a>，新建项目（建议名称：<code>bowen-guestbook</code>）</li>
+        <li>项目 → 项目设置 → 你的应用 → 添加 Web 应用（</> 图标）</li>
+        <li>复制下方 6 项配置，填入本页表单</li>
+      </ol>
+      <a class="btn-link" href="https://console.firebase.google.com/" target="_blank" rel="noopener">打开 Firebase 控制台</a>
+    </div>
+
+    <div class="step">
+      <h2>步骤 2 · 启用登录方式</h2>
+      <ol>
+        <li>Authentication → Sign-in method → 启用 <strong>Google</strong></li>
+        <li>启用 <strong>GitHub</strong>（需先在 GitHub 创建 OAuth App）：
+          <ul>
+            <li>GitHub → Settings → Developer settings → OAuth Apps → New</li>
+            <li>Homepage URL：<code id="home-url"></code></li>
+            <li>Authorization callback URL：<code id="callback-url">https://你的项目ID.firebaseapp.com/__/auth/handler</code></li>
+            <li>将 Client ID / Secret 填入 Firebase GitHub 登录配置</li>
+          </ul>
+        </li>
+        <li>Authentication → Settings → Authorized domains → 添加 <code>bowen352121-bit.github.io</code></li>
+      </ol>
+      <a class="btn-link" href="https://github.com/settings/developers" target="_blank" rel="noopener">打开 GitHub OAuth 设置</a>
+    </div>
+
+    <div class="step">
+      <h2>步骤 3 · 创建数据库与存储</h2>
+      <ol>
+        <li>Firestore Database → 创建数据库（选择就近区域）</li>
+        <li>Storage → 开始使用（默认 bucket 即可）</li>
+        <li>部署安全规则（有 Node.js 时运行 <code>npx firebase deploy --only firestore:rules,storage</code>；或在控制台 Rules 标签页手动粘贴 <code>firebase/firestore.rules</code> 与 <code>firebase/storage.rules</code> 内容）</li>
+      </ol>
+    </div>
+
+    <div class="step">
+      <h2>步骤 4 · 填入 Web 应用配置</h2>
+      <label for="apiKey">apiKey</label>
+      <input id="apiKey" placeholder="AIza...">
+      <label for="authDomain">authDomain</label>
+      <input id="authDomain" placeholder="bowen-guestbook.firebaseapp.com">
+      <label for="projectId">projectId</label>
+      <input id="projectId" placeholder="bowen-guestbook">
+      <label for="storageBucket">storageBucket</label>
+      <input id="storageBucket" placeholder="bowen-guestbook.appspot.com">
+      <label for="messagingSenderId">messagingSenderId</label>
+      <input id="messagingSenderId" placeholder="123456789">
+      <label for="appId">appId</label>
+      <input id="appId" placeholder="1:123456789:web:abc123">
+
+      <div class="btns">
+        <button type="button" class="btn-primary" id="btn-save">保存配置并测试</button>
+        <button type="button" id="btn-copy">复制 firebase-config.js 内容</button>
+        <button type="button" id="btn-clear">清除配置</button>
+      </div>
+      <div id="status" class="status"></div>
+      <pre id="output" hidden></pre>
+    </div>
+
+    <p class="back"><a href="jingjiao.html">← 返回景教留言板</a></p>
+  </div>
+
+  <script type="module">
+    const SITE_HOME = "https://bowen352121-bit.github.io/bowen_cn/景教/jingjiao.html";
+    const STORAGE_KEY = "bowen_firebase_config";
+
+    document.getElementById("home-url").textContent = SITE_HOME;
+
+    const fields = ["apiKey", "authDomain", "projectId", "storageBucket", "messagingSenderId", "appId"];
+
+    function readForm() {
+      const cfg = {};
+      fields.forEach((k) => { cfg[k] = document.getElementById(k).value.trim(); });
+      return cfg;
+    }
+
+    function fillForm(cfg) {
+      fields.forEach((k) => {
+        if (cfg[k]) document.getElementById(k).value = cfg[k];
+      });
+      if (cfg.projectId) {
+        document.getElementById("callback-url").textContent =
+          `https://${cfg.projectId}.firebaseapp.com/__/auth/handler`;
+      }
+    }
+
+    function buildConfigJs(cfg) {
+      return `// 由 setup.html 生成 — 景教留言板 Firebase 配置
+export const firebaseConfig = {
+  apiKey: "${cfg.apiKey}",
+  authDomain: "${cfg.authDomain}",
+  projectId: "${cfg.projectId}",
+  storageBucket: "${cfg.storageBucket}",
+  messagingSenderId: "${cfg.messagingSenderId}",
+  appId: "${cfg.appId}"
+};
+
+export function isFirebaseReady() {
+  return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.authDomain);
+}
+`;
+    }
+
+    function showStatus(msg, ok) {
+      const el = document.getElementById("status");
+      el.textContent = msg;
+      el.className = "status " + (ok ? "ok" : "err");
+    }
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try { fillForm(JSON.parse(saved)); } catch {}
+    }
+
+    document.getElementById("projectId").addEventListener("input", (e) => {
+      const id = e.target.value.trim();
+      if (id) {
+        document.getElementById("callback-url").textContent =
+          `https://${id}.firebaseapp.com/__/auth/handler`;
+        if (!document.getElementById("authDomain").value) {
+          document.getElementById("authDomain").value = `${id}.firebaseapp.com`;
+        }
+        if (!document.getElementById("storageBucket").value) {
+          document.getElementById("storageBucket").value = `${id}.appspot.com`;
+        }
+      }
+    });
+
+    document.getElementById("btn-save").addEventListener("click", async () => {
+      const cfg = readForm();
+      if (!cfg.apiKey || !cfg.projectId || !cfg.authDomain) {
+        showStatus("请至少填写 apiKey、authDomain、projectId。", false);
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+      document.getElementById("output").textContent = buildConfigJs(cfg);
+
+      try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+        const { getFirestore, collection, getDocs, limit, query } = await import(
+          "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+        );
+        const app = initializeApp(cfg);
+        const db = getFirestore(app);
+        await getDocs(query(collection(db, "guestbook_comments"), limit(1)));
+        showStatus("配置已保存到浏览器，Firestore 连接成功！请复制下方内容覆盖 景教/firebase-config.js，然后推送上线。", true);
+      } catch (err) {
+        showStatus("配置已保存，但连接测试失败：" + err.message + "。请检查 Firestore 是否已创建、规则是否已部署。", false);
+      }
+    });
+
+    document.getElementById("btn-copy").addEventListener("click", async () => {
+      const cfg = readForm();
+      const text = buildConfigJs(cfg);
+      document.getElementById("output").hidden = false;
+      document.getElementById("output").textContent = text;
+      try {
+        await navigator.clipboard.writeText(text);
+        showStatus("已复制到剪贴板！请粘贴覆盖 景教/firebase-config.js 文件内容。", true);
+      } catch {
+        showStatus("请手动复制下方代码块内容。", true);
+      }
+    });
+
+    document.getElementById("btn-clear").addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      fields.forEach((k) => { document.getElementById(k).value = ""; });
+      showStatus("已清除本地配置。", true);
+    });
+  </script>
+</body>
+</html>

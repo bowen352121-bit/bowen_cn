@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景教 · Guestbook</title>
+    <link rel="stylesheet" href="jingjiao.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <a class="brand" href="../bowen.html" aria-label="返回首页">
+                    <span class="brand-text">&lt;/&gt; BOWEN</span>
+                </a>
+                <span class="site-slogan">孩子们骑士梦怎会如此......</span>
+            </div>
+
+            <div class="header-right">
+                <img src="../images/要炸了孩子们.jpg" alt="头像" class="header-avatar">
+                <button id="music-toggle" class="music-toggle" type="button" title="播放/暂停音乐">
+                    <img id="music-icon" src="../images/音乐打开键.jpg" alt="Music">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-layout">
+        <section class="hero">
+            <nav class="channel-nav" aria-label="频道导航">
+                <a class="home-link" href="../bowen.html"><span>⌂</span>明殿</a>
+                <a href="../薇薇安/wwa.html"><span>&lt;&gt;</span>薇薇安</a>
+                <a href="../窄门/zm.html"><span>✦</span>窄门</a>
+                <a href="../职事/zs.html"><span>◉</span>职事↗</a>
+                <a href="../大千界/daqianjie.html"><span>◈</span>大千界</a>
+                <a href="../覺有情/jueyouqing.html"><span>✺</span>覺有情</a>
+                <a href="#"><span>♜</span>狂浪生</a>
+                <a class="active" href="#"><span>▣</span>景教</a>
+                <a href="#"><span>♥</span>隨喜</a>
+            </nav>
+
+            <div class="hero-banner">
+                <img class="hero-bg" src="../jj_images/guestbook-hero.jpg" alt="景教横幅"
+                    onerror="this.style.display='none'">
+                <div class="hero-copy">
+                    <h1>一言既定，万念同归</h1>
+                    <p>@bowen_zzz <span class="hero-divider">|</span> 景教 · Guestbook</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="content-grid">
+            <section class="guestbook-main" aria-label="留言板">
+                <div id="config-banner" class="config-banner hidden" role="status"></div>
+
+                <div class="compose-card">
+                    <div id="auth-panel" class="auth-panel">
+                        <p class="compose-hint">在下有一拙见，不知……</p>
+                        <div class="auth-actions">
+                            <button type="button" id="btn-login-google" class="auth-btn auth-btn-google">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                                Google 登录
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="compose-panel" class="compose-panel hidden">
+                        <div class="compose-user">
+                            <img id="user-avatar" src="../jj_images/guest-default.svg" alt="">
+                            <div class="compose-user-meta">
+                                <span id="user-name" class="compose-user-name"></span>
+                                <span id="user-email" class="compose-user-email"></span>
+                                <button type="button" id="btn-logout" class="compose-logout">退出</button>
+                            </div>
+                        </div>
+                        <div id="reply-indicator" class="reply-indicator hidden">
+                            回复 <strong id="reply-target-name"></strong>
+                            <button type="button" id="btn-cancel-reply" aria-label="取消回复">&times;</button>
+                        </div>
+                        <textarea id="comment-input" rows="4" placeholder="在此留下你的见解……" maxlength="2000"></textarea>
+                        <div class="compose-toolbar">
+                            <button type="button" id="btn-submit" class="submit-btn" disabled>发表留言</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comments-header">
+                    <div class="comments-count">共 <strong id="comment-total">0</strong> 条评论</div>
+                </div>
+
+                <p id="comments-empty" class="comments-empty">暂无留言，登录后即可发表第一条。</p>
+                <div id="comments-list" class="comments-list" aria-live="polite"></div>
+
+                <button type="button" id="btn-load-more" class="load-more-btn hidden">加载更多评论</button>
+            </section>
+
+            <aside class="sidebar" aria-label="侧边栏">
+                <div class="widget stats-widget">
+                    <div><div class="stat-num">260</div><div class="stat-label">全站文章</div></div>
+                    <div><div class="stat-num">998</div><div class="stat-label">今日阅读</div></div>
+                    <div><div class="stat-num" id="sidebar-comment-count">0</div><div class="stat-label">全站评论</div></div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-head">
+                        <h4>群贤毕至</h4>
+                        <div class="widget-tabs">
+                            <span class="widget-tab is-active">最新</span>
+                            <span class="widget-tab">热门</span>
+                            <span class="widget-tab">精选</span>
+                        </div>
+                    </div>
+                    <ol class="sidebar-posts">
+                        <li><span class="rank">1</span><div><p>想清楚再干</p><time>2026-05</time></div></li>
+                        <li><span class="rank">2</span><div><p>创造力是温柔的谎言</p><time>2026-03</time></div></li>
+                        <li><span class="rank">3</span><div><p>AI 代替不了这样的你</p><time>2026-03</time></div></li>
+                    </ol>
+                </div>
+
+                <div class="widget calendar-widget">
+                    <div class="calendar-head">
+                        <button type="button" aria-hidden="true">&lt;</button>
+                        <div>2026 年 6 月 18 日</div>
+                        <button type="button" aria-hidden="true">&gt;</button>
+                    </div>
+                    <div class="calendar-week">
+                        <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                    </div>
+                    <div class="calendar-days">
+                        <span class="other">1</span><span class="other">2</span><span class="other">3</span><span class="other">4</span><span class="other">5</span><span class="other">6</span><span>7</span>
+                        <span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+                        <span>15</span><span>16</span><span>17</span><span class="today">18</span><span>19</span><span>20</span><span>21</span>
+                        <span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span>
+                        <span>29</span><span>30</span><span class="other">1</span><span class="other">2</span><span class="other">3</span><span class="other">4</span><span class="other">5</span>
+                    </div>
+                </div>
+
+                <div class="widget tags-widget">
+                    <div class="tag-cloud">
+                        <span>见地</span><span>修行</span><span>形而上</span><span>稚绪</span><span>生活碎</span>
+                        <span>Web 开发</span><span>折腾</span><span>人工智能</span><span>诗</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <audio id="bgm" src="../media/水仙十字.mp4" loop preload="auto"></audio>
+    <script src="../music.js"></script>
+    <script type="module" src="jingjiao.js"></script>
+</body>
+
+</html>
