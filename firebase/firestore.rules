@@ -9,7 +9,7 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.content is string
         && request.resource.data.content.size() > 0
-        && request.resource.data.content.size() <= 2000;
+        && request.resource.data.content.size() <= 500000;
 
       allow update, delete: if false;
     }

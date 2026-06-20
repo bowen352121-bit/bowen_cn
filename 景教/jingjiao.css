@@ -288,6 +288,324 @@ button {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
+/* Surmon 风格留言编辑器 */
+.gb-compose {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.gb-compose-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa;
+}
+
+.gb-compose-head-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.gb-count {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.gb-count strong {
+    color: #333;
+    font-weight: 700;
+}
+
+.gb-sort select {
+    appearance: none;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    color: #666;
+    font-size: 0.8125rem;
+    padding: 0.2rem 1.5rem 0.2rem 0.5rem;
+    border-radius: 2px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23999' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.4rem center;
+}
+
+.gb-compose-auth {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gb-login-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 2px;
+    background: #fff;
+    color: #555;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.gb-login-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.gb-login-btn:hover {
+    border-color: #ccc;
+    background: #f9f9f9;
+}
+
+.gb-logged-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: #666;
+}
+
+.gb-logged-bar img {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 2px;
+    object-fit: cover;
+}
+
+.gb-logout-link {
+    color: #999;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.gb-logout-link:hover {
+    color: var(--accent);
+}
+
+.gb-editor-wrap {
+    padding: 0.85rem 1rem 1rem;
+}
+
+.gb-meta-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.gb-meta-row input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #eee;
+    background: transparent;
+    padding: 0.45rem 0.25rem;
+    font-size: 0.8125rem;
+    color: #555;
+    outline: none;
+}
+
+.gb-meta-row input::placeholder {
+    color: #bbb;
+}
+
+.gb-meta-row input:focus {
+    border-bottom-color: #ccc;
+}
+
+.gb-editor-box {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: #f3f3f3;
+    border: 1px solid #ebebeb;
+    border-radius: 2px;
+    padding: 0.85rem 0.85rem 0.5rem;
+}
+
+.gb-editor-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 2px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #e8eef3;
+}
+
+.gb-editor-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.gb-editor-main textarea.hidden {
+    display: none;
+}
+
+.gb-editor-main textarea {
+    width: 100%;
+    min-height: 5.5rem;
+    border: none;
+    background: transparent;
+    resize: vertical;
+    font: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: #444;
+    outline: none;
+    padding: 0;
+}
+
+.gb-editor-main textarea::placeholder {
+    color: transparent;
+}
+
+.gb-preview {
+    min-height: 3rem;
+    padding: 0.5rem 0 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: #444;
+    border-top: 1px dashed #ddd;
+    margin-top: 0.5rem;
+}
+
+.gb-editor-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+}
+
+.gb-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.gb-tool-btn {
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+}
+
+.gb-tool-btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.gb-tool-btn:hover {
+    color: #555;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.gb-tool-btn.is-active {
+    color: var(--accent);
+    background: rgba(0, 149, 255, 0.08);
+}
+
+.gb-publish-btn {
+    padding: 0.35rem 1.1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #fff;
+    color: #666;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.gb-publish-btn:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.gb-publish-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.gb-emoji-panel {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0.15rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 2px;
+    max-height: 8rem;
+    overflow-y: auto;
+}
+
+.gb-emoji-panel button {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    padding: 0.15rem;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.gb-emoji-panel button:hover {
+    background: #f3f3f3;
+}
+
+.comment-body a {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+.comment-body a:hover {
+    color: var(--accent-hover);
+}
+
+.comment-inline-img,
+.comment-image {
+    display: block;
+    max-width: 100%;
+    max-height: 280px;
+    margin-top: 0.5rem;
+    border-radius: 2px;
+    border: 1px solid #eee;
+    object-fit: contain;
+}
+
+.comment-code {
+    margin: 0.5rem 0 0;
+    padding: 0.65rem 0.75rem;
+    background: #f6f8fa;
+    border: 1px solid #ebebeb;
+    border-radius: 2px;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.comment-code code {
+    font-family: ui-monospace, Consolas, monospace;
+    color: #333;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .compose-hint {
     color: var(--muted);
     font-size: 0.9375rem;
@@ -595,7 +913,6 @@ button {
     font-size: 0.9375rem;
     line-height: 1.75;
     color: #444;
-    white-space: pre-wrap;
     word-break: break-word;
 }
 
@@ -845,12 +1162,17 @@ button {
         margin-left: 1.5rem;
     }
 
-    .auth-actions {
-        flex-direction: column;
+    .gb-meta-row {
+        grid-template-columns: 1fr;
     }
 
-    .auth-btn {
-        justify-content: center;
+    .gb-compose-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .gb-compose-auth {
         width: 100%;
+        justify-content: flex-end;
     }
 }
