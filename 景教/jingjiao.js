@@ -2,12 +2,14 @@
  * 景教留言板 · Firebase v10 + Surmon 风格编辑器
  */
 import { firebaseConfig, isFirebaseReady } from "./firebase-config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   signOut,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -71,6 +73,8 @@ const els = {
   btnLoadMore: document.getElementById("btn-load-more"),
   commentsEmpty: document.getElementById("comments-empty"),
   sortSelect: document.getElementById("sort-select"),
+  imageLightbox: document.getElementById("image-lightbox"),
+  imageLightboxImg: document.querySelector("#image-lightbox .img-lightbox-img"),
 };
 
 function initFirebase() {
@@ -79,11 +83,25 @@ function initFirebase() {
     return false;
   }
 
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
+  try {
+    app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (err) {
+    console.error("Firebase 初始化失败：", err);
+    els.configBanner.classList.remove("hidden");
+    els.configBanner.textContent =
+      "Firebase 初始化失败，请强制刷新页面（Ctrl+F5）后重试：" + (err.message || "未知错误");
+    return false;
+  }
 
   els.configBanner.classList.add("hidden");
+
+  getRedirectResult(auth).catch((err) => {
+    if (err.code !== "auth/popup-closed-by-user") {
+      console.error("登录回调失败：", err);
+    }
+  });
 
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
@@ -135,16 +153,39 @@ function getProviderLabel(user) {
 
 async function loginWithProvider(name) {
   if (!auth) {
-    alert("Firebase 尚未初始化，请先填写 firebase-config.js。");
+    alert("Firebase 尚未初始化。请强制刷新页面（Ctrl+F5），若仍失败请查看页面顶部黄色提示。");
     return;
   }
   const label = name === "github" ? "GitHub" : "Google";
   try {
     await signInWithPopup(auth, getAuthProvider(name));
   } catch (err) {
-    if (err.code !== "auth/popup-closed-by-user") {
-      alert(`${label} 登录失败：` + (err.message || "未知错误"));
+    console.error(`${label} 登录失败：`, err);
+    if (err.code === "auth/popup-closed-by-user") return;
+
+    if (err.code === "auth/popup-blocked") {
+      try {
+        await signInWithRedirect(auth, getAuthProvider(name));
+        return;
+      } catch (redirectErr) {
+        console.error("跳转登录失败：", redirectErr);
+        alert(`${label} 登录失败：弹窗被拦截。请允许本站弹窗，或换用跳转登录。`);
+        return;
+      }
     }
+
+    let hint = "";
+    if (err.code === "auth/unauthorized-domain") {
+      hint =
+        "\n\n请在 Firebase 控制台 → Authentication → Settings → Authorized domains 中添加当前域名（例如 127.0.0.1 或 localhost）。";
+    } else if (err.code === "auth/operation-not-allowed") {
+      hint =
+        "\n\n请在 Firebase 控制台 → Authentication → Sign-in method 中启用 " + label + " 登录。";
+    }
+
+    alert(
+      `${label} 登录失败（${err.code || "error"}）：${err.message || "未知错误"}${hint}`
+    );
   }
 }
 
@@ -191,7 +232,102 @@ function updateAuthUI() {
 }
 
 function hasCommentContent() {
-  return els.commentInput.value.trim().length > 0;
+  return getEditorMarkdown().trim().length > 0;
+}
+
+function getEditorMarkdown() {
+  const el = els.commentInput;
+  let md = "";
+
+  function walk(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      md += node.textContent;
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const tag = node.tagName;
+    if (tag === "BR") {
+      md += "\n";
+      return;
+    }
+    if (tag === "IMG") {
+      const alt = node.alt || "图片";
+      const src = node.getAttribute("src") || "";
+      if (src) md += `![${alt}](${src})`;
+      return;
+    }
+    if (tag === "PRE") {
+      const code = node.querySelector("code");
+      md += "\n```\n" + (code?.textContent || node.textContent).trim() + "\n```\n";
+      return;
+    }
+    if (tag === "DIV" && node !== el) {
+      node.childNodes.forEach(walk);
+      if (node.nextSibling) md += "\n";
+      return;
+    }
+    node.childNodes.forEach(walk);
+  }
+
+  el.childNodes.forEach(walk);
+  return md;
+}
+
+function clearEditor() {
+  els.commentInput.replaceChildren();
+  updateSubmitState();
+}
+
+function setEditorMarkdown(md) {
+  mountRichContent(els.commentInput, md);
+  updateSubmitState();
+}
+
+function focusEditor() {
+  els.commentInput.focus();
+}
+
+function insertNodesAtCursor(nodes) {
+  const el = els.commentInput;
+  el.focus();
+  const sel = window.getSelection();
+  let range;
+
+  if (sel.rangeCount && el.contains(sel.anchorNode)) {
+    range = sel.getRangeAt(0);
+    range.deleteContents();
+  } else {
+    range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+  }
+
+  const frag = document.createDocumentFragment();
+  nodes.forEach((node) => frag.appendChild(node));
+  const last = nodes[nodes.length - 1];
+  range.insertNode(frag);
+  range.setStartAfter(last);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function insertAtCursor(text) {
+  insertNodesAtCursor([document.createTextNode(text)]);
+  updateSubmitState();
+  if (previewMode) updatePreview();
+}
+
+function insertImageAtCursor(url, alt = "图片") {
+  const img = document.createElement("img");
+  img.className = "comment-inline-img";
+  img.alt = alt;
+  img.src = url;
+  img.contentEditable = "false";
+  insertNodesAtCursor([img, document.createElement("br")]);
+  updateSubmitState();
+  if (previewMode) updatePreview();
 }
 
 function updateSubmitState() {
@@ -241,7 +377,7 @@ function insertImageByUrl() {
 
   const trimmed = url.trim();
   const alt = prompt("图片描述（可选）：", "图片") || "图片";
-  insertAtCursor(`\n![${alt}](${trimmed})\n`);
+  insertImageAtCursor(trimmed, alt);
 }
 
 function compressImageFile(file, maxWidth = 720, quality = 0.72) {
@@ -276,35 +412,57 @@ function compressImageFile(file, maxWidth = 720, quality = 0.72) {
 
 async function handlePasteImage(e) {
   const items = e.clipboardData?.items;
-  if (!items) return;
+  if (!items) return false;
 
   for (const item of items) {
     if (!item.type.startsWith("image/")) continue;
 
     e.preventDefault();
     const file = item.getAsFile();
-    if (!file) return;
+    if (!file) return true;
 
     try {
       const dataUrl = await compressImageFile(file);
       if (dataUrl.length > 500000) {
         alert("粘贴的图片太大，请改用图片链接，或将图片放到 jj_images 文件夹后填入路径。");
-        return;
+        return true;
       }
-      insertAtCursor(`\n![粘贴图片](${dataUrl})\n`);
-      updateSubmitState();
+      insertImageAtCursor(dataUrl, "粘贴图片");
     } catch (err) {
       alert("粘贴图片失败：" + (err.message || "未知错误"));
     }
-    return;
+    return true;
   }
+
+  return false;
+}
+
+async function handleEditorPaste(e) {
+  if (await handlePasteImage(e)) return;
+
+  const text = e.clipboardData?.getData("text/plain") || "";
+  if (!text.includes("![") || !text.includes("](")) return;
+
+  const parts = parseMarkdownImages(text);
+  const hasImage = parts.some((p) => p.type === "image");
+  if (!hasImage) return;
+
+  e.preventDefault();
+  parts.forEach((part) => {
+    if (part.type === "image") insertImageAtCursor(part.url, part.alt);
+    else if (part.value) insertAtCursor(part.value);
+  });
 }
 
 async function submitComment() {
   if (isSubmitting || !db || !currentUser) return;
 
-  const text = els.commentInput.value;
+  const text = getEditorMarkdown();
   if (!text.trim()) return;
+  if (text.length > 500000) {
+    alert("内容超过 500000 字符限制，请缩短文字或改用图片链接。");
+    return;
+  }
 
   isSubmitting = true;
   els.btnSubmit.disabled = true;
@@ -334,7 +492,7 @@ async function submitComment() {
       createdAt: serverTimestamp(),
     });
 
-    els.commentInput.value = "";
+    clearEditor();
     clearReply();
     setPreviewMode(false);
   } catch (err) {
@@ -351,28 +509,22 @@ async function submitComment() {
 }
 
 // ── 编辑器工具 ──────────────────────────────────────────
-function insertAtCursor(text) {
-  const ta = els.commentInput;
-  const start = ta.selectionStart;
-  const end = ta.selectionEnd;
-  const before = ta.value.slice(0, start);
-  const after = ta.value.slice(end);
-  ta.value = before + text + after;
-  const pos = start + text.length;
-  ta.setSelectionRange(pos, pos);
-  ta.focus();
-  updateSubmitState();
-  if (previewMode) updatePreview();
-}
-
 function wrapSelection(before, after = before) {
-  const ta = els.commentInput;
-  const start = ta.selectionStart;
-  const end = ta.selectionEnd;
-  const selected = ta.value.slice(start, end);
-  const wrapped = before + (selected || "代码") + after;
-  ta.value = ta.value.slice(0, start) + wrapped + ta.value.slice(end);
-  ta.focus();
+  const el = els.commentInput;
+  const sel = window.getSelection();
+  if (!sel.rangeCount || !el.contains(sel.anchorNode)) {
+    insertAtCursor(before + "代码" + after);
+    return;
+  }
+  const range = sel.getRangeAt(0);
+  const selected = range.toString() || "代码";
+  const textNode = document.createTextNode(before + selected + after);
+  range.deleteContents();
+  range.insertNode(textNode);
+  range.setStartAfter(textNode);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
   updateSubmitState();
   if (previewMode) updatePreview();
 }
@@ -380,14 +532,14 @@ function wrapSelection(before, after = before) {
 function insertLink() {
   const url = prompt("请输入链接地址：", "https://");
   if (!url) return;
-  const ta = els.commentInput;
-  const selected = ta.value.slice(ta.selectionStart, ta.selectionEnd) || "链接文字";
-  insertAtCursor(`[${selected}](${url.trim()})`);
+  const sel = window.getSelection();
+  const selected = sel.rangeCount ? sel.toString() : "";
+  insertAtCursor(`[${selected || "链接文字"}](${url.trim()})`);
 }
 
 function insertCode() {
-  const ta = els.commentInput;
-  const selected = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+  const sel = window.getSelection();
+  const selected = sel.rangeCount ? sel.toString() : "";
   if (selected) {
     wrapSelection("`", "`");
   } else {
@@ -396,6 +548,7 @@ function insertCode() {
 }
 
 function buildEmojiPanel() {
+  if (!els.emojiPanel) return;
   els.emojiPanel.replaceChildren();
   EMOJIS.forEach((emoji) => {
     const btn = document.createElement("button");
@@ -431,10 +584,10 @@ function togglePreview() {
 }
 
 function updatePreview() {
-  els.commentPreview.innerHTML = renderRichContent(els.commentInput.value);
+  mountRichContent(els.commentPreview, getEditorMarkdown());
 }
 
-// ── 富文本渲染 ──────────────────────────────────────────
+// ── 富文本渲染（DOM 挂载，支持超长 Base64）────────────────
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -443,43 +596,211 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
-function renderInlineMarkdown(text) {
-  let html = escapeHtml(text);
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => {
-    const safeUrl = escapeHtml(url);
-    const safeAlt = escapeHtml(alt);
-    return `<img class="comment-inline-img" src="${safeUrl}" alt="${safeAlt}" loading="lazy">`;
-  });
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
-    const safeUrl = escapeHtml(url);
-    return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
-  });
-  html = html.replace(/`([^`\n]+)`/g, "<code>$1</code>");
-  html = html.replace(/\n/g, "<br>");
-  return html;
+function isBase64Char(c) {
+  return (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || (c >= "0" && c <= "9") || c === "+" || c === "/" || c === "=";
 }
 
-function renderRichContent(raw) {
-  if (!raw) return "";
-  const parts = [];
-  const regex = /```([\s\S]*?)```/g;
-  let last = 0;
-  let m;
-  while ((m = regex.exec(raw)) !== null) {
-    if (m.index > last) parts.push({ type: "text", value: raw.slice(last, m.index) });
-    parts.push({ type: "code", value: m[1] });
-    last = m.index + m[0].length;
-  }
-  if (last < raw.length) parts.push({ type: "text", value: raw.slice(last) });
+/** 从 data:image 起扫描 Base64 结束位置 */
+function findDataUrlEnd(text, start) {
+  const marker = ";base64,";
+  const markerIdx = text.indexOf(marker, start);
+  if (markerIdx === -1) return -1;
+  let j = markerIdx + marker.length;
+  while (j < text.length && isBase64Char(text[j])) j += 1;
+  return j;
+}
 
-  return parts
-    .map((part) => {
-      if (part.type === "code") {
-        return `<pre class="comment-code"><code>${escapeHtml(part.value.trim())}</code></pre>`;
+function parseMarkdownImages(text) {
+  const parts = [];
+  let i = 0;
+
+  while (i < text.length) {
+    const start = text.indexOf("![", i);
+    if (start === -1) {
+      parts.push({ type: "text", value: text.slice(i) });
+      break;
+    }
+
+    if (start > i) parts.push({ type: "text", value: text.slice(i, start) });
+
+    const altClose = text.indexOf("](", start + 2);
+    if (altClose === -1) {
+      parts.push({ type: "text", value: text.slice(start) });
+      break;
+    }
+
+    const alt = text.slice(start + 2, altClose);
+    const urlStart = altClose + 2;
+
+    if (text.startsWith("data:", urlStart)) {
+      const end = findDataUrlEnd(text, urlStart);
+      if (end > urlStart) {
+        parts.push({ type: "image", alt, url: text.slice(urlStart, end) });
+        i = end;
+        if (text[i] === ")") i += 1;
+        continue;
       }
-      return renderInlineMarkdown(part.value);
-    })
-    .join("");
+    }
+
+    const urlEnd = text.indexOf(")", urlStart);
+    if (urlEnd === -1) {
+      parts.push({ type: "text", value: text.slice(start) });
+      break;
+    }
+
+    parts.push({ type: "image", alt, url: text.slice(urlStart, urlEnd) });
+    i = urlEnd + 1;
+  }
+
+  return parts;
+}
+
+function parseStandaloneDataImages(text) {
+  const parts = [];
+  let i = 0;
+
+  while (i < text.length) {
+    const idx = text.indexOf("data:image/", i);
+    if (idx === -1) {
+      parts.push({ type: "text", value: text.slice(i) });
+      break;
+    }
+
+    if (idx > i) parts.push({ type: "text", value: text.slice(i, idx) });
+
+    const end = findDataUrlEnd(text, idx);
+    if (end <= idx) {
+      parts.push({ type: "text", value: text.slice(idx, idx + 1) });
+      i = idx + 1;
+      continue;
+    }
+
+    parts.push({ type: "image", alt: "图片", url: text.slice(idx, end) });
+    i = end;
+  }
+
+  return parts;
+}
+
+function appendTextWithBreaks(container, text) {
+  if (!text) return;
+  const lines = text.split("\n");
+  lines.forEach((line, idx) => {
+    if (line) container.appendChild(document.createTextNode(line));
+    if (idx < lines.length - 1) container.appendChild(document.createElement("br"));
+  });
+}
+
+function appendFormattedText(container, text) {
+  if (!text) return;
+
+  const parts = parseStandaloneDataImages(text);
+  parts.forEach((part) => {
+    if (part.type === "image") {
+      const img = document.createElement("img");
+      img.className = "comment-inline-img";
+      img.alt = part.alt || "图片";
+      img.loading = "lazy";
+      img.src = part.url;
+      container.appendChild(img);
+    } else {
+      appendTextWithBreaks(container, part.value);
+    }
+  });
+}
+
+function mountImage(container, url, alt) {
+  const img = document.createElement("img");
+  img.className = "comment-inline-img";
+  img.alt = alt || "图片";
+  img.loading = "lazy";
+  img.src = url;
+  img.onerror = () => img.classList.add("is-broken");
+  container.appendChild(img);
+}
+
+function openImageLightbox(src, alt) {
+  if (!els.imageLightbox || !els.imageLightboxImg || !src) return;
+  els.imageLightboxImg.src = src;
+  els.imageLightboxImg.alt = alt || "大图";
+  els.imageLightbox.classList.remove("hidden");
+  els.imageLightbox.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function closeImageLightbox() {
+  if (!els.imageLightbox) return;
+  els.imageLightbox.classList.add("hidden");
+  els.imageLightbox.hidden = true;
+  if (els.imageLightboxImg) els.imageLightboxImg.src = "";
+  document.body.style.overflow = "";
+}
+
+function bindLightboxEvents() {
+  const closeBtn = els.imageLightbox?.querySelector(".img-lightbox-close");
+  closeBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeImageLightbox();
+  });
+
+  els.imageLightbox?.addEventListener("click", (e) => {
+    if (e.target === els.imageLightbox) closeImageLightbox();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && els.imageLightbox && !els.imageLightbox.classList.contains("hidden")) {
+      closeImageLightbox();
+    }
+  });
+}
+
+function mountRichContent(container, raw) {
+  container.replaceChildren();
+  if (!raw) return;
+
+  let i = 0;
+  while (i < raw.length) {
+    const codeStart = raw.indexOf("```", i);
+    if (codeStart === -1) {
+      mountInlineSegments(container, raw.slice(i));
+      break;
+    }
+
+    if (codeStart > i) mountInlineSegments(container, raw.slice(i, codeStart));
+
+    const codeEnd = raw.indexOf("```", codeStart + 3);
+    if (codeEnd === -1) {
+      mountInlineSegments(container, raw.slice(codeStart));
+      break;
+    }
+
+    const pre = document.createElement("pre");
+    pre.className = "comment-code";
+    const code = document.createElement("code");
+    code.textContent = raw.slice(codeStart + 3, codeEnd).trim();
+    pre.appendChild(code);
+    container.appendChild(pre);
+    i = codeEnd + 3;
+  }
+}
+
+function mountInlineSegments(container, text) {
+  if (!text) return;
+
+  parseMarkdownImages(text).forEach((part) => {
+    if (part.type === "image") {
+      mountImage(container, part.url, part.alt);
+    } else {
+      appendFormattedText(container, part.value);
+    }
+  });
+}
+
+/** 兼容旧调用：返回 HTML 字符串（预览等） */
+function renderRichContent(raw) {
+  const wrap = document.createElement("div");
+  mountRichContent(wrap, raw);
+  return wrap.innerHTML;
 }
 
 // ── 评论列表渲染 ────────────────────────────────────────
@@ -517,24 +838,54 @@ function formatTime(iso) {
 function renderCommentItem(comment, isReply = false) {
   const el = document.createElement("article");
   el.className = "comment-item";
-  el.innerHTML = `
-    <div class="comment-head">
-      <img class="comment-avatar" src="${escapeHtml(comment.avatar)}" alt=""
-        loading="lazy" onerror="this.src='../jj_images/guest-default.svg'">
-      <div class="comment-meta">
-        <div class="comment-author-row">
-          <span class="comment-author">${escapeHtml(comment.author)}</span>
-          ${comment.email ? `<span class="comment-loc">${escapeHtml(comment.email)}</span>` : ""}
-          <span class="comment-id">#${escapeHtml(comment.id.slice(0, 6))}</span>
-        </div>
-        <div class="comment-body">${renderRichContent(comment.content)}</div>
-        <div class="comment-foot">
-          <span>${formatTime(comment.createdAt)}</span>
-          ${!isReply ? `<button type="button" class="btn-reply" data-id="${escapeHtml(comment.id)}" data-author="${escapeHtml(comment.author)}">回复</button>` : ""}
-        </div>
-      </div>
-    </div>
+
+  const head = document.createElement("div");
+  head.className = "comment-head";
+
+  const avatar = document.createElement("img");
+  avatar.className = "comment-avatar";
+  avatar.src = comment.avatar;
+  avatar.alt = "";
+  avatar.loading = "lazy";
+  avatar.onerror = () => { avatar.src = "../jj_images/guest-default.svg"; };
+
+  const meta = document.createElement("div");
+  meta.className = "comment-meta";
+
+  const authorRow = document.createElement("div");
+  authorRow.className = "comment-author-row";
+  authorRow.innerHTML = `
+    <span class="comment-author">${escapeHtml(comment.author)}</span>
+    ${comment.email ? `<span class="comment-loc">${escapeHtml(comment.email)}</span>` : ""}
+    <span class="comment-id">#${escapeHtml(comment.id.slice(0, 6))}</span>
   `;
+
+  const body = document.createElement("div");
+  body.className = "comment-body";
+  mountRichContent(body, comment.content);
+
+  const foot = document.createElement("div");
+  foot.className = "comment-foot";
+  const time = document.createElement("span");
+  time.textContent = formatTime(comment.createdAt);
+  foot.appendChild(time);
+
+  if (!isReply) {
+    const replyBtn = document.createElement("button");
+    replyBtn.type = "button";
+    replyBtn.className = "btn-reply";
+    replyBtn.dataset.id = comment.id;
+    replyBtn.dataset.author = comment.author;
+    replyBtn.textContent = "回复";
+    foot.appendChild(replyBtn);
+  }
+
+  meta.appendChild(authorRow);
+  meta.appendChild(body);
+  meta.appendChild(foot);
+  head.appendChild(avatar);
+  head.appendChild(meta);
+  el.appendChild(head);
 
   if (!isReply) {
     const replies = getReplies(comment.id);
@@ -575,20 +926,25 @@ function clearReply() {
   els.replyIndicator.classList.add("hidden");
 }
 
-function bindEvents() {
-  els.btnLoginGoogle.addEventListener("click", () => loginWithProvider("google"));
-  els.btnLoginGithub.addEventListener("click", () => loginWithProvider("github"));
-  els.btnLogout.addEventListener("click", logout);
-  els.btnCancelReply.addEventListener("click", clearReply);
+function bindAuthEvents() {
+  els.btnLoginGoogle?.addEventListener("click", () => loginWithProvider("google"));
+  els.btnLoginGithub?.addEventListener("click", () => loginWithProvider("github"));
+  els.btnLogout?.addEventListener("click", logout);
+}
+
+function bindEditorEvents() {
+  if (!els.commentInput) return;
+
+  els.btnCancelReply?.addEventListener("click", clearReply);
 
   els.commentInput.addEventListener("input", () => {
     updateSubmitState();
     if (previewMode) updatePreview();
   });
 
-  els.commentInput.addEventListener("paste", handlePasteImage);
+  els.commentInput.addEventListener("paste", handleEditorPaste);
 
-  els.btnSubmit.addEventListener("click", submitComment);
+  els.btnSubmit?.addEventListener("click", submitComment);
 
   els.commentInput.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -597,16 +953,14 @@ function bindEvents() {
     }
   });
 
-  els.btnToolImage.addEventListener("click", insertImageByUrl);
-
-  els.btnToolEmoji.addEventListener("click", (e) => {
+  els.btnToolImage?.addEventListener("click", insertImageByUrl);
+  els.btnToolEmoji?.addEventListener("click", (e) => {
     e.stopPropagation();
     toggleEmojiPanel();
   });
-
-  els.btnToolLink.addEventListener("click", insertLink);
-  els.btnToolCode.addEventListener("click", insertCode);
-  els.btnToolPreview.addEventListener("click", togglePreview);
+  els.btnToolLink?.addEventListener("click", insertLink);
+  els.btnToolCode?.addEventListener("click", insertCode);
+  els.btnToolPreview?.addEventListener("click", togglePreview);
 
   els.sortSelect?.addEventListener("change", (e) => {
     currentSort = e.target.value;
@@ -614,12 +968,19 @@ function bindEvents() {
     renderComments();
   });
 
-  els.btnLoadMore.addEventListener("click", () => {
+  els.btnLoadMore?.addEventListener("click", () => {
     displayedCount += PAGE_SIZE;
     renderComments();
   });
 
-  els.commentsList.addEventListener("click", (e) => {
+  els.commentsList?.addEventListener("click", (e) => {
+    const zoomImg = e.target.closest(".comment-body .comment-inline-img");
+    if (zoomImg && !zoomImg.classList.contains("is-broken")) {
+      e.preventDefault();
+      openImageLightbox(zoomImg.src, zoomImg.alt);
+      return;
+    }
+
     const btn = e.target.closest(".btn-reply");
     if (!btn) return;
     if (!currentUser) {
@@ -630,13 +991,23 @@ function bindEvents() {
   });
 
   document.addEventListener("click", (e) => {
-    if (!els.emojiPanel.contains(e.target) && e.target !== els.btnToolEmoji) {
-      els.emojiPanel.classList.add("hidden");
+    if (!els.emojiPanel?.contains(e.target) && e.target !== els.btnToolEmoji) {
+      els.emojiPanel?.classList.add("hidden");
     }
   });
 }
 
-buildEmojiPanel();
-bindEvents();
-initFirebase();
-updateAuthUI();
+function boot() {
+  initFirebase();
+  bindAuthEvents();
+  bindLightboxEvents();
+  try {
+    buildEmojiPanel();
+    bindEditorEvents();
+  } catch (err) {
+    console.error("编辑器初始化失败（登录仍可用）：", err);
+  }
+  updateAuthUI();
+}
+
+boot();

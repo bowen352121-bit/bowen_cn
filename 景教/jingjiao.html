@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>景教 · Guestbook</title>
+    <link rel="icon" href="../jj_images/guest-default.svg" type="image/svg+xml">
     <link rel="stylesheet" href="jingjiao.css">
 </head>
 
@@ -92,7 +93,7 @@
                         <div class="gb-editor-box">
                             <img id="user-avatar" class="gb-editor-avatar" src="../jj_images/guest-default.svg" alt="">
                             <div class="gb-editor-main">
-                                <textarea id="comment-input" maxlength="500000"></textarea>
+                                <div id="comment-input" class="gb-editor-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="写下留言…支持粘贴图片"></div>
                                 <div id="comment-preview" class="gb-preview hidden" aria-label="预览"></div>
                                 <div class="gb-editor-foot">
                                     <div class="gb-toolbar">
@@ -178,6 +179,12 @@
     </main>
 
     <audio id="bgm" src="../media/水仙十字.mp4" loop preload="auto"></audio>
+
+    <div id="image-lightbox" class="img-lightbox hidden" role="dialog" aria-modal="true" aria-label="查看大图" hidden>
+        <button type="button" class="img-lightbox-close" aria-label="关闭">&times;</button>
+        <img class="img-lightbox-img" alt="">
+    </div>
+
     <script src="../music.js"></script>
     <script type="module" src="jingjiao.js"></script>
 </body>

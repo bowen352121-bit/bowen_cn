@@ -449,6 +449,41 @@ button {
     flex-direction: column;
 }
 
+.gb-editor-main .gb-editor-input.hidden {
+    display: none;
+}
+
+.gb-editor-main .gb-editor-input {
+    width: 100%;
+    min-height: 5.5rem;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: #444;
+    outline: none;
+    padding: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.gb-editor-input:empty::before {
+    content: attr(data-placeholder);
+    color: #bbb;
+    pointer-events: none;
+}
+
+.gb-editor-input .comment-inline-img {
+    max-width: 100%;
+    max-height: 280px;
+    display: block;
+    margin: 0.35rem 0;
+    border-radius: 2px;
+    object-fit: contain;
+}
+
 .gb-editor-main textarea.hidden {
     display: none;
 }
@@ -479,6 +514,10 @@ button {
     color: #444;
     border-top: 1px dashed #ddd;
     margin-top: 0.5rem;
+}
+
+.gb-preview .comment-inline-img {
+    margin-top: 0.35rem;
 }
 
 .gb-editor-foot {
@@ -581,11 +620,66 @@ button {
 .comment-image {
     display: block;
     max-width: 100%;
-    max-height: 280px;
+    max-height: 420px;
     margin-top: 0.5rem;
     border-radius: 2px;
     border: 1px solid #eee;
     object-fit: contain;
+    background: #f5f5f5;
+}
+
+.comment-inline-img.is-broken {
+    display: none;
+}
+
+.comment-body .comment-inline-img {
+    cursor: zoom-in;
+}
+
+/* 评论图片灯箱 */
+.img-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.82);
+    box-sizing: border-box;
+}
+
+.img-lightbox.hidden {
+    display: none;
+}
+
+.img-lightbox-img {
+    max-width: min(96vw, 1200px);
+    max-height: 92vh;
+    object-fit: contain;
+    border-radius: 2px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+    background: #111;
+}
+
+.img-lightbox-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.85rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.img-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.22);
 }
 
 .comment-code {
