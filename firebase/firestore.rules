@@ -11,7 +11,11 @@ service cloud.firestore {
         && request.resource.data.content.size() > 0
         && request.resource.data.content.size() <= 500000;
 
-      allow update, delete: if false;
+      allow update: if false;
+
+      // 仅站长可删评（邮箱须与 景教/firebase-config.js 中 guestbookAdmin 一致）
+      allow delete: if request.auth != null
+        && request.auth.token.email == 'bowen352121@gmail.com';
     }
   }
 }

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>咖啡馆 · 绝区零社区</title>
+    <link rel="icon" href="../jj_images/guest-default.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="kafei.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <a class="brand" href="../bowen.html" aria-label="返回首页">
+                    <span class="brand-text">&lt;/&gt; BOWEN</span>
+                </a>
+                <span class="site-slogan">孩子们骑士梦怎会如此......</span>
+            </div>
+            <div class="header-right">
+                <img src="../images/nuomu1压缩2.gif" alt="头像" class="header-avatar">
+                <button id="music-toggle" class="music-toggle" type="button" title="播放/暂停音乐">
+                    <img id="music-icon" src="../images/音乐打开键.jpg" alt="Music">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <nav class="channel-nav" aria-label="频道导航">
+                <a class="home-link" href="../bowen.html"><span>⌂</span>明殿</a>
+                <a href="../薇薇安/wwa.html"><span>&lt;&gt;</span>薇薇安</a>
+                <a href="../窄门/zm.html"><span>✦</span>窄门</a>
+                <a href="../职事/zs.html"><span>◉</span>职事↗</a>
+                <a href="../大千界/daqianjie.html"><span>◈</span>大千界</a>
+                <a href="../覺有情/jueyouqing.html"><span>✺</span>覺有情</a>
+                <a class="active" href="#"><span>☕</span>咖啡馆</a>
+                <a href="../景教/jingjiao.html"><span>▣</span>景教</a>
+                <a href="#"><span>♥</span>隨喜</a>
+            </nav>
+
+            <div class="hero-banner">
+                <img class="hero-bg" src="../images/ZZZ.jpg" alt="咖啡馆横幅">
+                <div class="hero-copy">
+                    <h1>咖啡馆</h1>
+                    <p>绝区零社区 · 闲聊灌水与交流</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cafe-board" aria-label="咖啡馆版块">
+            <div class="cafe-board-inner">
+                <header class="cafe-board-head">
+                    <div class="cafe-board-title-row">
+                        <h2 class="cafe-board-title">咖啡馆</h2>
+                        <span class="cafe-board-sub">绝区零社区</span>
+                    </div>
+                    <div class="cafe-board-tools">
+                        <div class="cafe-sort" role="tablist" aria-label="排序">
+                            <button type="button" class="cafe-sort-btn is-active" data-sort="newest" role="tab">最新发帖</button>
+                            <button type="button" class="cafe-sort-btn" data-sort="reply" role="tab">最新回复</button>
+                            <button type="button" class="cafe-sort-btn" data-sort="hot" role="tab">热门</button>
+                        </div>
+                        <button type="button" class="cafe-publish-btn" id="btn-publish-hint">发布帖子</button>
+                    </div>
+                </header>
+
+                <div class="cafe-layout">
+                    <div class="cafe-main">
+                        <div id="cafe-feed" class="cafe-feed" aria-live="polite"></div>
+                        <button type="button" id="btn-load-more" class="cafe-load-more hidden">点击加载更多</button>
+                    </div>
+
+                    <aside class="cafe-aside" aria-label="侧边栏">
+                        <div class="cafe-widget">
+                            <div class="cafe-widget-head">
+                                <h3>官方资讯</h3>
+                                <a class="cafe-widget-more" href="https://www.miyoushe.com/zzz" target="_blank" rel="noopener">更多</a>
+                            </div>
+                            <ul class="cafe-news-list">
+                                <li><a href="https://www.miyoushe.com/zzz/article/76142094" target="_blank" rel="noopener"><span class="tag tag-act">活动</span>启程 罗斯凯利法！分享照片赢周边</a></li>
+                                <li><a href="https://www.miyoushe.com/zzz" target="_blank" rel="noopener"><span class="tag tag-info">资讯</span>代理人档案丨蕾米埃尔</a></li>
+                                <li><a href="https://www.miyoushe.com/zzz" target="_blank" rel="noopener"><span class="tag tag-info">资讯</span>代理人档案丨希格莉德</a></li>
+                                <li><a href="https://www.miyoushe.com/zzz" target="_blank" rel="noopener"><span class="tag tag-note">公告</span>《绝区零》账号封禁公示</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="cafe-widget">
+                            <div class="cafe-widget-head">
+                                <h3>社区地图</h3>
+                            </div>
+                            <div class="cafe-map-tags">
+                                <a class="cafe-map-tag is-active" href="kafei.html">咖啡馆</a>
+                                <a class="cafe-map-tag" href="https://www.miyoushe.com/zzz/home/57?type=2" target="_blank" rel="noopener">攻略</a>
+                                <a class="cafe-map-tag" href="https://www.miyoushe.com/zzz" target="_blank" rel="noopener">官方</a>
+                                <a class="cafe-map-tag" href="https://www.miyoushe.com/zzz/home/57?type=2" target="_blank" rel="noopener">同人图</a>
+                                <a class="cafe-map-tag" href="https://www.miyoushe.com/zzz/home/57?type=2" target="_blank" rel="noopener">COS</a>
+                            </div>
+                        </div>
+
+                        <div class="cafe-widget cafe-widget-ref">
+                            <p>版面参考</p>
+                            <a href="https://www.miyoushe.com/zzz/home/57?type=2" target="_blank" rel="noopener">米游社 · 咖啡馆版块</a>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="cafe-footer">
+        <p>BOWEN 个人站 · 咖啡馆频道 · 内容灵感来自米游社绝区零社区</p>
+    </footer>
+
+    <audio id="bgm" src="../media/水仙十字.mp4" loop preload="auto"></audio>
+    <script src="../music.js"></script>
+    <script src="kafei.js"></script>
+</body>
+
+</html>

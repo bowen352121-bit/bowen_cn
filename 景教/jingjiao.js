@@ -1,7 +1,7 @@
 /**
  * 景教留言板 · Firebase v10 + Surmon 风格编辑器
  */
-import { firebaseConfig, isFirebaseReady } from "./firebase-config.js";
+import { firebaseConfig, isFirebaseReady, guestbookAdmin } from "./firebase-config.js";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth,
@@ -17,6 +17,8 @@ import {
   getFirestore,
   collection,
   addDoc,
+  doc,
+  writeBatch,
   query,
   orderBy,
   onSnapshot,
@@ -25,6 +27,7 @@ import {
 
 const FIRESTORE_COLLECTION = "guestbook_comments";
 const PAGE_SIZE = 15;
+const DEFAULT_AVATAR = "../images/nuomu1压缩2.gif";
 
 const EMOJIS = [
   "😀", "😁", "😂", "🤣", "😊", "😍", "🥰", "😘", "😎", "🤔",
@@ -43,6 +46,7 @@ let replyTarget = null;
 let previewMode = false;
 let isSubmitting = false;
 let unsubscribe = null;
+const profileMetaByUid = {};
 
 const els = {
   configBanner: document.getElementById("config-banner"),
@@ -97,14 +101,19 @@ function initFirebase() {
 
   els.configBanner.classList.add("hidden");
 
-  getRedirectResult(auth).catch((err) => {
-    if (err.code !== "auth/popup-closed-by-user") {
-      console.error("登录回调失败：", err);
-    }
-  });
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result?.user) cacheProfileMeta(result);
+    })
+    .catch((err) => {
+      if (err.code !== "auth/popup-closed-by-user") {
+        console.error("登录回调失败：", err);
+      }
+    });
 
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
+    if (user) getProfileMetaForUser(user);
     updateAuthUI();
 
     if (user) {
@@ -158,7 +167,8 @@ async function loginWithProvider(name) {
   }
   const label = name === "github" ? "GitHub" : "Google";
   try {
-    await signInWithPopup(auth, getAuthProvider(name));
+    const result = await signInWithPopup(auth, getAuthProvider(name));
+    cacheProfileMeta(result);
   } catch (err) {
     console.error(`${label} 登录失败：`, err);
     if (err.code === "auth/popup-closed-by-user") return;
@@ -196,6 +206,259 @@ async function logout() {
   setPreviewMode(false);
 }
 
+function getAuthEmail(user) {
+  if (!user) return "";
+  if (user.email) return user.email.toLowerCase();
+  for (const p of user.providerData || []) {
+    if (p.email) return p.email.toLowerCase();
+  }
+  return "";
+}
+
+function normalizeProfileUrl(url) {
+  const trimmed = String(url || "").trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function isUglyProfileUrl(url) {
+  if (!url) return true;
+  if (url.includes("profiles.google.com")) return true;
+  try {
+    const path = new URL(url).pathname;
+    if (/\/\d{12,}/.test(path)) return true;
+  } catch {
+    return true;
+  }
+  return false;
+}
+
+function extractProfileMetaFromSignIn(result) {
+  const empty = { url: "", label: "" };
+  const user = result?.user;
+  const info = result?.additionalUserInfo;
+  const profile = info?.profile;
+  if (!user || !profile) return empty;
+
+  const providerId = info?.providerId || user.providerData?.[0]?.providerId || "";
+
+  if (providerId.includes("github")) {
+    const login = String(profile.login || "").trim();
+    if (!login) return empty;
+    return {
+      url: profile.html_url || `https://github.com/${login}`,
+      label: `github.com/${login}`,
+    };
+  }
+
+  if (providerId.includes("google")) {
+    const link = normalizeProfileUrl(profile.link || profile.url);
+    if (link && !isUglyProfileUrl(link)) {
+      return { url: link, label: formatProfileLabel(link) };
+    }
+    return empty;
+  }
+
+  return empty;
+}
+
+function cacheProfileMeta(signInResult) {
+  if (!signInResult?.user) return;
+  const meta = extractProfileMetaFromSignIn(signInResult);
+  if (!meta.url || !meta.label) return;
+  profileMetaByUid[signInResult.user.uid] = meta;
+  try {
+    localStorage.setItem(`gb_profile_${signInResult.user.uid}`, JSON.stringify(meta));
+  } catch {
+    /* ignore */
+  }
+}
+
+function inferProfileMetaFromUser(user) {
+  for (const p of user.providerData || []) {
+    if (p.providerId === "github.com") {
+      const login = p.displayName?.trim();
+      if (login && /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/.test(login)) {
+        return {
+          url: `https://github.com/${login}`,
+          label: `github.com/${login}`,
+        };
+      }
+    }
+  }
+  return { url: "", label: "" };
+}
+
+function readCachedProfileMeta(uid) {
+  try {
+    const raw = localStorage.getItem(`gb_profile_${uid}`);
+    if (!raw) return null;
+    if (raw.startsWith("{")) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.url && parsed?.label && !isUglyProfileUrl(parsed.url)) return parsed;
+      return null;
+    }
+    if (isUglyProfileUrl(raw)) return null;
+    return { url: raw, label: formatProfileLabel(raw) };
+  } catch {
+    return null;
+  }
+}
+
+function getProfileMetaForUser(user) {
+  if (!user) return { url: "", label: "" };
+  if (profileMetaByUid[user.uid]?.url) return profileMetaByUid[user.uid];
+  const cached = readCachedProfileMeta(user.uid);
+  if (cached) {
+    profileMetaByUid[user.uid] = cached;
+    return cached;
+  }
+  const inferred = inferProfileMetaFromUser(user);
+  if (inferred.url) profileMetaByUid[user.uid] = inferred;
+  return inferred;
+}
+
+function getCommentProfileMeta(comment) {
+  let url = comment.profileUrl || comment.website || "";
+  let label = comment.profileLabel || "";
+
+  if (url && isUglyProfileUrl(url)) {
+    url = "";
+    label = "";
+  }
+
+  if (url && !label) label = formatProfileLabel(url);
+  if (label && /\d{12,}/.test(label)) {
+    url = "";
+    label = "";
+  }
+
+  return { url, label };
+}
+
+function formatProfileLabel(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "github.com" && u.pathname.length > 1) {
+      return host + u.pathname.replace(/\/$/, "");
+    }
+    const path = u.pathname === "/" ? "" : u.pathname.replace(/\/$/, "");
+    return host + path;
+  } catch {
+    return url;
+  }
+}
+
+function buildAuthorProfileHtml(comment) {
+  const { url, label } = getCommentProfileMeta(comment);
+  if (!url || !label) return "";
+  return `<a class="comment-loc" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+}
+
+/** 常见国家/地区中文名（IP 接口返回英文时转换） */
+const COUNTRY_ZH = {
+  CN: "中国", HK: "香港", MO: "澳门", TW: "台湾",
+  JP: "日本", SG: "新加坡", US: "美国", GB: "英国", UK: "英国",
+  KR: "韩国", DE: "德国", FR: "法国", CA: "加拿大", AU: "澳大利亚",
+  RU: "俄罗斯", IN: "印度", TH: "泰国", MY: "马来西亚", VN: "越南",
+  PH: "菲律宾", ID: "印度尼西亚", NL: "荷兰", SE: "瑞典", CH: "瑞士",
+  IT: "意大利", ES: "西班牙", BR: "巴西", MX: "墨西哥", NZ: "新西兰",
+};
+
+function localizeCountryName(code, englishName) {
+  const key = String(code || "").toUpperCase();
+  if (COUNTRY_ZH[key]) return COUNTRY_ZH[key];
+  return englishName || key;
+}
+
+function detectBrowser() {
+  const ua = navigator.userAgent;
+  if (ua.includes("Edg/")) return "edge";
+  if (ua.includes("Firefox/")) return "firefox";
+  if (ua.includes("Chrome/")) return "chrome";
+  if (ua.includes("Safari/") && !ua.includes("Chrome")) return "safari";
+  return "other";
+}
+
+function buildBrowserIconHtml(browser) {
+  const icons = {
+    chrome: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#4285F4"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>',
+    edge: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#0078D7" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17V7h2v7.17l3.59-3.59L16 13l-5 5z"/></svg>',
+    firefox: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#FF7139"/></svg>',
+    safari: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#0fb5ee"/></svg>',
+    other: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#bbb"/></svg>',
+  };
+  const key = browser && icons[browser] ? browser : "other";
+  return `<span class="comment-browser comment-browser--${key}" title="浏览器">${icons[key]}</span>`;
+}
+
+function buildLocationHtml(comment) {
+  const code = comment.geoCountryCode;
+  const country = comment.geoCountry;
+  const city = comment.geoCity;
+  if (code) {
+    const label = city
+      ? `${code} ${country} · ${city}`
+      : `${code} ${country}`;
+    return `<span class="comment-geo">${escapeHtml(label)}</span>`;
+  }
+  if (comment.location) {
+    return `<span class="comment-geo">${escapeHtml(comment.location)}</span>`;
+  }
+  return "";
+}
+
+async function fetchVisitorGeo() {
+  const parsers = [
+    {
+      url: "https://ipwho.is/",
+      parse: (d) => {
+        if (!d?.success) throw new Error("geo fail");
+        return {
+          countryCode: d.country_code || "",
+          countryName: d.country || "",
+          city: d.city || "",
+        };
+      },
+    },
+    {
+      url: "https://ipapi.co/json/",
+      parse: (d) => ({
+        countryCode: d.country_code || "",
+        countryName: d.country_name || "",
+        city: d.city || "",
+      }),
+    },
+  ];
+
+  for (const { url, parse } of parsers) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(4500) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const geo = parse(data);
+      if (!geo.countryCode) continue;
+      return {
+        geoCountryCode: geo.countryCode.toUpperCase(),
+        geoCountry: localizeCountryName(geo.countryCode, geo.countryName),
+        geoCity: geo.city || "",
+      };
+    } catch {
+      /* try next */
+    }
+  }
+  return { geoCountryCode: "", geoCountry: "", geoCity: "" };
+}
+
+function isAdmin() {
+  if (!currentUser) return false;
+  if (guestbookAdmin.uids?.includes(currentUser.uid)) return true;
+  const email = getAuthEmail(currentUser);
+  return guestbookAdmin.emails?.some((e) => e.toLowerCase() === email);
+}
+
 function getDisplayName(user) {
   if (!user) return "用户";
   if (user.displayName?.trim()) return user.displayName.trim();
@@ -211,9 +474,8 @@ function getDisplayName(user) {
 function syncUserDisplay() {
   if (!currentUser) return;
   const name = getDisplayName(currentUser);
-  const avatar = currentUser.photoURL || "../jj_images/guest-default.svg";
-  els.userAvatar.src = avatar;
-  els.userAvatarMini.src = avatar;
+  els.userAvatar.src = DEFAULT_AVATAR;
+  els.userAvatarMini.src = DEFAULT_AVATAR;
   els.userNameMini.textContent = name;
 }
 
@@ -229,6 +491,7 @@ function updateAuthUI() {
     els.composePanel.classList.add("hidden");
   }
   updateSubmitState();
+  if (allComments.length) renderComments();
 }
 
 function hasCommentContent() {
@@ -353,9 +616,14 @@ function subscribeComments() {
           parentId: data.parentId || null,
           uid: data.uid || "",
           author: data.author || "访客",
-          email: data.email || "",
-          website: data.website || "",
-          avatar: data.avatar || "../jj_images/guest-default.svg",
+          profileUrl: data.profileUrl || data.website || "",
+          profileLabel: data.profileLabel || "",
+          geoCountryCode: data.geoCountryCode || "",
+          geoCountry: data.geoCountry || "",
+          geoCity: data.geoCity || "",
+          location: data.location || "",
+          browser: data.browser || "",
+          avatar: data.avatar || DEFAULT_AVATAR,
           content: data.content || "",
           replyTo: data.replyTo || "",
           createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
@@ -480,11 +748,19 @@ async function submitComment() {
       replyTo = replyTarget.author;
     }
 
+    const profileMeta = getProfileMetaForUser(currentUser);
+    const geo = await fetchVisitorGeo();
+
     await addDoc(collection(db, FIRESTORE_COLLECTION), {
       uid: currentUser.uid,
       author: getDisplayName(currentUser),
-      email: currentUser.email || "",
-      avatar: currentUser.photoURL || "",
+      profileUrl: profileMeta.url,
+      profileLabel: profileMeta.label,
+      geoCountryCode: geo.geoCountryCode,
+      geoCountry: geo.geoCountry,
+      geoCity: geo.geoCity,
+      browser: detectBrowser(),
+      avatar: DEFAULT_AVATAR,
       provider: currentUser.providerData?.[0]?.providerId || "",
       content,
       parentId,
@@ -847,7 +1123,7 @@ function renderCommentItem(comment, isReply = false) {
   avatar.src = comment.avatar;
   avatar.alt = "";
   avatar.loading = "lazy";
-  avatar.onerror = () => { avatar.src = "../jj_images/guest-default.svg"; };
+  avatar.onerror = () => { avatar.src = DEFAULT_AVATAR; };
 
   const meta = document.createElement("div");
   meta.className = "comment-meta";
@@ -856,7 +1132,9 @@ function renderCommentItem(comment, isReply = false) {
   authorRow.className = "comment-author-row";
   authorRow.innerHTML = `
     <span class="comment-author">${escapeHtml(comment.author)}</span>
-    ${comment.email ? `<span class="comment-loc">${escapeHtml(comment.email)}</span>` : ""}
+    ${buildAuthorProfileHtml(comment)}
+    ${buildBrowserIconHtml(comment.browser)}
+    ${buildLocationHtml(comment)}
     <span class="comment-id">#${escapeHtml(comment.id.slice(0, 6))}</span>
   `;
 
@@ -878,6 +1156,16 @@ function renderCommentItem(comment, isReply = false) {
     replyBtn.dataset.author = comment.author;
     replyBtn.textContent = "回复";
     foot.appendChild(replyBtn);
+  }
+
+  if (isAdmin()) {
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn-delete";
+    deleteBtn.dataset.id = comment.id;
+    deleteBtn.dataset.isRoot = isReply ? "0" : "1";
+    deleteBtn.textContent = "删除";
+    foot.appendChild(deleteBtn);
   }
 
   meta.appendChild(authorRow);
@@ -924,6 +1212,37 @@ function setReply(id, author) {
 function clearReply() {
   replyTarget = null;
   els.replyIndicator.classList.add("hidden");
+}
+
+async function deleteComment(commentId, isRoot) {
+  if (!isAdmin() || !db) return;
+
+  const replyCount = isRoot ? getReplies(commentId).length : 0;
+  const msg =
+    isRoot && replyCount > 0
+      ? `确定删除这条留言及其 ${replyCount} 条回复？此操作不可撤销。`
+      : "确定删除这条留言？此操作不可撤销。";
+  if (!confirm(msg)) return;
+
+  try {
+    const ids = [commentId];
+    if (isRoot) {
+      allComments
+        .filter((c) => c.parentId === commentId)
+        .forEach((r) => ids.push(r.id));
+    }
+
+    const batch = writeBatch(db);
+    ids.forEach((id) => batch.delete(doc(db, FIRESTORE_COLLECTION, id)));
+    await batch.commit();
+  } catch (err) {
+    console.error("删除失败：", err);
+    const hint =
+      err.code === "permission-denied"
+        ? "删除被拒绝：请确认已用站长账号登录，且 Firestore 规则已部署。"
+        : err.message || "未知错误";
+    alert("删除失败：" + hint);
+  }
 }
 
 function bindAuthEvents() {
@@ -974,6 +1293,13 @@ function bindEditorEvents() {
   });
 
   els.commentsList?.addEventListener("click", (e) => {
+    const delBtn = e.target.closest(".btn-delete");
+    if (delBtn) {
+      e.preventDefault();
+      deleteComment(delBtn.dataset.id, delBtn.dataset.isRoot === "1");
+      return;
+    }
+
     const zoomImg = e.target.closest(".comment-body .comment-inline-img");
     if (zoomImg && !zoomImg.classList.contains("is-broken")) {
       e.preventDefault();

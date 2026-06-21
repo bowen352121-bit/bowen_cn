@@ -12,3 +12,9 @@ export const firebaseConfig = {
 export function isFirebaseReady() {
   return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.authDomain);
 }
+
+/** 景教留言板管理员（仅这些人可删评，须与 firestore.rules 保持一致） */
+export const guestbookAdmin = {
+  emails: ["bowen352121@gmail.com"],
+  uids: [],
+};

@@ -59,7 +59,7 @@ const projects = [
     link: "modal", 
     image: "images/比利SP1.jpg",
     publishDate: "2026-04-01", 
-    views: "1.43k", comments: 2, likes: 14, category: "狂浪生", lang: "简体中文"
+    views: "1.43k", comments: 2, likes: 14, category: "咖啡馆", lang: "简体中文"
   },
   {
     title: "脉冲点火背后的架构设计",
@@ -541,6 +541,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnZhishi = document.getElementById("btn-zhishi");
   if (btnZhishi) {
     btnZhishi.addEventListener("click", () => {
+      window.BowenMusic?.saveMusicTime();
+      if (isMobile()) closeMobileSidebar();
+    });
+  }
+
+  const btnKafei = document.getElementById("btn-kafei");
+  if (btnKafei) {
+    btnKafei.addEventListener("click", () => {
       window.BowenMusic?.saveMusicTime();
       if (isMobile()) closeMobileSidebar();
     });
