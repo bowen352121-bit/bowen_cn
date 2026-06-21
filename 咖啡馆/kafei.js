@@ -53,7 +53,6 @@ const POSTS = [
     sortNew: 100,
     sortReply: 100,
     sortHot: 100,
-    link: "../bowen.html?read=0",
   },
   {
     id: "pin-2",
@@ -70,7 +69,6 @@ const POSTS = [
     sortNew: 99,
     sortReply: 99,
     sortHot: 99,
-    link: "../bowen.html?read=6",
   },
   {
     id: "1",
@@ -86,7 +84,6 @@ const POSTS = [
     sortNew: 90,
     sortReply: 70,
     sortHot: 85,
-    link: "https://www.miyoushe.com/zzz/article/76003722",
   },
   {
     id: "2",
@@ -102,7 +99,6 @@ const POSTS = [
     sortNew: 98,
     sortReply: 95,
     sortHot: 40,
-    link: "https://www.miyoushe.com/zzz/article/76142094",
   },
   {
     id: "3",
@@ -118,7 +114,6 @@ const POSTS = [
     sortNew: 85,
     sortReply: 80,
     sortHot: 78,
-    link: "https://www.miyoushe.com/zzz/home/57?type=2",
   },
   {
     id: "4",
@@ -134,7 +129,6 @@ const POSTS = [
     sortNew: 75,
     sortReply: 60,
     sortHot: 92,
-    link: "https://www.miyoushe.com/zzz/home/57?type=2",
   },
   {
     id: "5",
@@ -150,7 +144,6 @@ const POSTS = [
     sortNew: 70,
     sortReply: 55,
     sortHot: 98,
-    link: "https://www.miyoushe.com/zzz/home/57?type=2",
   },
   {
     id: "6",
@@ -166,7 +159,6 @@ const POSTS = [
     sortNew: 88,
     sortReply: 88,
     sortHot: 45,
-    link: "https://www.miyoushe.com/zzz/article/76123519",
   },
   {
     id: "7",
@@ -182,7 +174,6 @@ const POSTS = [
     sortNew: 82,
     sortReply: 75,
     sortHot: 35,
-    link: "https://www.miyoushe.com/zzz/home/57?type=2",
   },
   {
     id: "8",
@@ -198,7 +189,6 @@ const POSTS = [
     sortNew: 80,
     sortReply: 72,
     sortHot: 68,
-    link: "https://www.miyoushe.com/zzz/article/76123818",
   },
   {
     id: "9",
@@ -214,7 +204,6 @@ const POSTS = [
     sortNew: 92,
     sortReply: 90,
     sortHot: 50,
-    link: "https://www.miyoushe.com/zzz/article/76144010",
   },
   {
     id: "10",
@@ -230,7 +219,6 @@ const POSTS = [
     sortNew: 86,
     sortReply: 84,
     sortHot: 30,
-    link: "https://www.miyoushe.com/zzz/article/76144131",
   },
 ];
 
@@ -241,6 +229,9 @@ const feedEl = document.getElementById("cafe-feed");
 const loadMoreBtn = document.getElementById("btn-load-more");
 const sortBtns = document.querySelectorAll(".cafe-sort-btn");
 const publishBtn = document.getElementById("btn-publish-hint");
+const cafeLightbox = document.getElementById("cafe-image-lightbox");
+const cafeLightboxImg = document.querySelector("#cafe-image-lightbox .cafe-lightbox-img");
+const cafeLightboxClose = document.querySelector("#cafe-image-lightbox .cafe-lightbox-close");
 
 function escapeHtml(str) {
   return String(str)
@@ -275,11 +266,9 @@ function renderPinnedBlock(pinned) {
       .map(
         (post) =>
           `<li class="cafe-pinned-item">
-            <a href="${escapeHtml(post.link)}">
               <span class="cafe-pin-tag">置顶</span>
               <span class="cafe-pinned-title">${escapeHtml(post.title)}</span>
-            </a>
-          </li>`
+            </li>`
       )
       .join("") +
     "</ul>";
@@ -292,7 +281,7 @@ function renderImages(images) {
   const cls = images.length === 1 ? "single" : images.length === 2 ? "double" : "multi";
   const thumbs = images
     .slice(0, 3)
-    .map((src) => `<img src="${escapeHtml(src)}" alt="" loading="lazy">`)
+    .map((src) => `<img class="cafe-post-img" src="${escapeHtml(src)}" alt="帖子配图" loading="lazy">`)
     .join("");
   const more = images.length > 3 ? `<span class="cafe-img-more">+${images.length - 3}</span>` : "";
   return `<div class="cafe-post-images ${cls}">${thumbs}${more}</div>`;
@@ -315,12 +304,12 @@ function renderPost(post) {
         <span class="cafe-post-game">· 绝区零</span>
       </div>
     </div>
-    <a class="cafe-post-body" href="${escapeHtml(post.link)}" target="_blank" rel="noopener">
+    <div class="cafe-post-body">
       <h3 class="cafe-post-title">${escapeHtml(post.title)}</h3>
       ${post.excerpt ? `<p class="cafe-post-excerpt">${escapeHtml(post.excerpt)}</p>` : ""}
       ${renderImages(post.images)}
       ${tags ? `<div class="cafe-post-tags">${tags}</div>` : ""}
-    </a>
+    </div>
     <div class="cafe-post-foot">
       <span class="cafe-stat" title="评论">💬 ${post.comments}</span>
       <span class="cafe-stat" title="浏览">👁 ${post.views}</span>
@@ -361,6 +350,46 @@ loadMoreBtn?.addEventListener("click", () => {
 
 publishBtn?.addEventListener("click", () => {
   alert("本地演示站暂未接入发帖功能。可到米游社咖啡馆发布，或前往景教留言板互动。");
+});
+
+function openCafeLightbox(src, alt) {
+  if (!cafeLightbox || !cafeLightboxImg || !src) return;
+  cafeLightboxImg.src = src;
+  cafeLightboxImg.alt = alt || "大图";
+  cafeLightbox.classList.remove("hidden");
+  cafeLightbox.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function closeCafeLightbox() {
+  if (!cafeLightbox) return;
+  cafeLightbox.classList.add("hidden");
+  cafeLightbox.hidden = true;
+  if (cafeLightboxImg) cafeLightboxImg.src = "";
+  document.body.style.overflow = "";
+}
+
+feedEl?.addEventListener("click", (e) => {
+  const img = e.target.closest(".cafe-post-images img");
+  if (!img) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openCafeLightbox(img.currentSrc || img.src, img.alt);
+});
+
+cafeLightboxClose?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  closeCafeLightbox();
+});
+
+cafeLightbox?.addEventListener("click", (e) => {
+  if (e.target === cafeLightbox) closeCafeLightbox();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && cafeLightbox && !cafeLightbox.classList.contains("hidden")) {
+    closeCafeLightbox();
+  }
 });
 
 renderFeed();

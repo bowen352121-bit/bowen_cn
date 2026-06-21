@@ -18,7 +18,7 @@
     "#sig-prev,#sig-next,#article-view,input,textarea,select," +
     "#music-toggle,#sidebar-menu,#sidebar-overlay," +
     "#mobile-menu-toggle,#mobile-menu-close," +
-    "#preview,#close,#image-lightbox,.img-lightbox";
+    "#preview,#close,#image-lightbox,.img-lightbox,#cafe-image-lightbox,.cafe-lightbox";
 
   document.addEventListener("click", function (e) {
     if (e.target.closest(SKIP)) return;

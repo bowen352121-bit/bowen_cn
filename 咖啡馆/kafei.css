@@ -382,15 +382,10 @@ button {
     margin-top: 0.6rem;
 }
 
-.cafe-pinned-item a {
+.cafe-pinned-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: inherit;
-}
-
-.cafe-pinned-item a:hover .cafe-pinned-title {
-    color: var(--mhy-orange);
 }
 
 .cafe-pin-tag {
@@ -464,10 +459,6 @@ button {
     color: var(--mhy-text);
 }
 
-.cafe-post-body:hover .cafe-post-title {
-    color: var(--mhy-orange);
-}
-
 .cafe-post-excerpt {
     font-size: 0.875rem;
     line-height: 1.55;
@@ -502,6 +493,7 @@ button {
     object-fit: cover;
     background: #f0f0f0;
     display: block;
+    cursor: zoom-in;
 }
 
 .cafe-img-more {
@@ -680,4 +672,50 @@ button {
     color: #aaa;
     border-top: 1px solid var(--mhy-border);
     background: #fff;
+}
+
+/* ── 帖子图片灯箱 ── */
+.cafe-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.82);
+    box-sizing: border-box;
+}
+
+.cafe-lightbox.hidden {
+    display: none;
+}
+
+.cafe-lightbox-img {
+    max-width: min(96vw, 1200px);
+    max-height: 92vh;
+    object-fit: contain;
+    border-radius: 2px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+    background: #111;
+}
+
+.cafe-lightbox-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.85rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.cafe-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.22);
 }
