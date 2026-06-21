@@ -1135,7 +1135,6 @@ function renderCommentItem(comment, isReply = false) {
     ${buildAuthorProfileHtml(comment)}
     ${buildBrowserIconHtml(comment.browser)}
     ${buildLocationHtml(comment)}
-    <span class="comment-id">#${escapeHtml(comment.id.slice(0, 6))}</span>
   `;
 
   const body = document.createElement("div");

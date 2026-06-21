@@ -1024,12 +1024,6 @@ button {
     white-space: nowrap;
 }
 
-.comment-id {
-    font-size: 0.75rem;
-    color: #d4d4d8;
-    font-family: ui-monospace, monospace;
-}
-
 .comment-body {
     margin-top: 0.5rem;
     font-size: 0.9375rem;
