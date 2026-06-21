@@ -366,9 +366,50 @@ button {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-.cafe-post.is-pinned {
-    border-color: #ffd8c2;
-    background: linear-gradient(135deg, #fff 0%, #fff9f5 100%);
+/* ── 置顶帖（米游社风格）── */
+.cafe-pinned {
+    background: var(--mhy-card);
+    border: 1px solid var(--mhy-border);
+    border-radius: 4px;
+    padding: 0.75rem 1rem 0.85rem;
+}
+
+.cafe-pinned-list {
+    list-style: none;
+}
+
+.cafe-pinned-item + .cafe-pinned-item {
+    margin-top: 0.6rem;
+}
+
+.cafe-pinned-item a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: inherit;
+}
+
+.cafe-pinned-item a:hover .cafe-pinned-title {
+    color: var(--mhy-orange);
+}
+
+.cafe-pin-tag {
+    flex-shrink: 0;
+    display: inline-block;
+    padding: 1px 4px;
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    color: #00b5e5;
+    border: 1px solid #00b5e5;
+    border-radius: 2px;
+    background: transparent;
+}
+
+.cafe-pinned-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #000;
+    line-height: 1.4;
 }
 
 .cafe-post-head {
@@ -382,9 +423,15 @@ button {
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    object-fit: cover;
     flex-shrink: 0;
-    background: #eee;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    user-select: none;
 }
 
 .cafe-post-meta {
@@ -402,15 +449,6 @@ button {
 
 .cafe-post-game {
     color: #aaa;
-}
-
-.cafe-pin-badge {
-    font-size: 0.6875rem;
-    padding: 0.15rem 0.45rem;
-    background: var(--mhy-orange);
-    color: #fff;
-    border-radius: 2px;
-    font-weight: 600;
 }
 
 .cafe-post-body {

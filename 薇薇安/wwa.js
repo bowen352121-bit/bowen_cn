@@ -401,6 +401,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const readParams = new URLSearchParams(location.search);
+  const readIdx = readParams.get("read");
+  if (readIdx !== null) {
+    const i = parseInt(readIdx, 10);
+    if (!Number.isNaN(i) && articles[i]) showArticleContent(articles[i]);
+  }
+
   window.matchMedia("(max-width: 1023px)").addEventListener("change", (e) => {
     if (!e.matches) closeMobileSidebar();
   });

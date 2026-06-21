@@ -127,6 +127,15 @@ function showArticleContent(article) {
   history.pushState({ view: 'article' }, "");
 }
 
+(function openArticleFromQuery() {
+  const params = new URLSearchParams(location.search);
+  const readIdx = params.get("read");
+  if (readIdx === null) return;
+  const i = parseInt(readIdx, 10);
+  if (Number.isNaN(i) || !projects[i]) return;
+  showArticleContent(projects[i]);
+})();
+
 function showHomeList() {
   if (!homeView || !articleView) return;
   articleView.classList.add('hidden');
@@ -395,34 +404,6 @@ if(btnMingdian) {
     }
   });
 }
-
-// 🎆 5. 全局背景点击喷射 ZZZ 特效
-document.addEventListener('click', (e) => {
-  if (
-    e.target.closest('#sig-prev') ||
-    e.target.closest('#sig-next') ||
-    e.target.closest('#article-view') ||
-    e.target.closest('input') ||
-    e.target.closest('#music-toggle') ||
-    e.target.closest('#sidebar-menu') ||
-    e.target.closest('#sidebar-overlay') ||
-    e.target.closest('#mobile-menu-toggle') ||
-    e.target.closest('#mobile-menu-close') ||
-    document.body.classList.contains('mobile-sidebar-open')
-  ) return;
-  const zzzIcon = document.createElement('img');
-  zzzIcon.src = "images/ZZZ.jpg"; 
-  zzzIcon.className = "click-effect";
-  zzzIcon.style.left = `${e.clientX}px`;
-  zzzIcon.style.top = `${e.clientY}px`;
-  const randomRot = Math.floor(Math.random() * 50) - 25;
-  zzzIcon.style.setProperty('--rand-rot', `${randomRot}deg`);
-  const randomScale = Math.random() > 0.5 ? 1.3 : 0.9; 
-  zzzIcon.style.setProperty('--rand-scale', randomScale);
-  document.body.appendChild(zzzIcon);
-  setTimeout(() => zzzIcon.remove(), 800);
-});
-
 
 // ==========================================
 // 📱 手机侧边栏抽屉

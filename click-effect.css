@@ -1,0 +1,25 @@
+/* 全站点击特效（与明殿 bowen.html 一致） */
+.click-effect {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  animation: click-effect-float 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes click-effect-float {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-20px) scale(1.1) rotate(-10deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-65px) scale(0.8) rotate(15deg);
+  }
+}
