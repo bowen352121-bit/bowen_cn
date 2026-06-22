@@ -108,12 +108,17 @@ const articleView = document.getElementById('article-view');
 const viewTitle = document.getElementById('view-title');
 const viewDesc = document.getElementById('view-desc');
 const viewImage = document.getElementById('view-image');
-const viewRealTime = document.getElementById('view-real-time');
+const viewRealTime = document.getElementById('view-publish-time');
 const viewWordCount = document.getElementById('view-word-count');
 const viewReadTime = document.getElementById('view-read-time');
 const viewClickCount = document.getElementById('view-click-count');
 const viewCategory = document.getElementById('view-category');
 const viewTags = document.getElementById('view-tags');
+let listScrollY = 0;
+
+function restoreListScroll() {
+  requestAnimationFrame(() => window.scrollTo(0, listScrollY));
+}
 
 function getArticleTags(article) {
   if (Array.isArray(article.tags) && article.tags.length) return article.tags;
@@ -137,6 +142,7 @@ function renderArticleTags(article) {
 
 function showArticleContent(article) {
   if (!homeView || !articleView || !viewTitle || !viewDesc || !viewImage) return;
+  listScrollY = window.scrollY;
   if (article.isTop) {
     viewTitle.innerHTML = `<span class="sm-pin sm-pin--detail">置顶</span><span>${window.BowenArticleFormat?.escapeHtml(article.title) || article.title}</span>`;
   } else {
@@ -152,13 +158,14 @@ function showArticleContent(article) {
   if (viewClickCount) viewClickCount.textContent = article.views;
   if (viewCategory) viewCategory.textContent = article.category || '明殿内参';
   renderArticleTags(article);
-  const now = new Date();
   if (viewRealTime) {
-    viewRealTime.textContent = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    const published = window.BowenArticleFormat?.formatPublishDate(article.publishDate) || article.publishDate || '';
+    viewRealTime.dateTime = article.publishDate || published;
+    viewRealTime.textContent = published ? `发布于 ${published}` : '';
   }
   homeView.classList.add('hidden');
   articleView.classList.remove('hidden');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0, 0);
   history.pushState({ view: 'article' }, "");
 }
 
@@ -185,8 +192,8 @@ function exitArticleView() {
     if (location.search) {
       history.replaceState({ view: 'home' }, '', location.pathname);
     }
+    restoreListScroll();
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // 🎠 1. 顶部大 banner 轮播图逻辑
@@ -581,6 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("popstate", () => {
     if (articleView && !articleView.classList.contains("hidden")) {
       showHomeList();
+      restoreListScroll();
     }
   });
 

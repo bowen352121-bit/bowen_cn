@@ -453,6 +453,10 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* 源图右上角 ZZZ 水印 — 轻微放大并偏左下取景裁切 */
+  object-position: 42% 54%;
+  transform: scale(1.1);
+  transform-origin: center center;
 }
 
 #carousel-wrapper {
@@ -519,6 +523,9 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 42% 54%;
+  transform: scale(1.1);
+  transform-origin: center center;
 }
 
 .sm-featured-thumb.is-active {
@@ -902,44 +909,73 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 11px;
-  color: #999;
+  gap: 0;
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #888;
   line-height: 1.5;
 }
 
-.article-meta-item {
+.article-meta > * {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+}
+
+.article-meta > * + * {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid #e8e8e8;
+}
+
+.article-meta-item {
+  gap: 5px;
   white-space: nowrap;
 }
 
-.article-meta-icon {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-  color: #c4c4c4;
+.article-meta-author {
+  color: #444;
+  font-weight: 600;
 }
 
-.article-meta-strong {
+.article-meta-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: #b0b0b0;
+}
+
+#view-publish-time {
+  color: #777;
+  font-variant-numeric: tabular-nums;
+}
+
+.article-meta-item span,
+.article-meta-item time {
+  color: inherit;
+}
+
+.article-meta-item #view-word-count,
+.article-meta-item #view-read-time,
+.article-meta-item #view-click-count {
   color: #555;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .article-meta-category {
-  display: inline-block;
-  padding: 2px 9px;
-  font-size: 10px;
+  padding: 2px 10px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.4;
-  color: var(--sm-accent, #ff6a00);
-  background: #fff8f3;
-  border: 1px solid #ffe4cc;
+  line-height: 1.45;
+  color: #ff6a00 !important;
+  background: #fff7ed !important;
+  border: 1px solid #fed7aa !important;
   border-radius: 999px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .sm-article-card.is-pinned {

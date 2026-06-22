@@ -162,14 +162,21 @@ const articleView = document.getElementById("article-view");
 const viewTitle = document.getElementById("view-title");
 const viewDesc = document.getElementById("view-desc");
 const viewImage = document.getElementById("view-image");
-const viewRealTime = document.getElementById("view-real-time");
+const viewRealTime = document.getElementById("view-publish-time");
+const viewCategory = document.getElementById("view-category");
 const viewWordCount = document.getElementById("view-word-count");
 const viewReadTime = document.getElementById("view-read-time");
 const viewClickCount = document.getElementById("view-click-count");
 const btnBackHome = document.getElementById("btn-back-home");
+let listScrollY = 0;
+
+function restoreListScroll() {
+  requestAnimationFrame(() => window.scrollTo(0, listScrollY));
+}
 
 function showArticleContent(article) {
   if (!categoryView || !articleView) return;
+  listScrollY = window.scrollY;
   viewTitle.textContent = article.title;
   window.BowenArticleFormat?.applyDescToElement(viewDesc, article.desc);
   viewImage.src = article.image;
@@ -178,13 +185,15 @@ function showArticleContent(article) {
   if (viewWordCount) viewWordCount.textContent = wordCount.toLocaleString();
   if (viewReadTime) viewReadTime.textContent = readMinutes;
   if (viewClickCount) viewClickCount.textContent = article.views;
-  const now = new Date();
+  if (viewCategory) viewCategory.textContent = CATEGORY_NAME;
   if (viewRealTime) {
-    viewRealTime.textContent = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+    const published = window.BowenArticleFormat?.formatPublishDate(article.publishDate) || article.publishDate || "";
+    viewRealTime.dateTime = article.publishDate || published;
+    viewRealTime.textContent = published ? `发布于 ${published}` : "";
   }
   categoryView.classList.add("hidden");
   articleView.classList.remove("hidden");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo(0, 0);
   history.pushState({ view: "article" }, "");
 }
 
@@ -202,8 +211,8 @@ function exitArticleView() {
     if (location.search) {
       history.replaceState({ view: "home" }, "", location.pathname);
     }
+    restoreListScroll();
   }
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 if (btnBackHome) {
@@ -407,6 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("popstate", () => {
     if (articleView && !articleView.classList.contains("hidden")) {
       showCategoryList();
+      restoreListScroll();
     }
   });
 

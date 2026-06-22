@@ -29,10 +29,21 @@
     el.innerHTML = renderDescHtml(desc);
   }
 
+  function formatPublishDate(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(String(dateStr).length <= 10 ? `${dateStr}T12:00:00` : dateStr);
+    if (Number.isNaN(d.getTime())) return String(dateStr);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
   global.BowenArticleFormat = {
     escapeHtml,
     splitParagraphs,
     renderDescHtml,
     applyDescToElement,
+    formatPublishDate,
   };
 })(window);
