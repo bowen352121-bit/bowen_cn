@@ -4,13 +4,21 @@
 
 // 📅 基础文章数据库：加入标准规范的时间戳 (用于现实时间精准自动换算“几周前”)
 const projects = [
+  {
+    title: "能做的事有限，我也只是尽到责任。",
+    desc: "以前看这句话，觉得是底层职员在为无能找借口。但如今坐在执行官的位置上，面对每年几个亿的跨境预算和复杂的海外市场，再回头看自己这十几年的轨迹，我才发现这其实是效率最高的行事准则。\n\n人生最宝贵的东西是资源，而资源永远是有限的。\n\n十四岁那年我没考上高中，兜里一分钱没有，凌晨在德克士后门向店员讨要剩饭。那时候我能调动的资源只有脸面，我的责任就是让这具肉体活下去。两个月后家里情况好转，我进了职中。那是命运给的一道缝隙，我得钻过去。\n\n大三实习的时候，我在福州一所211大学的实验室兼职当教授助手。正职加兼职，一个月五六千块。那时候我白天上班，晚上在实验室帮研究生跑课题，天天泡在水里，最后落了个严重的关节炎。后来为了不影响后面的计划，我直接去北京做手术把关节“零件”给换了。\n\n外人觉得这叫吃苦、叫拼命，但在我看来，这只是一笔算得很清楚的账：每个月两千块的兼职薪水只是附带，我真正的回报是在那三个月里学懂了火药、动力学和引力学，最后能手搓出炸弹，并拿到了被引荐给某院士的机会。虽然直到最后我都没见过那位院士一面，但这不重要，在这个阶段，作为一个编制外的助手，我把能压榨的潜力和该交出的成果都做到了极限，这就是我的尽责。\n\n大学期间，我作为代理人创办了“筆之家”，做可飞行的手指魔方。我们顺利咬下了匈牙利一个两百万人民币的跨境订单。但紧接着就是合伙人内讧。我没有花时间去撕扯和内耗，因为当团队内部信任破裂时，及时止损才是最优解。我选择直接离开。\n\n之后投简历进吉比特海外宣传部，五个月后被西门子的Corporate Communications挖走。在西门子的海外体系里摸爬滚打了快两年，前阵子刚接任执行官。\n\n很多人喜欢把这种经历包装成野生天才的逆袭神话，但在商业逻辑里，没有神话，只有投入产出比。\n\n这一路走来，我遇到过学历的死墙、身体的病痛、同伴的背叛、以及各种各样不可控的局势。人的精力和时代的红利都是有天花板的，这就是“能做的事有限”。\n\n而我之所以能走到今天，无非是在每个阶段都保持了极高的清醒——在泔水桶边就去解决生存，在实验室就去榨干知识，在利益分配不均时就果断抽身，在跨国平台上就去拿业绩说话。\n\n我不对无法改变的环境抱有幻想，但我会把我手头上能调动的每一块筹码、每一份职权，都用到极致。\n\n所谓的“尽到责任”，不是对谁交差，而是作为一个决策者，对自己的每一步投资，完成绝对的履约。",
+    link: "modal",
+    image: "images/wanzho.jpg",
+    isTop: true,
+    publishDate: "2026-06-17",
+    views: "328", comments: 0, likes: 12, category: "职事", tags: ["职事", "尽责", "决策"], lang: "简体中文"
+  },
   { 
     title: "机器人的子弹从不迷茫：比利SP以正义之名，坚守最后的骑士梦", 
-    desc: "【置顶】新城区的霓虹依旧闪烁，但黑夜里的空洞从不沉睡。作为新艾利都治安局的精英，朱鸢手中的枪扣动时没有一丝犹豫。这不仅仅是一次次完美的任务执行，更是对这座城市、对所有怀揣正义与‘骑士梦’的孩子们最坚实的守护。\n\n当子弹划破长空，击碎虚无的恶意，我们终会明白：真正能打破黑暗的，从来不是命运的妥协，而是你我心中那股永不熄灭的执着与清醒。\n\n治安官已经就位，那些曾经执剑在黑夜中高呼正义的少年，现在是否依然坚信光芒的存在？孩子们，你们的骑士梦想，准备好在这一刻再度沸腾了吗？拉开保险，正义将由我们来彻底执行！", 
+    desc: "新城区的霓虹依旧闪烁，但黑夜里的空洞从不沉睡。作为新艾利都治安局的精英，朱鸢手中的枪扣动时没有一丝犹豫。这不仅仅是一次次完美的任务执行，更是对这座城市、对所有怀揣正义与‘骑士梦’的孩子们最坚实的守护。\n\n当子弹划破长空，击碎虚无的恶意，我们终会明白：真正能打破黑暗的，从来不是命运的妥协，而是你我心中那股永不熄灭的执着与清醒。\n\n治安官已经就位，那些曾经执剑在黑夜中高呼正义的少年，现在是否依然坚信光芒的存在？孩子们，你们的骑士梦想，准备好在这一刻再度沸腾了吗？拉开保险，正义将由我们来彻底执行！", 
     link: "modal", 
     image: "images/ZZZ3.0.1.jpg",
-    isTop: true,
-    publishDate: "2026-06-08", // 1周前
+    publishDate: "2026-06-08",
     views: "12.4k", comments: 88, likes: 999, category: "明殿内参", lang: "简体中文"
   },
   { 
@@ -81,7 +89,7 @@ const projects = [
 
 // ⏳ 现实时间核心算法
 function getRelativeTimeString(dateStr) {
-  const now = new Date("2026-06-15T18:00:00"); 
+  const now = new Date();
   const past = new Date(dateStr);
   const diffMs = now - past;
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -104,12 +112,37 @@ const viewRealTime = document.getElementById('view-real-time');
 const viewWordCount = document.getElementById('view-word-count');
 const viewReadTime = document.getElementById('view-read-time');
 const viewClickCount = document.getElementById('view-click-count');
-const btnBackHome = document.getElementById('btn-back-home');
+const viewCategory = document.getElementById('view-category');
+const viewTags = document.getElementById('view-tags');
+
+function getArticleTags(article) {
+  if (Array.isArray(article.tags) && article.tags.length) return article.tags;
+  return article.category ? [article.category] : [];
+}
+
+function renderArticleTags(article) {
+  if (!viewTags) return;
+  const tags = getArticleTags(article);
+  if (!tags.length) {
+    viewTags.innerHTML = '';
+    viewTags.hidden = true;
+    return;
+  }
+  viewTags.hidden = false;
+  const esc = window.BowenArticleFormat?.escapeHtml || ((s) => s);
+  viewTags.innerHTML =
+    '<span class="article-tags-label">标签</span>' +
+    tags.map((t) => `<span class="article-tag">${esc(t)}</span>`).join('');
+}
 
 function showArticleContent(article) {
   if (!homeView || !articleView || !viewTitle || !viewDesc || !viewImage) return;
-  viewTitle.textContent = article.title;
-  viewDesc.textContent = article.desc;
+  if (article.isTop) {
+    viewTitle.innerHTML = `<span class="sm-pin sm-pin--detail">置顶</span><span>${window.BowenArticleFormat?.escapeHtml(article.title) || article.title}</span>`;
+  } else {
+    viewTitle.textContent = article.title;
+  }
+  window.BowenArticleFormat?.applyDescToElement(viewDesc, article.desc);
   viewImage.src = article.image;
   const pureText = article.desc.replace(/\s+/g, ''); 
   const wordCount = pureText.length;
@@ -117,6 +150,8 @@ function showArticleContent(article) {
   if (viewWordCount) viewWordCount.textContent = wordCount.toLocaleString();
   if (viewReadTime) viewReadTime.textContent = readMinutes;
   if (viewClickCount) viewClickCount.textContent = article.views;
+  if (viewCategory) viewCategory.textContent = article.category || '明殿内参';
+  renderArticleTags(article);
   const now = new Date();
   if (viewRealTime) {
     viewRealTime.textContent = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
@@ -142,12 +177,16 @@ function showHomeList() {
   homeView.classList.remove('hidden');
 }
 
-if (btnBackHome) {
-  btnBackHome.addEventListener('click', () => {
-    if (!articleView.classList.contains('hidden')) {
-      history.back();
+function exitArticleView() {
+  if (!homeView || !articleView) return;
+  const inArticle = !articleView.classList.contains('hidden');
+  if (inArticle) {
+    showHomeList();
+    if (location.search) {
+      history.replaceState({ view: 'home' }, '', location.pathname);
     }
-  });
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // 🎠 1. 顶部大 banner 轮播图逻辑
@@ -283,9 +322,9 @@ if (sigSlider) {
 
 // 🏛️ 3. 右侧侧边栏“最近更新”选项卡
 const sidebarData = {
-  new: projects.slice(1, 9),
-  hot: [projects[4], projects[2], projects[7], projects[0], projects[6], projects[1], projects[3], projects[5]],
-  best: [projects[8], projects[2], projects[6], projects[0], projects[4], projects[1], projects[7], projects[3]]
+  new: projects.slice(1, 10),
+  hot: [projects[5], projects[3], projects[8], projects[1], projects[7], projects[2], projects[4], projects[6]],
+  best: [projects[9], projects[3], projects[7], projects[1], projects[5], projects[2], projects[8], projects[4]]
 };
 const sidebarList = document.getElementById('sidebar-list');
 const tabs = { new: document.getElementById('tab-new'), hot: document.getElementById('tab-hot'), best: document.getElementById('tab-best') };
@@ -338,8 +377,8 @@ let visibleCount = PAGE_SIZE;
 
 function buildArticleCard(p) {
   const card = document.createElement('article');
-  card.className = 'sm-article-card';
-  const pinHtml = p.isTop ? `<span class="sm-pin">置顶</span>` : '';
+  card.className = 'sm-article-card' + (p.isTop ? ' is-pinned' : '');
+  const pinHtml = p.isTop ? '<span class="sm-pin">置顶</span>' : '';
   const ribbonClass = p.title.includes('Cloudflare') ? 'sm-ribbon sm-ribbon-og' : 'sm-ribbon';
   const featuredHtml = p.isTop ? '<span class="sm-ribbon-featured">精选</span>' : '';
 
@@ -353,7 +392,7 @@ function buildArticleCard(p) {
     </div>
     <div class="sm-article-body">
       <div class="sm-article-head">
-        <h4 class="sm-article-title">${pinHtml}${p.title}</h4>
+        <h4 class="sm-article-title">${pinHtml}<span class="sm-article-title-text">${p.title}</span></h4>
         <span class="sm-article-lang">${p.lang === '简体中文' ? '中文' : p.lang}</span>
       </div>
       <p class="sm-article-desc">${p.desc}</p>
@@ -394,10 +433,14 @@ if (btnLoadMore) {
 }
 
 const btnMingdian = document.getElementById('btn-mingdian');
-if(btnMingdian) {
+const btnBrandHome = document.getElementById('btn-brand-home');
+
+btnBrandHome?.addEventListener('click', exitArticleView);
+
+if (btnMingdian) {
   btnMingdian.addEventListener('click', () => {
     if (!articleView.classList.contains('hidden')) {
-      history.back();
+      exitArticleView();
     } else {
       showHomeList();
       window.scrollTo({ top: 0, behavior: 'smooth' });

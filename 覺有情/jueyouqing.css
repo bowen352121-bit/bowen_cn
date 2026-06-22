@@ -285,6 +285,7 @@ button {
     color: #52525b;
     white-space: pre-wrap;
     word-break: break-word;
+    text-indent: 2em;
 }
 
 .snippet-image {

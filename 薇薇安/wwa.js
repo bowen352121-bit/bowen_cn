@@ -172,7 +172,7 @@ const btnBackHome = document.getElementById("btn-back-home");
 function showArticleContent(article) {
   if (!categoryView || !articleView) return;
   viewTitle.textContent = article.title;
-  viewDesc.textContent = article.desc;
+  window.BowenArticleFormat?.applyDescToElement(viewDesc, article.desc);
   viewImage.src = article.image;
   const wordCount = article.desc.replace(/\s+/g, "").length;
   const readMinutes = Math.max(1, Math.ceil(wordCount / 400));
@@ -195,10 +195,20 @@ function showCategoryList() {
   categoryView.classList.remove("hidden");
 }
 
+function exitArticleView() {
+  if (!categoryView || !articleView) return;
+  const inArticle = !articleView.classList.contains("hidden");
+  if (inArticle) {
+    showCategoryList();
+    if (location.search) {
+      history.replaceState({ view: "home" }, "", location.pathname);
+    }
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 if (btnBackHome) {
-  btnBackHome.addEventListener("click", () => {
-    if (!articleView.classList.contains("hidden")) history.back();
-  });
+  btnBackHome.addEventListener("click", exitArticleView);
 }
 
 function buildArticleCard(p) {
@@ -417,4 +427,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("music-icon"),
     { play: "../images/音乐打开键.jpg", mute: "../images/音乐关闭键.jpg" }
   );
+
+  document.getElementById("btn-brand-home")?.addEventListener("click", exitArticleView);
 });

@@ -37,7 +37,7 @@
         <button id="mobile-menu-toggle" class="lg:hidden p-2 -ml-1 rounded-md text-zinc-600 hover:bg-zinc-100 transition focus:outline-none cursor-pointer">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
         </button>
-        <span class="text-xl font-black tracking-wider text-sky-600">&lt;/&gt; BOWEN</span>
+        <button type="button" id="btn-brand-home" class="header-brand text-xl font-black tracking-wider text-sky-600" aria-label="返回主页列表">&lt;/&gt; BOWEN</button>
         <span class="text-xs text-zinc-500 border-l border-zinc-300 pl-2 hidden sm:inline font-medium">孩子们骑士梦怎会如此......</span>
       </div>
       
@@ -211,19 +211,28 @@
         <div class="space-y-3 pl-4 sm:pl-0">
           <h2 id="view-title" class="text-xl sm:text-2xl font-black text-zinc-900 tracking-wide leading-tight"></h2>
           
-          <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-zinc-400 font-medium pb-2 border-b border-zinc-100">
-            <div class="flex items-center space-x-1"><span>👤</span> <span class="text-zinc-600 font-bold">BOWEN</span></div>
-            <div class="flex items-center space-x-1 text-zinc-500">
-              <span>📅</span> <span id="view-real-time" class="font-semibold"></span>
-            </div>
-            <div class="flex items-center space-x-1">
-              <span>✍️</span> <span>共 <span id="view-word-count" class="text-zinc-600 font-bold">0</span> 字</span>
-            </div>
-            <div class="flex items-center space-x-1">
-              <span>⏳</span> <span>需阅读 <span id="view-read-time" class="text-zinc-600 font-bold">0</span> 分钟</span>
-            </div>
-            <div class="flex items-center space-x-1"><span>📂</span> <span class="text-sky-500 font-semibold hover:underline cursor-pointer">明殿内参</span></div>
-            <div class="flex items-center space-x-1"><span>👁</span> <span><span id="view-click-count" class="font-semibold">9,527</span> 次阅读</span></div>
+          <div class="article-meta">
+            <span class="article-meta-item">
+              <svg class="article-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0"/></svg>
+              <span class="article-meta-strong">BOWEN</span>
+            </span>
+            <span class="article-meta-item">
+              <svg class="article-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 9.75h18M4.5 21h15a1.5 1.5 0 001.5-1.5V7.5A1.5 1.5 0 0019.5 6h-15A1.5 1.5 0 003 7.5v12A1.5 1.5 0 004.5 21z"/></svg>
+              <time id="view-real-time"></time>
+            </span>
+            <span class="article-meta-item">
+              <svg class="article-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-8.25 9h16.5a1.5 1.5 0 001.5-1.5V5.25A1.5 1.5 0 0019.5 3.75h-15A1.5 1.5 0 003 5.25v13.5A1.5 1.5 0 004.5 21z"/></svg>
+              <span>共 <span id="view-word-count" class="article-meta-strong">0</span> 字</span>
+            </span>
+            <span class="article-meta-item">
+              <svg class="article-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>阅读 <span id="view-read-time" class="article-meta-strong">0</span> 分钟</span>
+            </span>
+            <span id="view-category" class="article-meta-category">明殿内参</span>
+            <span class="article-meta-item">
+              <svg class="article-meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span><span id="view-click-count" class="article-meta-strong">0</span> 次阅读</span>
+            </span>
           </div>
         </div>
 
@@ -231,23 +240,15 @@
           <img id="view-image" src="images/比利SP1.jpg" alt="文章图片" class="w-full h-full object-cover">
         </div>
 
-        <p id="view-desc" class="text-sm sm:text-base text-zinc-700 whitespace-pre-wrap tracking-wide leading-loose font-normal"></p>
+        <div id="view-desc" class="text-sm sm:text-base text-zinc-700 tracking-wide leading-loose font-normal"></div>
 
         <div class="pt-6 space-y-5 border-t border-zinc-100">
-          <div class="flex items-center space-x-2 text-xs">
-            <span class="text-zinc-400 font-bold">📌 标签:</span>
-            <span class="bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-none font-semibold">#绝区零</span>
-            <span class="bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-none font-semibold">#治安局</span>
-          </div>
+          <div id="view-tags" class="article-tags" aria-label="文章标签"></div>
 
           <div class="bg-zinc-50 border-l-4 border-sky-500 p-4 rounded-none text-xs text-zinc-500 space-y-1">
             <div><span class="font-bold text-zinc-700">本文作者：</span>BOWEN</div>
             <div class="truncate"><span class="font-bold text-zinc-700">本文链接：</span><span class="text-sky-600 hover:underline">https://bowen352121-bit.github.io/bowen_cn/</span></div>
           </div>
-          
-          <button id="btn-back-home" class="px-4 py-2 bg-zinc-800 text-white font-bold text-xs hover:bg-sky-600 transition duration-200 shadow-xs cursor-pointer">
-            ← 返回主页列表
-          </button>
         </div>
       </div>
     </section>
@@ -323,6 +324,7 @@
 
   <script src="music.js?v=20260620"></script>
   <script src="click-effect.js?v=20260620"></script>
+  <script src="article-format.js?v=20260620"></script>
   <script src="calendar.js?v=20260620"></script>
   <script src="bowen.js?v=20260620"></script>
 </body>
