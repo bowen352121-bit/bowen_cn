@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="slj-mj-page">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,14 @@
   <meta http-equiv="Expires" content="0">
   <title>赛博灵柩 • Cyber | BOWEN</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../bowen.css?v=20260619">
   <link rel="stylesheet" href="../click-effect.css?v=20260620">
-  <link rel="stylesheet" href="slj.css?v=20260623">
+  <link rel="stylesheet" href="slj.css?v=20260711">
 </head>
-<body class="bg-[#f4f7f6] text-[#333333] min-h-screen relative pt-16 font-sans">
+<body class="slj-mj-page font-sans">
 
   <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30 select-none">
     <div class="scroll-container transform rotate-[-6deg] top-[10%]">
@@ -154,23 +157,20 @@
 
       <div id="category-view">
         <div class="slj-mj-stage">
-          <canvas id="slj-bg-canvas" aria-hidden="true"></canvas>
+          <canvas id="slj-vortex-canvas" aria-label="Midjourney 风格首页动效"></canvas>
+          <div class="slj-scanlines" aria-hidden="true"></div>
           <div class="slj-mj-vignette" aria-hidden="true"></div>
 
-          <div class="slj-mj-grid-wrap">
-            <div id="slj-mj-grid" class="slj-mj-grid" aria-label="赛博灵柩作品网格"></div>
+          <div class="slj-mj-logo slj-mj-logo--enter" aria-hidden="true">
+            <span class="slj-mj-logo__glow"></span>
+            <span class="slj-mj-logo__text" data-text="Bowen">Bowen</span>
+            <span class="slj-mj-logo__scan"></span>
           </div>
 
-          <div class="slj-mj-hero">
-            <div class="slj-mj-logo" aria-hidden="true">◎</div>
-            <h1 class="slj-mj-title">赛博灵柩</h1>
-            <p class="slj-mj-sub">Cyber · Edge · Agent</p>
-            <p class="slj-mj-hint">悬停探索 · 点击文章块阅读</p>
-          </div>
-
-          <div class="slj-mj-toolbar" role="toolbar" aria-label="视图控制">
-            <button type="button" id="slj-btn-explore" class="is-active">Explore</button>
-            <button type="button" disabled title="即将开放">Create</button>
+          <div class="slj-mj-actions">
+            <button type="button" class="slj-mj-btn" disabled title="即将开放">Sign In</button>
+            <button type="button" class="slj-mj-btn" disabled title="即将开放">Log In</button>
+            <a href="../bowen.html" class="slj-mj-btn slj-mj-btn--primary">Explore</a>
           </div>
         </div>
       </div>
@@ -286,8 +286,7 @@
   <script src="../click-effect.js?v=20260620"></script>
   <script src="../article-format.js?v=20260620"></script>
   <script src="../calendar.js?v=20260620"></script>
-  <script src="slj-canvas.js?v=20260622"></script>
-  <script src="slj-grid.js?v=20260622"></script>
-  <script src="slj.js?v=20260622"></script>
+  <script src="slj-vortex.js?v=20260710"></script>
+  <script src="slj.js?v=20260701"></script>
 </body>
 </html>

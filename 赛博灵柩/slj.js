@@ -39,6 +39,7 @@ function showArticleContent(article) {
   }
   categoryView.classList.add("hidden");
   articleView.classList.remove("hidden");
+  window.sljVortexPause?.();
   window.scrollTo(0, 0);
   history.pushState({ view: "article" }, "");
 }
@@ -49,6 +50,7 @@ function showCategoryList() {
   if (!categoryView || !articleView) return;
   articleView.classList.add("hidden");
   categoryView.classList.remove("hidden");
+  window.sljVortexResume?.();
 }
 
 function exitArticleView() {
@@ -78,6 +80,7 @@ function closeMobileSidebar() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  document.documentElement.classList.add("slj-mj-page");
   document.body.classList.add("slj-mj-page");
   document.body.classList.remove("mobile-sidebar-open");
 
@@ -107,10 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showCategoryList();
       restoreListScroll();
     }
-  });
-
-  document.getElementById("slj-btn-explore")?.addEventListener("click", () => {
-    document.querySelector(".slj-mj-stage")?.scrollIntoView({ behavior: "smooth" });
   });
 
   window.BowenMusic?.bindToggle(
