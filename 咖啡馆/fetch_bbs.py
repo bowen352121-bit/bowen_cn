@@ -35,6 +35,7 @@ VIOLATION_IMAGE_MARKERS = (
 )
 SCRIPT_DIR = Path(__file__).resolve().parent
 IMAGES_DIR = SCRIPT_DIR / "images" / "mihoyo"
+ARCHIVE_DIR = SCRIPT_DIR / "archive"
 OUTPUT_JSON = SCRIPT_DIR / "mihoyo_data.json"
 
 HEADERS = {
@@ -276,7 +277,17 @@ def main() -> int:
         json.dumps(output, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+
+    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+    day_key = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    archive_path = ARCHIVE_DIR / f"mihoyo_{day_key}.json"
+    archive_path.write_text(
+        json.dumps(output, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
     log(f"saved {OUTPUT_JSON} ({len(posts)} items)")
+    log(f"archived {archive_path.name}")
     return 0
 
 

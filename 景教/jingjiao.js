@@ -5,6 +5,10 @@ import { firebaseConfig, isFirebaseReady, guestbookAdmin } from "./firebase-conf
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
   GoogleAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
@@ -81,7 +85,24 @@ const els = {
   imageLightboxImg: document.querySelector("#image-lightbox .img-lightbox-img"),
 };
 
-function initFirebase() {
+function createAuth(appInstance) {
+  try {
+    return initializeAuth(appInstance, {
+      persistence: indexedDBLocalPersistence,
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
+  } catch (err) {
+    if (err?.code === "auth/already-initialized") {
+      return getAuth(appInstance);
+    }
+    return initializeAuth(appInstance, {
+      persistence: browserLocalPersistence,
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
+  }
+}
+
+async function initFirebase() {
   if (!isFirebaseReady()) {
     showConfigBanner();
     return false;
@@ -89,7 +110,7 @@ function initFirebase() {
 
   try {
     app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-    auth = getAuth(app);
+    auth = createAuth(app);
     db = getFirestore(app);
   } catch (err) {
     console.error("Firebase 初始化失败：", err);
@@ -101,17 +122,19 @@ function initFirebase() {
 
   els.configBanner.classList.add("hidden");
 
-  getRedirectResult(auth)
-    .then((result) => {
-      if (result?.user) cacheProfileMeta(result);
-    })
-    .catch((err) => {
-      if (err.code === "auth/popup-closed-by-user") return;
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) cacheProfileMeta(result);
+  } catch (err) {
+    if (err.code === "auth/popup-closed-by-user") {
+      /* ignore */
+    } else {
       console.error("登录回调失败：", err);
       els.configBanner.classList.remove("hidden");
       els.configBanner.textContent =
         "登录失败：" + (err.message || err.code || "未知错误");
-    });
+    }
+  }
 
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
@@ -156,20 +179,27 @@ function getAuthProvider(name) {
 }
 
 function prefersRedirectLogin() {
-  return (
-    window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
-    window.matchMedia("(max-width: 768px)").matches
+  const coarseTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  const narrow = window.matchMedia("(max-width: 1024px)").matches;
+  const mobileUa = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
   );
+  return coarseTouch || narrow || mobileUa;
 }
 
-function getProviderLabel(user) {
-  const id = user?.providerData?.[0]?.providerId || "";
-  if (id.includes("github")) return "GitHub";
-  if (id.includes("google")) return "Google";
-  return "访客";
+function showLoginError(label, err) {
+  let hint = "";
+  if (err?.code === "auth/unauthorized-domain") {
+    hint =
+      "\n\n请在 Firebase 控制台 → Authentication → Settings → Authorized domains 中添加当前站点域名。";
+  } else if (err?.code === "auth/operation-not-allowed") {
+    hint =
+      "\n\n请在 Firebase 控制台 → Authentication → Sign-in method 中启用 " + label + " 登录。";
+  }
+  alert(`${label} 登录失败（${err?.code || "error"}）：${err?.message || "请稍后重试"}${hint}`);
 }
 
-async function loginWithProvider(name) {
+function loginWithProvider(name) {
   if (!auth) {
     alert("Firebase 尚未初始化。请强制刷新页面（Ctrl+F5），若仍失败请查看页面顶部黄色提示。");
     return;
@@ -178,15 +208,18 @@ async function loginWithProvider(name) {
   const provider = getAuthProvider(name);
 
   if (prefersRedirectLogin()) {
-    try {
-      await signInWithRedirect(auth, provider);
-    } catch (err) {
+    // 移动端须在用户手势内同步发起跳转，不能 await（iOS Safari 会拦截）
+    signInWithRedirect(auth, provider).catch((err) => {
       console.error(`${label} 跳转登录失败：`, err);
-      alert(`${label} 登录失败：${err.message || "请稍后重试"}`);
-    }
+      showLoginError(label, err);
+    });
     return;
   }
 
+  void loginWithPopup(name, label, provider);
+}
+
+async function loginWithPopup(name, label, provider) {
   try {
     const result = await signInWithPopup(auth, provider);
     cacheProfileMeta(result);
@@ -195,29 +228,22 @@ async function loginWithProvider(name) {
     if (err.code === "auth/popup-closed-by-user") return;
 
     if (err.code === "auth/popup-blocked") {
-      try {
-        await signInWithRedirect(auth, getAuthProvider(name));
-        return;
-      } catch (redirectErr) {
+      signInWithRedirect(auth, getAuthProvider(name)).catch((redirectErr) => {
         console.error("跳转登录失败：", redirectErr);
-        alert(`${label} 登录失败：弹窗被拦截。请允许本站弹窗，或换用跳转登录。`);
-        return;
-      }
+        showLoginError(label, redirectErr);
+      });
+      return;
     }
 
-    let hint = "";
-    if (err.code === "auth/unauthorized-domain") {
-      hint =
-        "\n\n请在 Firebase 控制台 → Authentication → Settings → Authorized domains 中添加当前域名（例如 127.0.0.1 或 localhost）。";
-    } else if (err.code === "auth/operation-not-allowed") {
-      hint =
-        "\n\n请在 Firebase 控制台 → Authentication → Sign-in method 中启用 " + label + " 登录。";
-    }
-
-    alert(
-      `${label} 登录失败（${err.code || "error"}）：${err.message || "未知错误"}${hint}`
-    );
+    showLoginError(label, err);
   }
+}
+
+function getProviderLabel(user) {
+  const id = user?.providerData?.[0]?.providerId || "";
+  if (id.includes("github")) return "GitHub";
+  if (id.includes("google")) return "Google";
+  return "访客";
 }
 
 async function logout() {
@@ -1266,9 +1292,20 @@ async function deleteComment(commentId, isRoot) {
 }
 
 function bindAuthEvents() {
-  els.btnLoginGoogle?.addEventListener("click", () => loginWithProvider("google"));
-  els.btnLoginGithub?.addEventListener("click", () => loginWithProvider("github"));
-  els.btnLogout?.addEventListener("click", logout);
+  const bindLogin = (btn, name) => {
+    if (!btn) return;
+    btn.addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+        loginWithProvider(name);
+      },
+      { passive: false }
+    );
+  };
+  bindLogin(els.btnLoginGoogle, "google");
+  bindLogin(els.btnLoginGithub, "github");
+  els.btnLogout?.addEventListener("click", () => void logout());
 }
 
 function bindEditorEvents() {
@@ -1343,8 +1380,8 @@ function bindEditorEvents() {
   });
 }
 
-function boot() {
-  initFirebase();
+async function boot() {
+  await initFirebase();
   bindAuthEvents();
   bindLightboxEvents();
   try {
@@ -1356,4 +1393,4 @@ function boot() {
   updateAuthUI();
 }
 
-boot();
+void boot();

@@ -9,12 +9,19 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: mihoyo-daily-sync
+  cancel-in-progress: false
+
 jobs:
   sync-mihoyo:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -28,10 +35,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add 咖啡馆/mihoyo_data.json 咖啡馆/images/mihoyo/
+          git add 咖啡馆/mihoyo_data.json 咖啡馆/images/mihoyo/ 咖啡馆/archive/
           if git diff --staged --quiet; then
             echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(cafe): sync MiHoYo latest replies $(date -u +%Y-%m-%d)"
+          git push origin HEAD:master
+
+      - name: Trigger Vercel redeploy
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$VERCEL_DEPLOY_HOOK" ]; then
+            curl -fsS -X POST "$VERCEL_DEPLOY_HOOK"
           else
-            git commit -m "chore: sync MiHoYo cafe latest replies"
-            git push
+            echo "VERCEL_DEPLOY_HOOK not set; relying on git push to trigger Vercel."
           fi
