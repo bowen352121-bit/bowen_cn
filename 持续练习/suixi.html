@@ -224,6 +224,11 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* 移动端目录轮播（PC 隐藏） */
+    .lore-carousel {
+      display: none;
+    }
+
     .lore-body {
       flex: 1;
       overflow-y: auto;
@@ -294,8 +299,8 @@
       }
 
       .scan-hud {
-        top: 38%;
-        width: min(68vmin, 88%);
+        top: 34%;
+        width: min(72vmin, 92%);
       }
 
       .lore-panel {
@@ -305,10 +310,10 @@
         right: 0;
         bottom: 0;
         width: 100%;
-        max-height: min(46vh, 360px);
+        max-height: min(52vh, 400px);
         transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
         border-left: none;
-        border-top: 1px solid rgba(255, 210, 80, 0.1);
+        border-top: 1px solid rgba(255, 210, 80, 0.14);
       }
       .lore-panel.is-collapsed {
         max-height: 0;
@@ -316,10 +321,11 @@
       }
       .lore-panel-inner {
         width: 100%;
-        max-height: min(46vh, 360px);
-        padding: 1rem 1rem 0.85rem;
-        padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
-        background: #050810;
+        max-height: min(52vh, 400px);
+        padding: 0.65rem 0 0;
+        padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, rgba(8, 12, 20, 0.97) 0%, #050810 100%);
+        gap: 0;
       }
       .lore-toggle {
         left: 50%;
@@ -335,33 +341,140 @@
         transform: rotate(180deg);
       }
 
-      .lore-title {
-        font-size: 1.85rem;
+      .back-link {
+        margin: 0 1rem 0.5rem;
+        font-size: 0.7rem;
       }
 
-      .lore-subtitle {
-        font-size: 0.62rem;
-        margin-bottom: 1rem;
+      .lore-tag {
+        margin: 0 1rem 0.55rem;
+        font-size: 0.58rem;
       }
 
-      .lore-nav-item {
-        padding: 0.5rem 0.4rem;
-        font-size: 0.78rem;
+      .lore-title,
+      .lore-subtitle,
+      .lore-divider,
+      .lore-nav {
+        display: none;
+      }
+
+      .lore-carousel {
+        display: block;
+        flex-shrink: 0;
+        margin-bottom: 0.65rem;
+      }
+
+      .lore-carousel-row {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        padding: 0 0.35rem;
+      }
+
+      .lore-carousel-arrow {
+        flex-shrink: 0;
+        width: 2.75rem;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0;
+        border: none;
+        background: transparent;
+        color: rgba(200, 210, 220, 0.55);
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .lore-carousel-arrow svg {
+        width: 1.125rem;
+        height: 1.125rem;
+      }
+
+      .lore-carousel-arrow:hover,
+      .lore-carousel-arrow:active {
+        color: rgba(255, 210, 100, 0.95);
+      }
+
+      .lore-carousel-head {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.65rem 0.85rem;
+        background:
+          repeating-linear-gradient(
+            -45deg,
+            rgba(255, 255, 255, 0.025) 0,
+            rgba(255, 255, 255, 0.025) 2px,
+            transparent 2px,
+            transparent 7px
+          ),
+          linear-gradient(180deg, rgba(28, 34, 44, 0.95) 0%, rgba(12, 16, 24, 0.98) 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+      }
+
+      .lore-carousel-index {
+        flex-shrink: 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.04em;
+        color: #ffc448;
+      }
+
+      .lore-carousel-title {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.88rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: rgba(235, 240, 248, 0.92);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .lore-carousel-bars {
+        display: flex;
+        gap: 0.28rem;
+        padding: 0.55rem 1rem 0.35rem;
+      }
+
+      .lore-carousel-bar {
+        flex: 1;
+        height: 3px;
+        border-radius: 1px;
+        background: rgba(255, 255, 255, 0.12);
+        transition: background 0.25s ease, transform 0.25s ease;
+      }
+
+      .lore-carousel-bar.is-active {
+        background: #ffc448;
+        transform: scaleY(1.15);
       }
 
       .lore-body {
+        flex: 1;
         font-size: 0.8rem;
-        line-height: 1.75;
+        line-height: 1.78;
+        padding: 0 1rem;
+        min-height: 0;
+        -webkit-overflow-scrolling: touch;
       }
 
-      .back-link {
-        margin-bottom: 1rem;
+      .lore-footer {
+        margin-top: 0.65rem;
+        padding: 0.55rem 1rem 0;
+        font-size: 0.58rem;
       }
 
       .hint-drag {
         left: 50%;
         transform: translateX(-50%);
-        bottom: calc(min(46vh, 360px) + 0.5rem);
+        bottom: calc(min(52vh, 400px) + 0.5rem);
         text-align: center;
         white-space: nowrap;
         font-size: 0.62rem;
@@ -421,6 +534,22 @@
         </button>
       </nav>
 
+      <div class="lore-carousel" id="lore-carousel" aria-label="资料目录">
+        <div class="lore-carousel-row">
+          <button type="button" class="lore-carousel-arrow lore-carousel-prev" id="lore-prev" aria-label="上一项">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+          </button>
+          <div class="lore-carousel-head">
+            <span class="lore-carousel-index" id="lore-carousel-index">1/5</span>
+            <span class="lore-carousel-title" id="lore-carousel-title">极北王庭 · 总览</span>
+          </div>
+          <button type="button" class="lore-carousel-arrow lore-carousel-next" id="lore-next" aria-label="下一项">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </button>
+        </div>
+        <div class="lore-carousel-bars" id="lore-carousel-bars" aria-hidden="true"></div>
+      </div>
+
       <div class="lore-body">
         <section class="lore-section is-active" data-lore="01">
           <p>
@@ -467,26 +596,88 @@
 
       const navItems = panel.querySelectorAll(".lore-nav-item[data-lore]");
       const sections = panel.querySelectorAll(".lore-section[data-lore]");
+      const carouselIndex = document.getElementById("lore-carousel-index");
+      const carouselTitle = document.getElementById("lore-carousel-title");
+      const carouselBars = document.getElementById("lore-carousel-bars");
+      const prevBtn = document.getElementById("lore-prev");
+      const nextBtn = document.getElementById("lore-next");
+
+      function navEntryTitle(item) {
+        const num = item.querySelector(".lore-nav-num");
+        let text = item.textContent.trim();
+        if (num) text = text.replace(num.textContent, "").trim();
+        return text;
+      }
+
+      function buildCarouselBars() {
+        if (!carouselBars) return;
+        carouselBars.replaceChildren();
+        navItems.forEach((item, i) => {
+          const bar = document.createElement("span");
+          bar.className = "lore-carousel-bar" + (item.classList.contains("is-active") ? " is-active" : "");
+          bar.dataset.lore = item.dataset.lore || String(i + 1).padStart(2, "0");
+          carouselBars.appendChild(bar);
+        });
+      }
+
+      function updateCarousel(activeId) {
+        const items = [...navItems];
+        const idx = items.findIndex((item) => item.dataset.lore === activeId);
+        if (idx < 0) return;
+        const total = items.length;
+        if (carouselIndex) carouselIndex.textContent = `${idx + 1}/${total}`;
+        if (carouselTitle) carouselTitle.textContent = navEntryTitle(items[idx]);
+        carouselBars?.querySelectorAll(".lore-carousel-bar").forEach((bar, i) => {
+          bar.classList.toggle("is-active", i === idx);
+        });
+      }
+
+      function activateLore(id) {
+        if (!id) return;
+        navItems.forEach((nav) => {
+          const active = nav.dataset.lore === id;
+          nav.classList.toggle("is-active", active);
+          if (active) nav.setAttribute("aria-current", "page");
+          else nav.removeAttribute("aria-current");
+        });
+        sections.forEach((section) => {
+          const active = section.dataset.lore === id;
+          section.classList.toggle("is-active", active);
+          section.hidden = !active;
+        });
+        updateCarousel(id);
+      }
+
+      buildCarouselBars();
 
       navItems.forEach((item) => {
         item.addEventListener("click", () => {
-          const id = item.dataset.lore;
-          if (!id) return;
-
-          navItems.forEach((nav) => {
-            const active = nav.dataset.lore === id;
-            nav.classList.toggle("is-active", active);
-            if (active) nav.setAttribute("aria-current", "page");
-            else nav.removeAttribute("aria-current");
-          });
-
-          sections.forEach((section) => {
-            const active = section.dataset.lore === id;
-            section.classList.toggle("is-active", active);
-            section.hidden = !active;
-          });
+          activateLore(item.dataset.lore);
         });
       });
+
+      prevBtn?.addEventListener("click", () => {
+        const items = [...navItems];
+        const idx = items.findIndex((item) => item.classList.contains("is-active"));
+        const next = (idx - 1 + items.length) % items.length;
+        activateLore(items[next].dataset.lore);
+      });
+
+      nextBtn?.addEventListener("click", () => {
+        const items = [...navItems];
+        const idx = items.findIndex((item) => item.classList.contains("is-active"));
+        const next = (idx + 1) % items.length;
+        activateLore(items[next].dataset.lore);
+      });
+
+      carouselBars?.addEventListener("click", (e) => {
+        const bar = e.target.closest(".lore-carousel-bar");
+        if (!bar?.dataset.lore) return;
+        activateLore(bar.dataset.lore);
+      });
+
+      const activeItem = panel.querySelector(".lore-nav-item.is-active");
+      if (activeItem?.dataset.lore) updateCarousel(activeItem.dataset.lore);
     })();
   </script>
 
