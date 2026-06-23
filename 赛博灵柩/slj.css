@@ -25,6 +25,8 @@ body.slj-mj-page > header {
   background: rgba(1, 6, 18, 0.55) !important;
   border-color: rgba(0, 229, 255, 0.06) !important;
   color: #e4e4e7;
+  pointer-events: auto;
+  z-index: 100 !important;
 }
 
 body.slj-mj-page .header-brand {

@@ -283,8 +283,19 @@
     }
 
     @media (max-width: 768px) {
+      html, body {
+        overflow: hidden;
+        height: 100%;
+        height: 100dvh;
+      }
+
       #app {
         --scene-center-x: 50%;
+      }
+
+      .scan-hud {
+        top: 38%;
+        width: min(68vmin, 88%);
       }
 
       .lore-panel {
@@ -294,7 +305,7 @@
         right: 0;
         bottom: 0;
         width: 100%;
-        max-height: 42vh;
+        max-height: min(46vh, 360px);
         transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
         border-left: none;
         border-top: 1px solid rgba(255, 210, 80, 0.1);
@@ -305,8 +316,9 @@
       }
       .lore-panel-inner {
         width: 100%;
-        max-height: 42vh;
-        padding: 1.25rem 1.25rem 1rem;
+        max-height: min(46vh, 360px);
+        padding: 1rem 1rem 0.85rem;
+        padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
         background: #050810;
       }
       .lore-toggle {
@@ -322,7 +334,43 @@
       .lore-panel.is-collapsed .lore-toggle svg {
         transform: rotate(180deg);
       }
-      .hint-drag { left: 1rem; bottom: 0.75rem; }
+
+      .lore-title {
+        font-size: 1.85rem;
+      }
+
+      .lore-subtitle {
+        font-size: 0.62rem;
+        margin-bottom: 1rem;
+      }
+
+      .lore-nav-item {
+        padding: 0.5rem 0.4rem;
+        font-size: 0.78rem;
+      }
+
+      .lore-body {
+        font-size: 0.8rem;
+        line-height: 1.75;
+      }
+
+      .back-link {
+        margin-bottom: 1rem;
+      }
+
+      .hint-drag {
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(min(46vh, 360px) + 0.5rem);
+        text-align: center;
+        white-space: nowrap;
+        font-size: 0.62rem;
+        transition: bottom 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #app.sidebar-collapsed .hint-drag {
+        bottom: 2.75rem;
+      }
     }
   </style>
 </head>
@@ -409,6 +457,13 @@
         toggle.setAttribute("aria-expanded", String(!collapsed));
         toggle.setAttribute("aria-label", collapsed ? "展开侧栏" : "收起侧栏");
       });
+
+      if (window.matchMedia("(max-width: 768px)").matches) {
+        panel.classList.add("is-collapsed");
+        app.classList.add("sidebar-collapsed");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "展开侧栏");
+      }
 
       const navItems = panel.querySelectorAll(".lore-nav-item[data-lore]");
       const sections = panel.querySelectorAll(".lore-section[data-lore]");

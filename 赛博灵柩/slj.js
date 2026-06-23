@@ -65,6 +65,16 @@ function exitArticleView() {
   }
 }
 
+function handleBrandHomeClick() {
+  const inArticle = articleView && !articleView.classList.contains("hidden");
+  if (inArticle) {
+    exitArticleView();
+    return;
+  }
+  window.BowenMusic?.saveMusicTime();
+  window.location.href = "../bowen.html";
+}
+
 if (btnBackHome) {
   btnBackHome.addEventListener("click", exitArticleView);
 }
@@ -84,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("slj-mj-page");
   document.body.classList.remove("mobile-sidebar-open");
 
-  document.getElementById("btn-brand-home")?.addEventListener("click", exitArticleView);
+  document.getElementById("btn-brand-home")?.addEventListener("click", handleBrandHomeClick);
 
   const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
   const mobileMenuClose = document.getElementById("mobile-menu-close");

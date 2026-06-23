@@ -613,3 +613,111 @@ button {
 .cafe-lightbox-close:hover {
     background: rgba(255, 255, 255, 0.22);
 }
+
+/* ── 手机端排版优化 ── */
+@media (max-width: 639px) {
+    .cafe-board {
+        padding: 0.65rem 0 1.5rem;
+    }
+
+    .cafe-board-inner {
+        padding: 0 0.75rem;
+    }
+
+    .cafe-board-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.65rem;
+        padding: 0.75rem;
+    }
+
+    .cafe-board-title {
+        font-size: 1.125rem;
+    }
+
+    .cafe-board-tools {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .cafe-sort {
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 2px;
+    }
+
+    .cafe-sort::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cafe-sort-btn {
+        flex-shrink: 0;
+        padding: 0.4rem 0.65rem;
+        font-size: 0.75rem;
+    }
+
+    .cafe-publish-btn {
+        width: 100%;
+        text-align: center;
+        padding: 0.55rem 1rem;
+    }
+
+    .cafe-post {
+        padding: 0.75rem;
+    }
+
+    .cafe-post-title {
+        font-size: 0.9375rem;
+    }
+
+    .cafe-post-excerpt {
+        font-size: 0.8125rem;
+    }
+
+    .cafe-post-images {
+        max-width: none;
+    }
+
+    .cafe-post-foot {
+        flex-wrap: wrap;
+        gap: 0.5rem 0.85rem;
+    }
+
+    .cafe-aside {
+        gap: 0.65rem;
+    }
+
+    .cafe-widget {
+        padding: 0.75rem;
+    }
+
+    .cafe-map-tags {
+        gap: 0.35rem;
+    }
+
+    .cafe-map-tag {
+        font-size: 0.75rem;
+        padding: 0.28rem 0.55rem;
+    }
+
+    .hero {
+        height: 8.5rem;
+    }
+
+    .hero-copy h1 {
+        font-size: 1.375rem;
+    }
+
+    .hero-copy p {
+        font-size: 0.75rem;
+    }
+
+    .cafe-footer {
+        padding: 1rem 0.75rem;
+        font-size: 0.6875rem;
+        line-height: 1.5;
+    }
+}

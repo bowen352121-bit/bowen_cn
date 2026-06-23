@@ -106,9 +106,11 @@ function initFirebase() {
       if (result?.user) cacheProfileMeta(result);
     })
     .catch((err) => {
-      if (err.code !== "auth/popup-closed-by-user") {
-        console.error("登录回调失败：", err);
-      }
+      if (err.code === "auth/popup-closed-by-user") return;
+      console.error("登录回调失败：", err);
+      els.configBanner.classList.remove("hidden");
+      els.configBanner.textContent =
+        "登录失败：" + (err.message || err.code || "未知错误");
     });
 
   onAuthStateChanged(auth, (user) => {
@@ -153,6 +155,13 @@ function getAuthProvider(name) {
   return provider;
 }
 
+function prefersRedirectLogin() {
+  return (
+    window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
+    window.matchMedia("(max-width: 768px)").matches
+  );
+}
+
 function getProviderLabel(user) {
   const id = user?.providerData?.[0]?.providerId || "";
   if (id.includes("github")) return "GitHub";
@@ -166,8 +175,20 @@ async function loginWithProvider(name) {
     return;
   }
   const label = name === "github" ? "GitHub" : "Google";
+  const provider = getAuthProvider(name);
+
+  if (prefersRedirectLogin()) {
+    try {
+      await signInWithRedirect(auth, provider);
+    } catch (err) {
+      console.error(`${label} 跳转登录失败：`, err);
+      alert(`${label} 登录失败：${err.message || "请稍后重试"}`);
+    }
+    return;
+  }
+
   try {
-    const result = await signInWithPopup(auth, getAuthProvider(name));
+    const result = await signInWithPopup(auth, provider);
     cacheProfileMeta(result);
   } catch (err) {
     console.error(`${label} 登录失败：`, err);
