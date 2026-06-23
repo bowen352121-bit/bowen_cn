@@ -262,21 +262,133 @@ button {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-.cafe-mihoyo-foot {
-    align-items: center;
+.cafe-replies {
+    margin-top: 0;
+    padding: 0.65rem 0 0;
+    border-top: 1px dashed #ececec;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
 }
 
-.cafe-mihoyo-link {
-    margin-left: auto;
+.cafe-replies[hidden] {
+    display: none;
+}
+
+.cafe-reply-toggle {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    transition: color 0.15s ease;
+}
+
+.cafe-reply-toggle:hover .cafe-stat-icon,
+.cafe-reply-toggle:hover .cafe-stat-num {
+    color: var(--mhy-orange);
+}
+
+.cafe-reply-toggle.is-open .cafe-stat-icon,
+.cafe-reply-toggle.is-open .cafe-stat-num {
+    color: var(--mhy-orange-deep);
+}
+
+.cafe-reply {
+    padding: 0.55rem 0.65rem;
+    background: #fafafa;
+    border-radius: 8px;
+}
+
+.cafe-reply--sub {
+    margin-left: 1.25rem;
+    background: #f5f5f5;
+}
+
+.cafe-reply-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.35rem;
+}
+
+.cafe-reply-head .cafe-post-avatar,
+.cafe-reply-head .cafe-post-avatar-img {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.6875rem;
+}
+
+.cafe-reply-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.cafe-reply-author {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--mhy-orange);
-    white-space: nowrap;
+    color: #444;
 }
 
-.cafe-mihoyo-link:hover {
+.cafe-reply-time {
+    font-size: 0.75rem;
+    color: #aaa;
+}
+
+.cafe-reply-content {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: #555;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.cafe-reply-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+.cafe-reply-img {
+    max-width: 7.5rem;
+    max-height: 7.5rem;
+    border-radius: 6px;
+    object-fit: cover;
+    cursor: zoom-in;
+}
+
+.cafe-like-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    transition: color 0.15s ease;
+}
+
+.cafe-like-btn:hover:not(:disabled) .cafe-stat-icon,
+.cafe-like-btn:hover:not(:disabled) .cafe-stat-num {
+    color: var(--mhy-orange);
+}
+
+.cafe-like-btn.is-liked .cafe-stat-icon {
+    color: var(--mhy-orange);
+}
+
+.cafe-like-btn.is-liked .cafe-stat-icon path {
+    fill: currentColor;
+}
+
+.cafe-like-btn.is-liked .cafe-stat-num {
     color: var(--mhy-orange-deep);
-    text-decoration: underline;
+}
+
+.cafe-like-btn:disabled {
+    cursor: default;
 }
 
 .cafe-mihoyo-empty {
@@ -455,12 +567,44 @@ button {
 
 .cafe-post-foot {
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.85rem 1.1rem;
     margin-top: 0.65rem;
-    padding-top: 0.5rem;
+    padding-top: 0.55rem;
     border-top: 1px solid #f0f0f0;
+}
+
+.cafe-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    color: #9aa0a6;
+    line-height: 1;
+    user-select: none;
+}
+
+.cafe-stat-icon {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    flex-shrink: 0;
+    color: #b0b5bb;
+}
+
+.cafe-stat-num {
     font-size: 0.8125rem;
-    color: var(--mhy-muted);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    color: #888;
+}
+
+.cafe-stat--like .cafe-stat-icon {
+    color: #c4c8cc;
+}
+
+.cafe-stat--like .cafe-stat-num {
+    color: #8a8f94;
 }
 
 .cafe-load-more {

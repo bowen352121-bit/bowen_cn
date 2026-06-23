@@ -22,7 +22,10 @@ API_URL = (
     "?forum_id=57&sort_type=1&is_good=false&page_size=10&page=1"
 )
 FORUM_ID = 57
+GAME_ID = 8
 LIMIT = 10
+REPLIES_PER_POST = 6
+MAX_SUB_REPLIES = 3
 MAX_WORKERS = 6
 # 米游社违规/删除占位图，不下载、不展示
 VIOLATION_IMAGE_MARKERS = (
@@ -204,7 +207,110 @@ def parse_item(item: dict, downloaded: dict[str, str]) -> dict | None:
     }
 
 
-def schedule_downloads(raw_list: list[dict]) -> dict[str, str]:
+def build_replies_url(post_id: str) -> str:
+    return (
+        "https://bbs-api.miyoushe.com/post/wapi/getPostReplies"
+        f"?post_id={post_id}&gids={GAME_ID}&size={REPLIES_PER_POST}&order_type=1&last_id=0"
+    )
+
+
+def parse_struct_content(text: str) -> str:
+    if not text or not text.strip().startswith("["):
+        return strip_html(text)
+    try:
+        parts = json.loads(text)
+    except json.JSONDecodeError:
+        return strip_html(text)
+    chunks: list[str] = []
+    for part in parts:
+        if not isinstance(part, dict):
+            continue
+        if "insert" in part:
+            insert = part["insert"]
+            if isinstance(insert, str):
+                chunks.append(insert)
+    return strip_html("".join(chunks))
+
+
+def collect_reply_image_urls(item: dict) -> list[str]:
+    urls: list[str] = []
+    for img in item.get("images") or []:
+        url = (img.get("url") or "").strip()
+        if url and url not in urls and not is_violation_image(url):
+            urls.append(url)
+    return filter_valid_images(urls)[:3]
+
+
+def parse_reply_item(
+    item: dict,
+    post_id: str,
+    downloaded: dict[str, str],
+    *,
+    is_sub: bool = False,
+) -> dict | None:
+    reply = item.get("reply") or {}
+    user = item.get("user") or {}
+    stat = item.get("stat") or {}
+
+    reply_id = str(reply.get("reply_id") or "")
+    if not reply_id:
+        return None
+
+    nickname = (user.get("nickname") or "匿名用户").strip()
+    avatar_url = (user.get("avatar_url") or "").strip()
+    content = strip_html(reply.get("content") or "")
+    if not content:
+        content = parse_struct_content(reply.get("struct_content") or "")
+
+    image_urls = collect_reply_image_urls(item)
+    avatar_local = downloaded.get(avatar_url, "") if avatar_url else ""
+    images_local = [downloaded[url] for url in image_urls if url in downloaded]
+
+    created_at = int(reply.get("created_at") or 0)
+    if created_at:
+        dt = datetime.fromtimestamp(created_at, tz=timezone.utc)
+        time_label = dt.strftime("%m-%d %H:%M")
+    else:
+        time_label = ""
+
+    return {
+        "reply_id": reply_id,
+        "post_id": post_id,
+        "author": nickname,
+        "avatar_url": avatar_url,
+        "avatar_local": avatar_local,
+        "content": content,
+        "time": time_label,
+        "is_sub": is_sub,
+        "images_url": image_urls,
+        "images_local": images_local,
+        "likes": int(stat.get("like_num") or 0),
+    }
+
+
+def fetch_post_replies(post_id: str, downloaded: dict[str, str]) -> list[dict]:
+    try:
+        payload = fetch_json(build_replies_url(post_id))
+    except Exception as err:
+        log(f"  ! replies failed for {post_id}: {err}")
+        return []
+
+    raw_list = (payload.get("data") or {}).get("list") or []
+    comments: list[dict] = []
+
+    for item in raw_list[:REPLIES_PER_POST]:
+        parsed = parse_reply_item(item, post_id, downloaded, is_sub=False)
+        if parsed and (parsed["content"] or parsed["images_url"]):
+            comments.append(parsed)
+        for sub in (item.get("sub_replies") or [])[:MAX_SUB_REPLIES]:
+            sub_parsed = parse_reply_item(sub, post_id, downloaded, is_sub=True)
+            if sub_parsed and (sub_parsed["content"] or sub_parsed["images_url"]):
+                comments.append(sub_parsed)
+
+    return comments
+
+
+def collect_download_jobs(raw_list: list[dict], posts: list[dict]) -> list[tuple[str, Path]]:
     jobs: list[tuple[str, Path]] = []
     seen: set[str] = set()
 
@@ -225,6 +331,33 @@ def schedule_downloads(raw_list: list[dict]) -> dict[str, str]:
                 seen.add(url)
                 jobs.append((url, IMAGES_DIR / safe_filename(f"post_{post_id}", url, idx)))
 
+    for post in posts:
+        post_id = post.get("post_id") or "post"
+        for comment in post.get("comments") or []:
+            avatar_url = (comment.get("avatar_url") or "").strip()
+            reply_id = comment.get("reply_id") or "reply"
+            if avatar_url and avatar_url not in seen:
+                seen.add(avatar_url)
+                jobs.append(
+                    (
+                        avatar_url,
+                        IMAGES_DIR / safe_filename(f"avatar_r_{reply_id}", avatar_url),
+                    )
+                )
+            for idx, url in enumerate(comment.get("images_url") or []):
+                if url and url not in seen and not is_violation_image(url):
+                    seen.add(url)
+                    jobs.append(
+                        (
+                            url,
+                            IMAGES_DIR / safe_filename(f"reply_{reply_id}", url, idx),
+                        )
+                    )
+
+    return jobs
+
+
+def download_all(jobs: list[tuple[str, Path]]) -> dict[str, str]:
     downloaded: dict[str, str] = {}
     if not jobs:
         return downloaded
@@ -243,6 +376,22 @@ def schedule_downloads(raw_list: list[dict]) -> dict[str, str]:
     return downloaded
 
 
+def apply_downloads_to_post(post: dict, downloaded: dict[str, str]) -> None:
+    avatar_url = (post.get("avatar_url") or "").strip()
+    if avatar_url and avatar_url in downloaded:
+        post["avatar_local"] = downloaded[avatar_url]
+    post["images_local"] = [
+        downloaded[url] for url in (post.get("images_url") or []) if url in downloaded
+    ]
+    for comment in post.get("comments") or []:
+        c_avatar = (comment.get("avatar_url") or "").strip()
+        if c_avatar and c_avatar in downloaded:
+            comment["avatar_local"] = downloaded[c_avatar]
+        comment["images_local"] = [
+            downloaded[url] for url in (comment.get("images_url") or []) if url in downloaded
+        ]
+
+
 def main() -> int:
     log(f"fetch MiHoYo cafe forum_id={FORUM_ID}")
     payload = fetch_json(API_URL)
@@ -251,15 +400,24 @@ def main() -> int:
         log("warning: empty API list")
         return 1
 
-    downloaded = schedule_downloads(raw_list)
-
     posts: list[dict] = []
     for item in raw_list[:LIMIT]:
-        parsed = parse_item(item, downloaded)
-        if parsed:
-            posts.append(parsed)
-            label = (parsed["title"] or parsed["content"])[:40]
-            log(f"  ok [{parsed['author']}] {label}")
+        parsed = parse_item(item, {})
+        if not parsed:
+            continue
+        post_id = parsed["post_id"]
+        log(f"  fetching replies for {post_id} …")
+        parsed["comments"] = fetch_post_replies(post_id, {})
+        posts.append(parsed)
+
+    jobs = collect_download_jobs(raw_list, posts)
+    downloaded = download_all(jobs)
+
+    for post in posts:
+        apply_downloads_to_post(post, downloaded)
+        label = (post["title"] or post["content"])[:40]
+        reply_count = len(post.get("comments") or [])
+        log(f"  ok [{post['author']}] {label} ({reply_count} replies)")
 
     output = {
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

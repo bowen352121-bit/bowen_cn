@@ -12,10 +12,17 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
+  doc,
+  getDoc,
+  setDoc,
+  runTransaction,
+  increment,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const PAGE_SIZE = 8;
 const FIRESTORE_COLLECTION = "cafe_posts";
+const CAFE_LIKES_COLLECTION = "cafe_likes";
+const CAFE_VIEWS_COLLECTION = "cafe_views";
 const MIHOYO_VIOLATION_IMAGE_RE = /weigui|shanchu|违规/i;
 
 const AVATAR_COLORS = [
@@ -249,7 +256,16 @@ let db = null;
 let currentUser = null;
 let dynamicPosts = [];
 let postsUnsubscribe = null;
+let likesUnsubscribe = null;
+let viewsUnsubscribe = null;
 let isSubmitting = false;
+let mihoyoPosts = [];
+const extraLikeCounts = {};
+const extraViewCounts = {};
+const userLikedKeys = new Set();
+let viewCountArmed = false;
+let viewCountFlushed = false;
+let viewTrackingSetup = false;
 
 let currentSort = "newest";
 let displayedCount = PAGE_SIZE;
@@ -344,6 +360,7 @@ function mapFirestorePost(id, data) {
     sortNew: createdMs,
     sortReply: comments,
     sortHot: likes * 3 + comments * 2 + Math.floor(views / 10),
+    likeKey: `local_${id}`,
   };
 }
 
@@ -397,6 +414,267 @@ function renderImages(images) {
   return `<div class="cafe-post-images ${cls}">${thumbs}${more}</div>`;
 }
 
+const CAFE_STAT_ICONS = {
+  comment:
+    '<svg class="cafe-stat-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.25 3.75A1.25 1.25 0 013.5 2.5h9a1.25 1.25 0 011.25 1.25v5.5A1.25 1.25 0 0112.5 10.5H6.6L4 12.75v-2.25H3.5a1.25 1.25 0 01-1.25-1.25v-5.5z" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/></svg>',
+  view:
+    '<svg class="cafe-stat-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 4.25c2.45 0 4.55 1.45 5.65 3.75-1.1 2.3-3.2 3.75-5.65 3.75S3.45 10.3 2.35 8c1.1-2.3 3.2-3.75 5.65-3.75z" fill="none" stroke="currentColor" stroke-width="1.15"/><circle cx="8" cy="8" r="1.65" fill="none" stroke="currentColor" stroke-width="1.15"/></svg>',
+  like:
+    '<svg class="cafe-stat-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13.5S2.75 10.2 2.75 6.45c0-1.55 1.25-2.8 2.8-2.8.95 0 1.8.48 2.25 1.22.45-.74 1.3-1.22 2.25-1.22 1.55 0 2.8 1.25 2.8 2.8C13.25 10.2 8 13.5 8 13.5z" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/></svg>',
+};
+
+function formatStatNum(n) {
+  const num = Number(n) || 0;
+  if (num >= 10000) return `${(num / 10000).toFixed(1).replace(/\.0$/, "")}w`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  return String(num);
+}
+
+function getTotalLikes(baseLikes, likeKey) {
+  const base = Number(baseLikes) || 0;
+  if (!likeKey) return base;
+  return base + (extraLikeCounts[likeKey] || 0);
+}
+
+function getTotalViews(baseViews, viewKey) {
+  const base = Number(baseViews) || 0;
+  if (!viewKey) return base;
+  return base + (extraViewCounts[viewKey] || 0);
+}
+
+function getMihoyoStatKey(post) {
+  if (!post?.post_id) return null;
+  return `mihoyo_${post.post_id}`;
+}
+
+function getMihoyoLikeKey(post) {
+  return getMihoyoStatKey(post);
+}
+
+function renderStat(kind, value) {
+  const labels = { comment: "评论", view: "浏览", like: "点赞" };
+  const icon = CAFE_STAT_ICONS[kind] || "";
+  const num = formatStatNum(value);
+  return `<span class="cafe-stat cafe-stat--${kind}" title="${labels[kind] || ""}">${icon}<span class="cafe-stat-num">${num}</span></span>`;
+}
+
+function renderCommentToggle(value, targetId) {
+  const icon = CAFE_STAT_ICONS.comment;
+  const num = formatStatNum(value);
+  return `<button type="button" class="cafe-stat cafe-stat--comment cafe-reply-toggle" data-reply-target="${escapeHtml(targetId)}" aria-expanded="false" title="展开回复">${icon}<span class="cafe-stat-num">${num}</span></button>`;
+}
+
+function renderViewStat(baseViews, viewKey) {
+  const total = getTotalViews(baseViews, viewKey);
+  const icon = CAFE_STAT_ICONS.view;
+  return `<span class="cafe-stat cafe-stat--view" data-view-key="${escapeHtml(viewKey)}" data-base-views="${Number(baseViews) || 0}" title="浏览">${icon}<span class="cafe-stat-num">${formatStatNum(total)}</span></span>`;
+}
+
+function renderPostFoot(stats, options = {}) {
+  const {
+    extraHtml = "",
+    className = "cafe-post-foot",
+    likeKey = null,
+    liked = false,
+    viewKey = null,
+    commentToggleTarget = null,
+  } = options;
+  const commentHtml = commentToggleTarget
+    ? renderCommentToggle(stats.comments, commentToggleTarget)
+    : renderStat("comment", stats.comments);
+  const viewHtml = viewKey ? renderViewStat(stats.views, viewKey) : renderStat("view", stats.views);
+  const likeHtml = likeKey
+    ? renderLikeStat(stats.likes, likeKey, liked)
+    : renderStat("like", stats.likes);
+  return `<div class="${className}">${commentHtml}${viewHtml}${likeHtml}${extraHtml}</div>`;
+}
+
+function renderReplyImages(images) {
+  if (!images?.length) return "";
+  const thumbs = images
+    .slice(0, 2)
+    .map((src) => `<img class="cafe-reply-img" src="${escapeHtml(src)}" alt="回复配图" loading="lazy">`)
+    .join("");
+  return `<div class="cafe-reply-images">${thumbs}</div>`;
+}
+
+function renderReplyItem(comment) {
+  const cls = comment.is_sub ? "cafe-reply cafe-reply--sub" : "cafe-reply";
+  return `<div class="${cls}">
+    <div class="cafe-reply-head">
+      ${renderAvatarHtml(comment.author, comment.avatar_local)}
+      <div class="cafe-reply-meta">
+        <span class="cafe-reply-author">${escapeHtml(comment.author)}</span>
+        ${comment.time ? `<span class="cafe-reply-time">${escapeHtml(comment.time)}</span>` : ""}
+      </div>
+    </div>
+    ${comment.content ? `<p class="cafe-reply-content">${escapeHtml(comment.content)}</p>` : ""}
+    ${renderReplyImages(comment.images_local)}
+  </div>`;
+}
+
+function renderLikeStat(baseLikes, likeKey, liked) {
+  const total = getTotalLikes(baseLikes, likeKey);
+  const icon = CAFE_STAT_ICONS.like;
+  return `<button type="button" class="cafe-stat cafe-stat--like cafe-like-btn${liked ? " is-liked" : ""}" data-like-key="${escapeHtml(likeKey)}" data-base-likes="${Number(baseLikes) || 0}" title="点赞" aria-pressed="${liked ? "true" : "false"}"${liked ? " disabled" : ""}>${icon}<span class="cafe-stat-num">${formatStatNum(total)}</span></button>`;
+}
+
+function renderReplies(comments, targetId) {
+  if (!comments?.length || !targetId) return "";
+  return `<div class="cafe-replies" id="${escapeHtml(targetId)}" hidden>${comments.map(renderReplyItem).join("")}</div>`;
+}
+
+function toggleReplyPanel(btn) {
+  const panel = document.getElementById(btn.dataset.replyTarget || "");
+  if (!panel) return;
+  const open = panel.hidden;
+  panel.hidden = !open;
+  btn.classList.toggle("is-open", open);
+  btn.setAttribute("aria-expanded", open ? "true" : "false");
+  btn.title = open ? "收起回复" : "展开回复";
+}
+
+function updateLikeCountsInDom() {
+  document.querySelectorAll(".cafe-like-btn").forEach((btn) => {
+    const key = btn.dataset.likeKey;
+    if (!key) return;
+    const base = Number(btn.dataset.baseLikes) || 0;
+    const numEl = btn.querySelector(".cafe-stat-num");
+    if (numEl) numEl.textContent = formatStatNum(getTotalLikes(base, key));
+    const liked = userLikedKeys.has(key);
+    btn.classList.toggle("is-liked", liked);
+    btn.disabled = liked;
+    btn.setAttribute("aria-pressed", liked ? "true" : "false");
+  });
+}
+
+function updateViewCountsInDom() {
+  document.querySelectorAll(".cafe-stat--view[data-view-key]").forEach((el) => {
+    const key = el.dataset.viewKey;
+    if (!key) return;
+    const base = Number(el.dataset.baseViews) || 0;
+    const numEl = el.querySelector(".cafe-stat-num");
+    if (numEl) numEl.textContent = formatStatNum(getTotalViews(base, key));
+  });
+}
+
+async function loadUserLikedKeys(keys) {
+  if (!currentUser || !db || !keys.length) return;
+  const uniqueKeys = [...new Set(keys.filter(Boolean))];
+  await Promise.all(
+    uniqueKeys.map(async (key) => {
+      const snap = await getDoc(doc(db, CAFE_LIKES_COLLECTION, key, "voters", currentUser.uid));
+      if (snap.exists()) userLikedKeys.add(key);
+    })
+  );
+}
+
+async function likePost(postKey) {
+  if (!postKey) return;
+  if (!currentUser) {
+    openGuestModal();
+    return;
+  }
+  if (!db) return;
+  if (userLikedKeys.has(postKey)) return;
+
+  const likeRef = doc(db, CAFE_LIKES_COLLECTION, postKey);
+  const voterRef = doc(db, CAFE_LIKES_COLLECTION, postKey, "voters", currentUser.uid);
+
+  try {
+    await runTransaction(db, async (transaction) => {
+      const voterSnap = await transaction.get(voterRef);
+      if (voterSnap.exists()) return;
+      transaction.set(voterRef, { at: serverTimestamp() });
+      transaction.set(likeRef, { count: increment(1) }, { merge: true });
+    });
+    userLikedKeys.add(postKey);
+    updateLikeCountsInDom();
+  } catch (err) {
+    console.error("点赞失败：", err);
+  }
+}
+
+function subscribeLikes() {
+  if (!db) return;
+  likesUnsubscribe?.();
+  likesUnsubscribe = onSnapshot(
+    collection(db, CAFE_LIKES_COLLECTION),
+    (snapshot) => {
+      Object.keys(extraLikeCounts).forEach((key) => delete extraLikeCounts[key]);
+      snapshot.docs.forEach((docSnap) => {
+        extraLikeCounts[docSnap.id] = Number(docSnap.data().count) || 0;
+      });
+      updateLikeCountsInDom();
+    },
+    (err) => console.error("加载点赞数据失败：", err)
+  );
+}
+
+function subscribeViews() {
+  if (!db) return;
+  viewsUnsubscribe?.();
+  viewsUnsubscribe = onSnapshot(
+    collection(db, CAFE_VIEWS_COLLECTION),
+    (snapshot) => {
+      Object.keys(extraViewCounts).forEach((key) => delete extraViewCounts[key]);
+      snapshot.docs.forEach((docSnap) => {
+        extraViewCounts[docSnap.id] = Number(docSnap.data().count) || 0;
+      });
+      updateViewCountsInDom();
+    },
+    (err) => console.error("加载浏览数据失败：", err)
+  );
+}
+
+function collectStatKeys() {
+  const keys = mihoyoPosts.map(getMihoyoStatKey).filter(Boolean);
+  dynamicPosts.forEach((post) => {
+    if (post.likeKey) keys.push(post.likeKey);
+  });
+  return [...new Set(keys)];
+}
+
+function collectLikeKeys() {
+  return collectStatKeys();
+}
+
+function armViewCount() {
+  viewCountArmed = true;
+}
+
+async function recordPageViews() {
+  if (!db || viewCountFlushed || !viewCountArmed) return;
+
+  const keys = collectStatKeys();
+  if (!keys.length) return;
+
+  viewCountFlushed = true;
+  try {
+    await Promise.all(
+      keys.map((key) =>
+        setDoc(doc(db, CAFE_VIEWS_COLLECTION, key), { count: increment(1) }, { merge: true })
+      )
+    );
+  } catch (err) {
+    viewCountFlushed = false;
+    console.error("浏览计数失败：", err);
+  }
+}
+
+function setupViewTracking() {
+  armViewCount();
+  if (viewTrackingSetup) return;
+  viewTrackingSetup = true;
+  const flush = () => {
+    recordPageViews();
+  };
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flush();
+  });
+}
+
 function renderPost(post) {
   const article = document.createElement("article");
   article.className = "cafe-post";
@@ -415,11 +693,14 @@ function renderPost(post) {
       ${post.excerpt ? `<p class="cafe-post-excerpt">${escapeHtml(post.excerpt)}</p>` : ""}
       ${renderImages(post.images)}
     </div>
-    <div class="cafe-post-foot">
-      <span class="cafe-stat" title="评论">💬 ${post.comments}</span>
-      <span class="cafe-stat" title="浏览">👁 ${post.views}</span>
-      <span class="cafe-stat" title="点赞">♥ ${post.likes}</span>
-    </div>
+    ${renderPostFoot(
+      { comments: post.comments, views: post.views, likes: post.likes },
+      {
+        likeKey: post.likeKey || null,
+        liked: post.likeKey ? userLikedKeys.has(post.likeKey) : false,
+        viewKey: post.likeKey || null,
+      }
+    )}
   `;
 
   return article;
@@ -449,6 +730,10 @@ function renderMihoyoPost(post) {
   const excerpt = post.content || "";
   const images = filterMihoyoImages(post);
   const timeLabel = post.reply_time || "刚刚";
+  const likeKey = getMihoyoStatKey(post);
+  const liked = likeKey ? userLikedKeys.has(likeKey) : false;
+  const comments = Array.isArray(post.comments) ? post.comments : [];
+  const replyTargetId = comments.length ? `cafe-replies-${post.post_id}` : null;
 
   article.innerHTML = `
     <div class="cafe-post-head">
@@ -464,15 +749,28 @@ function renderMihoyoPost(post) {
       ${excerpt ? `<p class="cafe-post-excerpt">${escapeHtml(excerpt)}</p>` : ""}
       ${renderImages(images)}
     </div>
-    <div class="cafe-post-foot cafe-mihoyo-foot">
-      <span class="cafe-stat" title="评论">💬 ${post.replies ?? 0}</span>
-      <span class="cafe-stat" title="浏览">👁 ${post.views ?? 0}</span>
-      <span class="cafe-stat" title="点赞">♥ ${post.likes ?? 0}</span>
-      <a class="cafe-mihoyo-link" href="${escapeHtml(post.post_url || "#")}" target="_blank" rel="noopener noreferrer">查看原帖 ›</a>
-    </div>
+    ${renderPostFoot(
+      { comments: post.replies ?? 0, views: post.views ?? 0, likes: post.likes ?? 0 },
+      {
+        className: "cafe-post-foot cafe-mihoyo-foot",
+        likeKey,
+        liked,
+        viewKey: likeKey,
+        commentToggleTarget: replyTargetId,
+      }
+    )}
+    ${renderReplies(comments, replyTargetId)}
   `;
 
   return article;
+}
+
+function renderMihoyoFeed() {
+  if (!mihoyoFeedEl) return;
+  mihoyoFeedEl.replaceChildren();
+  mihoyoPosts.forEach((post) => mihoyoFeedEl.appendChild(renderMihoyoPost(post)));
+  updateLikeCountsInDom();
+  updateViewCountsInDom();
 }
 
 async function loadMihoyoFeed() {
@@ -492,8 +790,12 @@ async function loadMihoyoFeed() {
     }
 
     mihoyoEmptyEl?.classList.add("hidden");
-    mihoyoFeedEl.replaceChildren();
-    posts.forEach((post) => mihoyoFeedEl.appendChild(renderMihoyoPost(post)));
+    mihoyoPosts = posts;
+    await loadUserLikedKeys(collectLikeKeys());
+    renderMihoyoFeed();
+    subscribeLikes();
+    subscribeViews();
+    setupViewTracking();
   } catch (err) {
     console.warn("米游社数据加载失败：", err);
     mihoyoFeedEl.replaceChildren();
@@ -647,11 +949,21 @@ function initFirebase() {
     return;
   }
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     currentUser = user;
+    userLikedKeys.clear();
+    if (user && db) {
+      await loadUserLikedKeys(collectLikeKeys());
+      renderMihoyoFeed();
+      renderFeed();
+    } else {
+      updateLikeCountsInDom();
+    }
   });
 
   subscribePosts();
+  subscribeLikes();
+  subscribeViews();
 }
 
 function subscribePosts() {
@@ -661,9 +973,14 @@ function subscribePosts() {
 
   postsUnsubscribe = onSnapshot(
     q,
-    (snapshot) => {
+    async (snapshot) => {
       dynamicPosts = snapshot.docs.map((docSnap) => mapFirestorePost(docSnap.id, docSnap.data()));
+      if (currentUser) {
+        await loadUserLikedKeys(collectLikeKeys());
+      }
       renderFeed();
+      updateLikeCountsInDom();
+      updateViewCountsInDom();
     },
     (err) => {
       console.error("加载帖子失败：", err);
@@ -722,15 +1039,33 @@ function closeCafeLightbox() {
   updateBodyScrollLock();
 }
 
-feedEl?.addEventListener("click", (e) => {
-  const img = e.target.closest(".cafe-post-images img");
+mihoyoFeedEl?.addEventListener("click", (e) => {
+  const replyToggle = e.target.closest(".cafe-reply-toggle");
+  if (replyToggle) {
+    e.preventDefault();
+    toggleReplyPanel(replyToggle);
+    return;
+  }
+  const likeBtn = e.target.closest(".cafe-like-btn");
+  if (likeBtn && !likeBtn.disabled) {
+    e.preventDefault();
+    likePost(likeBtn.dataset.likeKey);
+    return;
+  }
+  const img = e.target.closest(".cafe-post-images img, .cafe-reply-images img");
   if (!img) return;
   e.preventDefault();
   e.stopPropagation();
   openCafeLightbox(img.currentSrc || img.src, img.alt);
 });
 
-mihoyoFeedEl?.addEventListener("click", (e) => {
+feedEl?.addEventListener("click", (e) => {
+  const likeBtn = e.target.closest(".cafe-like-btn");
+  if (likeBtn && !likeBtn.disabled) {
+    e.preventDefault();
+    likePost(likeBtn.dataset.likeKey);
+    return;
+  }
   const img = e.target.closest(".cafe-post-images img");
   if (!img) return;
   e.preventDefault();
@@ -768,4 +1103,6 @@ renderFeed();
 
 window.addEventListener("beforeunload", () => {
   postsUnsubscribe?.();
+  likesUnsubscribe?.();
+  viewsUnsubscribe?.();
 });
