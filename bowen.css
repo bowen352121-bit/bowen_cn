@@ -862,7 +862,10 @@ body {
   background: none;
   padding: 0;
   cursor: pointer;
-  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: 900;
   transition: opacity 0.15s;
 }
 
