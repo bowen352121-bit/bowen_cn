@@ -123,7 +123,8 @@
       color: rgba(255, 210, 100, 0.85);
       cursor: pointer;
       z-index: 30;
-      transition: background 0.2s, color 0.2s, border-color 0.2s, bottom 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
 
     .lore-toggle:hover {
@@ -136,7 +137,7 @@
       width: 16px;
       height: 16px;
       transform: rotate(-90deg);
-      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .lore-panel.is-collapsed .lore-toggle svg {
@@ -290,7 +291,11 @@
       z-index: 5;
       text-align: center;
       white-space: nowrap;
-      transition: bottom 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: bottom 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .lore-scrim {
+      display: none;
     }
 
     @media (max-width: 768px) {
@@ -311,23 +316,63 @@
 
       .lore-panel {
         --lore-panel-width: 100%;
+        --lore-panel-h: min(52vh, 400px);
         top: auto;
         left: 0;
         right: 0;
         bottom: 0;
         width: 100%;
-        max-height: min(52vh, 400px);
-        transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+        height: var(--lore-panel-h);
+        max-height: none;
+        overflow: hidden;
         border-left: none;
         border-top: 1px solid rgba(255, 210, 80, 0.14);
+        transform: translate3d(0, 0, 0);
+        transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform;
+        backface-visibility: hidden;
       }
+
       .lore-panel.is-collapsed {
-        max-height: 0;
+        transform: translate3d(0, 100%, 0);
         border-top-color: transparent;
+        pointer-events: none;
       }
+
+      .lore-panel.is-collapsed .lore-panel-inner {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .lore-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 8;
+        border: none;
+        padding: 0;
+        margin: 0;
+        background: rgba(2, 6, 12, 0.38);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        cursor: default;
+        transition: opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+          visibility 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .lore-scrim.is-visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
       .lore-panel-inner {
         width: 100%;
-        max-height: min(52vh, 400px);
+        height: 100%;
+        max-height: none;
         padding: 0.65rem 0 0;
         padding-bottom: max(2.75rem, calc(0.65rem + env(safe-area-inset-bottom)));
         background: linear-gradient(180deg, rgba(8, 12, 20, 0.97) 0%, #050810 100%);
@@ -486,6 +531,8 @@
       <p class="hint-drag">DRAG TO ROTATE · 拖拽旋转</p>
     </div>
 
+    <button type="button" class="lore-scrim" id="lore-scrim" aria-label="收起资料栏" hidden></button>
+
     <aside class="lore-panel" id="lore-panel">
       <button type="button" class="lore-toggle" id="lore-toggle" aria-label="收起侧栏" aria-expanded="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
@@ -561,20 +608,38 @@
       const app = document.getElementById("app");
       const panel = document.getElementById("lore-panel");
       const toggle = document.getElementById("lore-toggle");
+      const scrim = document.getElementById("lore-scrim");
       if (!app || !panel || !toggle) return;
 
-      toggle.addEventListener("click", () => {
-        const collapsed = panel.classList.toggle("is-collapsed");
+      const mobileMq = window.matchMedia("(max-width: 768px)");
+      const isMobile = () => mobileMq.matches;
+
+      function setPanelCollapsed(collapsed) {
+        panel.classList.toggle("is-collapsed", collapsed);
         app.classList.toggle("sidebar-collapsed", collapsed);
         toggle.setAttribute("aria-expanded", String(!collapsed));
-        toggle.setAttribute("aria-label", collapsed ? "展开侧栏" : "收起侧栏");
+        toggle.setAttribute("aria-label", collapsed ? "展开资料栏" : "收起资料栏");
+
+        if (!isMobile() || !scrim) return;
+        scrim.classList.toggle("is-visible", !collapsed);
+        scrim.hidden = collapsed;
+      }
+
+      toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setPanelCollapsed(!panel.classList.contains("is-collapsed"));
       });
 
-      if (window.matchMedia("(max-width: 768px)").matches) {
-        panel.classList.add("is-collapsed");
-        app.classList.add("sidebar-collapsed");
-        toggle.setAttribute("aria-expanded", "false");
-        toggle.setAttribute("aria-label", "展开侧栏");
+      scrim?.addEventListener("click", () => {
+        setPanelCollapsed(true);
+      });
+
+      panel.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      if (isMobile()) {
+        setPanelCollapsed(true);
       }
 
       const navItems = panel.querySelectorAll(".lore-nav-item[data-lore]");
