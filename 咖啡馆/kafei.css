@@ -248,6 +248,54 @@ button {
     gap: 0.65rem;
 }
 
+.cafe-mihoyo-section {
+    margin-bottom: 0.65rem;
+}
+
+.cafe-mihoyo-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.cafe-mihoyo-post:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cafe-mihoyo-foot {
+    align-items: center;
+}
+
+.cafe-mihoyo-link {
+    margin-left: auto;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--mhy-orange);
+    white-space: nowrap;
+}
+
+.cafe-mihoyo-link:hover {
+    color: var(--mhy-orange-deep);
+    text-decoration: underline;
+}
+
+.cafe-mihoyo-empty {
+    margin: 0;
+    padding: 0.75rem 0;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--mhy-muted);
+}
+
+.cafe-post-avatar-img {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: #f0f0f0;
+}
+
 .cafe-post {
     background: var(--mhy-card);
     border: 1px solid var(--mhy-border);
@@ -403,20 +451,6 @@ button {
 
 .cafe-post-images.multi {
     position: relative;
-}
-
-.cafe-post-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-}
-
-.cafe-post-tag {
-    font-size: 0.6875rem;
-    padding: 0.1rem 0.4rem;
-    background: #f5f5f5;
-    color: #888;
-    border-radius: 2px;
 }
 
 .cafe-post-foot {
@@ -614,6 +648,161 @@ button {
     background: rgba(255, 255, 255, 0.22);
 }
 
+.hidden {
+    display: none !important;
+}
+
+/* ── 弹窗 ── */
+.cafe-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.cafe-modal-panel {
+    width: min(100%, 26rem);
+    padding: 1.25rem;
+    background: var(--mhy-card);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+.cafe-compose-panel {
+    width: min(100%, 32rem);
+    padding: 0;
+    overflow: hidden;
+}
+
+.cafe-modal-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--mhy-text);
+}
+
+.cafe-modal-desc {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--mhy-muted);
+}
+
+.cafe-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+}
+
+.cafe-modal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
+    padding: 0.45rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background 0.15s, color 0.15s;
+}
+
+.cafe-modal-btn-muted {
+    background: #f3f3f3;
+    color: var(--mhy-text);
+}
+
+.cafe-modal-btn-muted:hover {
+    background: #e8e8e8;
+}
+
+.cafe-modal-btn-primary {
+    background: var(--mhy-orange);
+    color: #fff;
+}
+
+.cafe-modal-btn-primary:hover {
+    background: var(--mhy-orange-deep);
+}
+
+.cafe-compose-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--mhy-border);
+}
+
+.cafe-compose-close {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 4px;
+    font-size: 1.35rem;
+    line-height: 1;
+    color: var(--mhy-muted);
+}
+
+.cafe-compose-close:hover {
+    background: #f3f3f3;
+    color: var(--mhy-text);
+}
+
+.cafe-compose-form {
+    padding: 1rem 1.25rem 1.25rem;
+}
+
+.cafe-field {
+    display: block;
+    margin-bottom: 0.85rem;
+}
+
+.cafe-field-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--mhy-text);
+}
+
+.cafe-field-hint {
+    font-weight: 400;
+    color: var(--mhy-muted);
+}
+
+.cafe-field input,
+.cafe-field textarea {
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid var(--mhy-border);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--mhy-text);
+    background: #fff;
+    resize: vertical;
+}
+
+.cafe-field input:focus,
+.cafe-field textarea:focus {
+    outline: none;
+    border-color: var(--mhy-orange);
+    box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.12);
+}
+
+.cafe-compose-form .cafe-modal-actions {
+    margin-top: 0.5rem;
+}
+
+.cafe-modal-btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 /* ── 手机端排版优化 ── */
 @media (max-width: 639px) {
     .cafe-board {
@@ -663,6 +852,16 @@ button {
         width: 100%;
         text-align: center;
         padding: 0.55rem 1rem;
+    }
+
+    .cafe-mihoyo-foot {
+        flex-wrap: wrap;
+    }
+
+    .cafe-mihoyo-link {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 0.25rem;
     }
 
     .cafe-post {
@@ -719,5 +918,28 @@ button {
         padding: 1rem 0.75rem;
         font-size: 0.6875rem;
         line-height: 1.5;
+    }
+
+    .cafe-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .cafe-modal-panel {
+        width: 100%;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .cafe-compose-panel {
+        max-height: 92vh;
+        overflow-y: auto;
+    }
+
+    .cafe-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .cafe-modal-btn {
+        width: 100%;
     }
 }

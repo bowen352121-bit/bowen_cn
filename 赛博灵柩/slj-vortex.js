@@ -23,9 +23,9 @@
   const DPR_CAP = 1;
   const RENDER_SCALE = 0.78;
   const TWIST_SPEED = 0.00011;
-  const HOLE_OPEN_MS = 180;
-  const HOLE_REPAIR_MS = 2400;
-  const HOLE_SWIRL_ZONE = 50;
+  const HOLE_OPEN_MS = 140;
+  const HOLE_REPAIR_MS = 2000;
+  const HOLE_SWIRL_ZONE = 32;
   const FILL_COLOR = "#00d7ee";
   const ATLAS_COLS = 16;
 
@@ -117,16 +117,16 @@
   }
 
   function punchHole(x, y) {
-    const rMax = clamp(Math.min(w, h) * 0.14, 80, 150);
+    const rMax = clamp(Math.min(w, h) * 0.055, 34, 60);
     holes.push({
       x,
       y,
       rMax,
       born: performance.now(),
       dir: Math.random() > 0.5 ? 1 : -1,
-      strength: 0.48 + Math.random() * 0.12,
+      strength: 0.92 + Math.random() * 0.18,
     });
-    if (holes.length > 8) holes.shift();
+    if (holes.length > 10) holes.shift();
   }
 
   function localVortexWarp(px, py, hole, now) {
@@ -143,9 +143,9 @@
     const vigor = hole.vigorNow;
     if (vigor < 0.02) return null;
 
-    const rMin = Math.max(rMax * 0.14, 12);
+    const rMin = Math.max(rMax * 0.18, 8);
     const age = now - hole.born;
-    const swirl = 1 + Math.min(age / 900, 0.35);
+    const swirl = 1.75 + Math.min(age / 700, 0.55);
     const l = hole.dir * hole.strength * vigor * swirl / Math.max(dist, rMin);
 
     const cosL = Math.cos(l);
@@ -153,16 +153,11 @@
     const rotX = relX * cosL - relY * sinL;
     const rotY = relX * sinL + relY * cosL;
 
-    const blend = (1 - smoothstep(rMax * 0.42, outerR, dist)) * vigor;
+    const blend = (1 - smoothstep(rMax * 0.2, outerR, dist)) * vigor;
     const drawX = px + (rotX - relX) * blend;
     const drawY = py + (rotY - relY) * blend;
 
-    const eyeR = rMax * 0.24 * smoothstep(0, HOLE_OPEN_MS, age);
-    let cut = 0;
-    if (dist < eyeR) cut = 1;
-    else if (dist < eyeR + 5) cut = 1 - smoothstep(eyeR, eyeR + 5, dist);
-
-    return { cut, drawX, drawY, blend };
+    return { cut: 0, drawX, drawY, blend };
   }
 
   function applyHoles(px, py) {
@@ -215,18 +210,6 @@
     holeBounds = activeHoles.length
       ? { minX, minY, maxX, maxY }
       : null;
-  }
-
-  function drawVortexEyes() {
-    for (let i = 0; i < activeHoles.length; i++) {
-      const hole = activeHoles[i];
-      if (hole.rMaxNow < 6 || hole.vigorNow < 0.12) continue;
-      const eyeR = hole.rMaxNow * 0.2 * hole.vigorNow;
-      ctx.fillStyle = "#01040c";
-      ctx.beginPath();
-      ctx.arc(hole.x, hole.y, eyeR, 0, Math.PI * 2);
-      ctx.fill();
-    }
   }
 
   function onCanvasPointer(e) {
@@ -336,20 +319,15 @@
 
         let drawX = p.x;
         let drawY = p.y;
-        let alphaMul = 1;
 
         if (hasHoles && inHoleBounds(p.x, p.y)) {
           const holeFx = applyHoles(p.x, p.y);
-          if (holeFx.cut >= 0.99) continue;
           if (holeFx.near) {
             drawX = holeFx.drawX;
             drawY = holeFx.drawY;
           }
-          alphaMul = 1 - holeFx.cut;
         }
-
-        if (alphaMul < 0.05) continue;
-        ctx.globalAlpha = rowAlpha * alphaMul;
+        ctx.globalAlpha = rowAlpha;
         drawGlyph(ch, drawX, drawY);
       }
     }
@@ -362,7 +340,6 @@
     ctx.fillStyle = "#01040c";
     ctx.fillRect(0, 0, w, h);
     drawStreams(scrollT, now);
-    drawVortexEyes();
     stage?.classList.add("slj-stage--ready");
   }
 

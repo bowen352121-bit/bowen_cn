@@ -12,7 +12,10 @@ const PHOTOS = [
     { file: "CH8.jpg", addedAt: "2026-06-16T15:35:19" },
     { file: "CH9.jpg", addedAt: "2026-06-16T15:35:25" },
     { file: "CH10.jpg", addedAt: "2026-06-16T15:35:32" },
-    { file: "CH11.jpg", addedAt: "2026-06-16T15:35:38" }
+    { file: "CH11.jpg", addedAt: "2026-06-16T15:35:38" },
+    { file: "26.6.23_1.jpg", addedAt: "2026-06-23T14:20:00" },
+    { file: "26.6.23_2.jpg", addedAt: "2026-06-23T14:25:00" },
+    { file: "26.6.23_3.jpg", addedAt: "2026-06-23T14:30:00" }
 ];
 
 const gallery = document.getElementById("gallery");

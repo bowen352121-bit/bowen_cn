@@ -1,7 +1,22 @@
 /**
- * 咖啡馆 · 米游社风格帖子流（静态展示）
+ * 咖啡馆 · 米游社风格帖子流 + Firebase 发帖
  */
+import { firebaseConfig, isFirebaseReady } from "../景教/firebase-config.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
 const PAGE_SIZE = 8;
+const FIRESTORE_COLLECTION = "cafe_posts";
+const MIHOYO_VIOLATION_IMAGE_RE = /weigui|shanchu|违规/i;
 
 const AVATAR_COLORS = [
   "#ff6a00",
@@ -37,7 +52,14 @@ function renderAvatar(author) {
   return `<span class="cafe-post-avatar" style="background:${color}" aria-hidden="true">${escapeHtml(initial)}</span>`;
 }
 
-const POSTS = [
+function renderAvatarHtml(author, avatarUrl) {
+  if (avatarUrl) {
+    return `<img class="cafe-post-avatar-img" src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(author)}的头像" loading="lazy">`;
+  }
+  return renderAvatar(author);
+}
+
+const STATIC_POSTS = [
   {
     id: "pin-1",
     pinned: true,
@@ -222,6 +244,13 @@ const POSTS = [
   },
 ];
 
+let auth = null;
+let db = null;
+let currentUser = null;
+let dynamicPosts = [];
+let postsUnsubscribe = null;
+let isSubmitting = false;
+
 let currentSort = "newest";
 let displayedCount = PAGE_SIZE;
 
@@ -232,6 +261,19 @@ const publishBtn = document.getElementById("btn-publish-hint");
 const cafeLightbox = document.getElementById("cafe-image-lightbox");
 const cafeLightboxImg = document.querySelector("#cafe-image-lightbox .cafe-lightbox-img");
 const cafeLightboxClose = document.querySelector("#cafe-image-lightbox .cafe-lightbox-close");
+const guestModal = document.getElementById("cafe-guest-modal");
+const guestCancelBtn = document.getElementById("cafe-guest-cancel");
+const composeModal = document.getElementById("cafe-compose-modal");
+const composeForm = document.getElementById("cafe-compose-form");
+const composeCloseBtn = document.getElementById("cafe-compose-close");
+const composeCancelBtn = document.getElementById("cafe-compose-cancel");
+const composeSubmitBtn = document.getElementById("cafe-compose-submit");
+const titleInput = document.getElementById("cafe-post-title");
+const excerptInput = document.getElementById("cafe-post-excerpt");
+const tagsInput = document.getElementById("cafe-post-tags");
+const imagesInput = document.getElementById("cafe-post-images");
+const mihoyoFeedEl = document.getElementById("cafe-mihoyo-feed");
+const mihoyoEmptyEl = document.getElementById("cafe-mihoyo-empty");
 
 function escapeHtml(str) {
   return String(str)
@@ -239,6 +281,74 @@ function escapeHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function getDisplayName(user) {
+  if (!user) return "用户";
+  if (user.displayName?.trim()) return user.displayName.trim();
+
+  const provider = user.providerData?.[0];
+  if (provider?.displayName?.trim()) return provider.displayName.trim();
+
+  if (user.email?.includes("@")) return user.email.split("@")[0];
+
+  return "用户";
+}
+
+function formatPostTime(date) {
+  if (!date || Number.isNaN(date.getTime())) return "刚刚";
+
+  const now = Date.now();
+  const diff = now - date.getTime();
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (diff < minute) return "刚刚";
+  if (diff < hour) return `${Math.floor(diff / minute)}分钟前`;
+  if (diff < day) return `${Math.floor(diff / hour)}小时前`;
+  if (diff < 7 * day) return `${Math.floor(diff / day)}天前`;
+
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${m}-${d}`;
+}
+
+function timestampToDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value);
+  return null;
+}
+
+function mapFirestorePost(id, data) {
+  const createdAt = timestampToDate(data.createdAt);
+  const createdMs = createdAt?.getTime() || Date.now();
+  const views = Number(data.views) || 0;
+  const comments = Number(data.comments) || 0;
+  const likes = Number(data.likes) || 0;
+
+  return {
+    id,
+    pinned: false,
+    author: data.author || "用户",
+    time: formatPostTime(createdAt),
+    title: data.title || "",
+    excerpt: data.excerpt || "",
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    views,
+    comments,
+    likes,
+    images: Array.isArray(data.images) ? data.images.filter(Boolean) : [],
+    sortNew: createdMs,
+    sortReply: comments,
+    sortHot: likes * 3 + comments * 2 + Math.floor(views / 10),
+  };
+}
+
+function getAllPosts() {
+  return [...STATIC_POSTS, ...dynamicPosts];
 }
 
 function sortNormalPosts(posts) {
@@ -291,13 +401,9 @@ function renderPost(post) {
   const article = document.createElement("article");
   article.className = "cafe-post";
 
-  const tags = post.tags
-    .map((t) => `<span class="cafe-post-tag">${escapeHtml(t)}</span>`)
-    .join("");
-
   article.innerHTML = `
     <div class="cafe-post-head">
-      ${renderAvatar(post.author)}
+      ${renderAvatarHtml(post.author, post.avatarUrl)}
       <div class="cafe-post-meta">
         <span class="cafe-post-author">${escapeHtml(post.author)}</span>
         <span class="cafe-post-time">${escapeHtml(post.time)}</span>
@@ -308,7 +414,6 @@ function renderPost(post) {
       <h3 class="cafe-post-title">${escapeHtml(post.title)}</h3>
       ${post.excerpt ? `<p class="cafe-post-excerpt">${escapeHtml(post.excerpt)}</p>` : ""}
       ${renderImages(post.images)}
-      ${tags ? `<div class="cafe-post-tags">${tags}</div>` : ""}
     </div>
     <div class="cafe-post-foot">
       <span class="cafe-stat" title="评论">💬 ${post.comments}</span>
@@ -320,9 +425,85 @@ function renderPost(post) {
   return article;
 }
 
+function filterMihoyoImages(post) {
+  const urls = Array.isArray(post.images_url) ? post.images_url : [];
+  const locals = Array.isArray(post.images_local) ? post.images_local : [];
+  if (!locals.length) return [];
+
+  if (!urls.length) {
+    return locals.filter((src) => src && !MIHOYO_VIOLATION_IMAGE_RE.test(src));
+  }
+
+  return locals.filter((src, index) => {
+    if (!src) return false;
+    const url = urls[index] || "";
+    return !MIHOYO_VIOLATION_IMAGE_RE.test(url) && !MIHOYO_VIOLATION_IMAGE_RE.test(src);
+  });
+}
+
+function renderMihoyoPost(post) {
+  const article = document.createElement("article");
+  article.className = "cafe-post cafe-mihoyo-post";
+
+  const title = post.title || "";
+  const excerpt = post.content || "";
+  const images = filterMihoyoImages(post);
+  const timeLabel = post.reply_time || "刚刚";
+
+  article.innerHTML = `
+    <div class="cafe-post-head">
+      ${renderAvatarHtml(post.author, post.avatar_local)}
+      <div class="cafe-post-meta">
+        <span class="cafe-post-author">${escapeHtml(post.author)}</span>
+        <span class="cafe-post-time">${escapeHtml(timeLabel)}</span>
+        <span class="cafe-post-game">· 绝区零</span>
+      </div>
+    </div>
+    <div class="cafe-post-body">
+      ${title ? `<h3 class="cafe-post-title">${escapeHtml(title)}</h3>` : ""}
+      ${excerpt ? `<p class="cafe-post-excerpt">${escapeHtml(excerpt)}</p>` : ""}
+      ${renderImages(images)}
+    </div>
+    <div class="cafe-post-foot cafe-mihoyo-foot">
+      <span class="cafe-stat" title="评论">💬 ${post.replies ?? 0}</span>
+      <span class="cafe-stat" title="浏览">👁 ${post.views ?? 0}</span>
+      <span class="cafe-stat" title="点赞">♥ ${post.likes ?? 0}</span>
+      <a class="cafe-mihoyo-link" href="${escapeHtml(post.post_url || "#")}" target="_blank" rel="noopener noreferrer">查看原帖 ›</a>
+    </div>
+  `;
+
+  return article;
+}
+
+async function loadMihoyoFeed() {
+  if (!mihoyoFeedEl) return;
+
+  try {
+    const resp = await fetch(`mihoyo_data.json?_=${Date.now()}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const data = await resp.json();
+    const posts = Array.isArray(data.posts) ? data.posts : [];
+
+    if (!posts.length) {
+      mihoyoFeedEl.replaceChildren();
+      mihoyoEmptyEl?.classList.remove("hidden");
+      return;
+    }
+
+    mihoyoEmptyEl?.classList.add("hidden");
+    mihoyoFeedEl.replaceChildren();
+    posts.forEach((post) => mihoyoFeedEl.appendChild(renderMihoyoPost(post)));
+  } catch (err) {
+    console.warn("米游社数据加载失败：", err);
+    mihoyoFeedEl.replaceChildren();
+    mihoyoEmptyEl?.classList.remove("hidden");
+  }
+}
+
 function renderFeed() {
-  const pinned = POSTS.filter((p) => p.pinned);
-  const normal = sortNormalPosts(POSTS);
+  const pinned = getAllPosts().filter((p) => p.pinned);
+  const normal = sortNormalPosts(getAllPosts());
   const slice = normal.slice(0, displayedCount);
 
   feedEl.replaceChildren();
@@ -332,6 +513,162 @@ function renderFeed() {
 
   slice.forEach((post) => feedEl.appendChild(renderPost(post)));
   loadMoreBtn.classList.toggle("hidden", displayedCount >= normal.length);
+}
+
+function updateBodyScrollLock() {
+  const anyOpen =
+    (cafeLightbox && !cafeLightbox.classList.contains("hidden")) ||
+    (composeModal && !composeModal.classList.contains("hidden")) ||
+    (guestModal && !guestModal.classList.contains("hidden"));
+  document.body.style.overflow = anyOpen ? "hidden" : "";
+}
+
+function openModal(modal) {
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  modal.hidden = false;
+  updateBodyScrollLock();
+}
+
+function closeModal(modal) {
+  if (!modal) return;
+  modal.classList.add("hidden");
+  modal.hidden = true;
+  updateBodyScrollLock();
+}
+
+function resetComposeForm() {
+  composeForm?.reset();
+}
+
+function openGuestModal() {
+  openModal(guestModal);
+}
+
+function closeGuestModal() {
+  closeModal(guestModal);
+}
+
+function openComposeModal() {
+  resetComposeForm();
+  openModal(composeModal);
+  titleInput?.focus();
+}
+
+function closeComposeModal() {
+  closeModal(composeModal);
+}
+
+function parseTags(raw) {
+  return raw
+    .split(/[,，]/)
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+}
+
+function parseImageUrls(raw) {
+  return raw
+    .split(/\n|,|，/)
+    .map((u) => u.trim())
+    .filter((u) => /^https?:\/\//i.test(u))
+    .slice(0, 3);
+}
+
+async function submitPost(event) {
+  event.preventDefault();
+  if (isSubmitting || !db || !currentUser) return;
+
+  const title = titleInput.value.trim();
+  const excerpt = excerptInput.value.trim();
+  const tags = parseTags(tagsInput.value);
+  const images = parseImageUrls(imagesInput.value);
+
+  if (!title) {
+    alert("请填写标题。");
+    titleInput.focus();
+    return;
+  }
+  if (!excerpt) {
+    alert("请填写正文。");
+    excerptInput.focus();
+    return;
+  }
+
+  isSubmitting = true;
+  composeSubmitBtn.disabled = true;
+  composeSubmitBtn.textContent = "发布中…";
+
+  try {
+    await addDoc(collection(db, FIRESTORE_COLLECTION), {
+      uid: currentUser.uid,
+      author: getDisplayName(currentUser),
+      title,
+      excerpt,
+      tags,
+      images,
+      views: 0,
+      comments: 0,
+      likes: 0,
+      createdAt: serverTimestamp(),
+    });
+
+    closeComposeModal();
+    resetComposeForm();
+    currentSort = "newest";
+    sortBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.sort === "newest"));
+    displayedCount = PAGE_SIZE;
+  } catch (err) {
+    console.error("发帖失败：", err);
+    const msg =
+      err.code === "permission-denied"
+        ? "发帖被拒绝：请确认已在景教登录，且 Firestore 规则已部署。"
+        : err.message || "未知错误";
+    alert("发帖失败：" + msg);
+  } finally {
+    isSubmitting = false;
+    composeSubmitBtn.disabled = false;
+    composeSubmitBtn.textContent = "发布";
+  }
+}
+
+function initFirebase() {
+  if (!isFirebaseReady()) {
+    console.warn("Firebase 未配置，咖啡馆仅展示静态帖子。");
+    return;
+  }
+
+  try {
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (err) {
+    console.error("Firebase 初始化失败：", err);
+    return;
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+  });
+
+  subscribePosts();
+}
+
+function subscribePosts() {
+  if (!db) return;
+
+  const q = query(collection(db, FIRESTORE_COLLECTION), orderBy("createdAt", "desc"));
+
+  postsUnsubscribe = onSnapshot(
+    q,
+    (snapshot) => {
+      dynamicPosts = snapshot.docs.map((docSnap) => mapFirestorePost(docSnap.id, docSnap.data()));
+      renderFeed();
+    },
+    (err) => {
+      console.error("加载帖子失败：", err);
+    }
+  );
 }
 
 sortBtns.forEach((btn) => {
@@ -349,8 +686,24 @@ loadMoreBtn?.addEventListener("click", () => {
 });
 
 publishBtn?.addEventListener("click", () => {
-  alert("本地演示站暂未接入发帖功能。可到米游社咖啡馆发布，或前往景教留言板互动。");
+  if (currentUser) {
+    openComposeModal();
+  } else {
+    openGuestModal();
+  }
 });
+
+guestCancelBtn?.addEventListener("click", closeGuestModal);
+guestModal?.addEventListener("click", (e) => {
+  if (e.target === guestModal) closeGuestModal();
+});
+
+composeCloseBtn?.addEventListener("click", closeComposeModal);
+composeCancelBtn?.addEventListener("click", closeComposeModal);
+composeModal?.addEventListener("click", (e) => {
+  if (e.target === composeModal) closeComposeModal();
+});
+composeForm?.addEventListener("submit", submitPost);
 
 function openCafeLightbox(src, alt) {
   if (!cafeLightbox || !cafeLightboxImg || !src) return;
@@ -358,7 +711,7 @@ function openCafeLightbox(src, alt) {
   cafeLightboxImg.alt = alt || "大图";
   cafeLightbox.classList.remove("hidden");
   cafeLightbox.hidden = false;
-  document.body.style.overflow = "hidden";
+  updateBodyScrollLock();
 }
 
 function closeCafeLightbox() {
@@ -366,10 +719,18 @@ function closeCafeLightbox() {
   cafeLightbox.classList.add("hidden");
   cafeLightbox.hidden = true;
   if (cafeLightboxImg) cafeLightboxImg.src = "";
-  document.body.style.overflow = "";
+  updateBodyScrollLock();
 }
 
 feedEl?.addEventListener("click", (e) => {
+  const img = e.target.closest(".cafe-post-images img");
+  if (!img) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openCafeLightbox(img.currentSrc || img.src, img.alt);
+});
+
+mihoyoFeedEl?.addEventListener("click", (e) => {
   const img = e.target.closest(".cafe-post-images img");
   if (!img) return;
   e.preventDefault();
@@ -387,9 +748,24 @@ cafeLightbox?.addEventListener("click", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && cafeLightbox && !cafeLightbox.classList.contains("hidden")) {
+  if (e.key !== "Escape") return;
+  if (cafeLightbox && !cafeLightbox.classList.contains("hidden")) {
     closeCafeLightbox();
+    return;
+  }
+  if (composeModal && !composeModal.classList.contains("hidden")) {
+    closeComposeModal();
+    return;
+  }
+  if (guestModal && !guestModal.classList.contains("hidden")) {
+    closeGuestModal();
   }
 });
 
+initFirebase();
+loadMihoyoFeed();
 renderFeed();
+
+window.addEventListener("beforeunload", () => {
+  postsUnsubscribe?.();
+});

@@ -71,6 +71,11 @@
 
                 <div class="cafe-layout">
                     <div class="cafe-main">
+                        <section class="cafe-mihoyo-section" aria-label="米游社最新回复">
+                            <div id="cafe-mihoyo-feed" class="cafe-mihoyo-feed" aria-live="polite"></div>
+                            <p id="cafe-mihoyo-empty" class="cafe-mihoyo-empty hidden">暂无同步数据，请稍后刷新。</p>
+                        </section>
+
                         <div id="cafe-feed" class="cafe-feed" aria-live="polite"></div>
                         <button type="button" id="btn-load-more" class="cafe-load-more hidden">点击加载更多</button>
                     </div>
@@ -125,10 +130,52 @@
         <img class="cafe-lightbox-img" alt="">
     </div>
 
+    <div id="cafe-guest-modal" class="cafe-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cafe-guest-title" hidden>
+        <div class="cafe-modal-panel">
+            <h3 id="cafe-guest-title" class="cafe-modal-title">需要登录</h3>
+            <p class="cafe-modal-desc">发布帖子需要先登录。请前往<strong>景教</strong>使用 Google 或 GitHub 登录/注册，登录后即可回到咖啡馆发帖。</p>
+            <div class="cafe-modal-actions">
+                <button type="button" class="cafe-modal-btn cafe-modal-btn-muted" id="cafe-guest-cancel">稍后再说</button>
+                <a class="cafe-modal-btn cafe-modal-btn-primary" href="../景教/jingjiao.html">前往景教登录</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="cafe-compose-modal" class="cafe-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cafe-compose-title" hidden>
+        <div class="cafe-modal-panel cafe-compose-panel">
+            <header class="cafe-compose-head">
+                <h3 id="cafe-compose-title" class="cafe-modal-title">发布帖子</h3>
+                <button type="button" class="cafe-compose-close" id="cafe-compose-close" aria-label="关闭">&times;</button>
+            </header>
+            <form id="cafe-compose-form" class="cafe-compose-form">
+                <label class="cafe-field">
+                    <span class="cafe-field-label">标题</span>
+                    <input type="text" id="cafe-post-title" name="title" maxlength="80" required placeholder="写个标题吧">
+                </label>
+                <label class="cafe-field">
+                    <span class="cafe-field-label">正文</span>
+                    <textarea id="cafe-post-excerpt" name="excerpt" rows="5" maxlength="2000" required placeholder="分享你的想法…"></textarea>
+                </label>
+                <label class="cafe-field">
+                    <span class="cafe-field-label">标签 <span class="cafe-field-hint">选填，逗号分隔</span></span>
+                    <input type="text" id="cafe-post-tags" name="tags" maxlength="120" placeholder="绝区零, 配队">
+                </label>
+                <label class="cafe-field">
+                    <span class="cafe-field-label">配图链接 <span class="cafe-field-hint">选填，每行一个 URL</span></span>
+                    <textarea id="cafe-post-images" name="images" rows="2" maxlength="2000" placeholder="https://…"></textarea>
+                </label>
+                <div class="cafe-modal-actions">
+                    <button type="button" class="cafe-modal-btn cafe-modal-btn-muted" id="cafe-compose-cancel">取消</button>
+                    <button type="submit" class="cafe-modal-btn cafe-modal-btn-primary" id="cafe-compose-submit">发布</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <audio id="bgm" src="../media/水仙十字.mp4" loop preload="auto"></audio>
     <script src="../music.js"></script>
     <script src="../click-effect.js?v=20260620"></script>
-    <script src="kafei.js"></script>
+    <script type="module" src="kafei.js"></script>
 </body>
 
 </html>

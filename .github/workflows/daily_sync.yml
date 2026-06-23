@@ -1,0 +1,37 @@
+name: Daily MiHoYo Cafe Sync
+
+on:
+  schedule:
+    # 每天 UTC 01:30（北京时间 09:30）
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-mihoyo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch MiHoYo cafe posts
+        run: python 咖啡馆/fetch_bbs.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 咖啡馆/mihoyo_data.json 咖啡馆/images/mihoyo/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: sync MiHoYo cafe latest replies"
+            git push
+          fi
