@@ -117,12 +117,44 @@ body.slj-mj-page #sidebar-menu {
 }
 
 @media (max-width: 1023px) {
-  body.slj-mj-page #sidebar-menu {
-    z-index: 90 !important;
+  body.slj-mj-page > #sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 190 !important;
+    opacity: 0;
+    pointer-events: none;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transition: opacity 0.3s ease;
   }
 
-  body.slj-mj-page #sidebar-overlay {
-    z-index: 85 !important;
+  body.slj-mj-page.mobile-sidebar-open > #sidebar-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  body.slj-mj-page > #sidebar-menu.sidebar-drawer {
+    position: fixed !important;
+    top: var(--sm-header-h, 4rem) !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    width: min(70vw, 300px) !important;
+    max-width: 300px !important;
+    z-index: 195 !important;
+    transform: translate3d(-100%, 0, 0) !important;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    pointer-events: none !important;
+    overflow-y: auto !important;
+    background: rgba(1, 8, 20, 0.97) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45) !important;
+    border-right: 1px solid rgba(0, 229, 255, 0.12) !important;
+  }
+
+  body.slj-mj-page > #sidebar-menu.sidebar-drawer.is-open {
+    transform: translate3d(0, 0, 0) !important;
+    pointer-events: auto !important;
   }
 }
 

@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../bowen.css?v=20260619">
   <link rel="stylesheet" href="../click-effect.css?v=20260620">
-  <link rel="stylesheet" href="slj.css?v=20260714">
+  <link rel="stylesheet" href="slj.css?v=20260624">
 </head>
 <body class="slj-mj-page font-sans">
 
@@ -55,11 +55,9 @@
     </div>
   </header>
 
-  <div id="layout-shell" class="mx-auto px-3 md:px-4 relative">
+  <div id="sidebar-overlay" class="fixed inset-0 z-[55] lg:hidden" aria-hidden="true"></div>
 
-    <div id="sidebar-overlay" class="fixed inset-0 z-[55] lg:hidden" aria-hidden="true"></div>
-
-    <aside id="sidebar-menu" class="sidebar-drawer fixed inset-y-0 left-0 w-3/5 max-w-[280px] z-[80] overflow-y-auto flex flex-col lg:sticky lg:top-20 lg:self-start lg:inset-auto lg:overflow-visible lg:z-auto">
+  <aside id="sidebar-menu" class="sidebar-drawer fixed inset-y-0 left-0 w-3/5 max-w-[280px] z-[80] overflow-y-auto flex flex-col lg:sticky lg:top-20 lg:self-start lg:inset-auto lg:overflow-visible lg:z-auto">
       <div class="sm-drawer-head lg:hidden">
         <div class="sm-drawer-brand">
           <img src="../images/nuomu1压缩2.gif" alt="BOWEN" class="sm-drawer-avatar">
@@ -152,6 +150,8 @@
         </a>
       </nav>
     </aside>
+
+  <div id="layout-shell" class="mx-auto px-3 md:px-4 relative">
 
     <section id="main-content" class="relative z-10">
 
@@ -281,6 +281,6 @@
   <script src="../article-format.js?v=20260620"></script>
   <script src="../calendar.js?v=20260620"></script>
   <script src="slj-vortex.js?v=20260623"></script>
-  <script src="slj.js?v=20260624"></script>
+  <script src="slj.js?v=20260625"></script>
 </body>
 </html>

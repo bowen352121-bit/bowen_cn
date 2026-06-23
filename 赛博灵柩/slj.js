@@ -111,7 +111,9 @@ function openMobileSidebar() {
   sidebarMenu.setAttribute("aria-hidden", "false");
   sidebarOverlay?.setAttribute("aria-hidden", "false");
   document.body.classList.add("mobile-sidebar-open");
-  document.addEventListener("pointerdown", handleOutsidePointer, { capture: true });
+  window.setTimeout(() => {
+    document.addEventListener("pointerdown", handleOutsidePointer, { capture: true });
+  }, 80);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
