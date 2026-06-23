@@ -65,14 +65,14 @@ function exitArticleView() {
   }
 }
 
-function handleBrandHomeClick() {
+function handleBrandHomeClick(e) {
   const inArticle = articleView && !articleView.classList.contains("hidden");
   if (inArticle) {
+    e?.preventDefault();
     exitArticleView();
     return;
   }
   window.BowenMusic?.saveMusicTime();
-  window.location.href = "../bowen.html";
 }
 
 if (btnBackHome) {
@@ -84,9 +84,34 @@ function isMobile() {
 }
 
 function closeMobileSidebar() {
+  const sidebarMenu = document.getElementById("sidebar-menu");
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+  if (!sidebarMenu?.classList.contains("is-open")) return;
+  sidebarMenu.classList.remove("is-open");
+  sidebarMenu.setAttribute("aria-hidden", "true");
+  sidebarOverlay?.setAttribute("aria-hidden", "true");
   document.body.classList.remove("mobile-sidebar-open");
-  const overlay = document.getElementById("sidebar-overlay");
-  if (overlay) overlay.setAttribute("aria-hidden", "true");
+  document.removeEventListener("pointerdown", handleOutsidePointer, { capture: true });
+}
+
+function handleOutsidePointer(event) {
+  const sidebarMenu = document.getElementById("sidebar-menu");
+  const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+  if (!sidebarMenu?.classList.contains("is-open")) return;
+  if (sidebarMenu.contains(event.target)) return;
+  if (mobileMenuToggle?.contains(event.target)) return;
+  closeMobileSidebar();
+}
+
+function openMobileSidebar() {
+  const sidebarMenu = document.getElementById("sidebar-menu");
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+  if (!sidebarMenu || !isMobile() || sidebarMenu.classList.contains("is-open")) return;
+  sidebarMenu.classList.add("is-open");
+  sidebarMenu.setAttribute("aria-hidden", "false");
+  sidebarOverlay?.setAttribute("aria-hidden", "false");
+  document.body.classList.add("mobile-sidebar-open");
+  document.addEventListener("pointerdown", handleOutsidePointer, { capture: true });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -94,19 +119,39 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.classList.add("slj-mj-page");
   document.body.classList.remove("mobile-sidebar-open");
 
-  document.getElementById("btn-brand-home")?.addEventListener("click", handleBrandHomeClick);
-
+  const sidebarMenu = document.getElementById("sidebar-menu");
   const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
   const mobileMenuClose = document.getElementById("mobile-menu-close");
   const sidebarOverlay = document.getElementById("sidebar-overlay");
+  const btnBrandHome = document.getElementById("btn-brand-home");
 
-  mobileMenuToggle?.addEventListener("click", () => {
-    document.body.classList.add("mobile-sidebar-open");
-    sidebarOverlay?.setAttribute("aria-hidden", "false");
+  if (sidebarMenu && isMobile()) {
+    sidebarMenu.setAttribute("aria-hidden", "true");
+  }
+
+  btnBrandHome?.addEventListener("click", handleBrandHomeClick);
+
+  mobileMenuToggle?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    sidebarMenu?.classList.contains("is-open") ? closeMobileSidebar() : openMobileSidebar();
   });
 
-  mobileMenuClose?.addEventListener("click", closeMobileSidebar);
+  mobileMenuClose?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeMobileSidebar();
+  });
+
   sidebarOverlay?.addEventListener("click", closeMobileSidebar);
+
+  sidebarMenu?.addEventListener("click", (e) => {
+    const item = e.target.closest(".sm-nav-item");
+    if (item && isMobile() && sidebarMenu.classList.contains("is-open")) {
+      window.BowenMusic?.saveMusicTime();
+      closeMobileSidebar();
+    }
+  });
 
   document.querySelectorAll("#sidebar-menu a").forEach((link) => {
     link.addEventListener("click", () => {

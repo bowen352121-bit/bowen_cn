@@ -26,11 +26,24 @@ body.slj-mj-page > header {
   border-color: rgba(0, 229, 255, 0.06) !important;
   color: #e4e4e7;
   pointer-events: auto;
-  z-index: 100 !important;
+  z-index: 200 !important;
+  isolation: isolate;
+}
+
+body.slj-mj-page > header * {
+  pointer-events: auto;
+}
+
+body.slj-mj-page #mobile-menu-toggle,
+body.slj-mj-page #btn-brand-home {
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
 }
 
 body.slj-mj-page .header-brand {
   color: #00e5ff !important;
+  text-decoration: none;
 }
 
 body.slj-mj-page .site-slogan,
@@ -101,7 +114,16 @@ body.slj-mj-page #sidebar-menu {
   box-shadow: none !important;
   outline: none !important;
   pointer-events: auto;
-  z-index: 45 !important;
+}
+
+@media (max-width: 1023px) {
+  body.slj-mj-page #sidebar-menu {
+    z-index: 90 !important;
+  }
+
+  body.slj-mj-page #sidebar-overlay {
+    z-index: 85 !important;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -141,13 +163,16 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
   background: rgba(0, 229, 255, 0.1);
 }
 
-/* ── 全屏舞台：铺满视口 ── */
+/* ── 全屏舞台：铺满视口（顶栏以下，避免遮挡 header 点击） ── */
 .slj-mj-stage {
   position: fixed;
-  inset: 0;
+  top: var(--sm-header-h, 4rem);
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh - var(--sm-header-h, 4rem));
+  height: calc(100dvh - var(--sm-header-h, 4rem));
   overflow: hidden;
   background: #01040c;
   pointer-events: none;
