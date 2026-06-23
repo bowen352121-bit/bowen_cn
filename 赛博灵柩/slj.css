@@ -159,6 +159,8 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
   display: block;
   z-index: 1;
   pointer-events: auto;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .slj-scanlines {

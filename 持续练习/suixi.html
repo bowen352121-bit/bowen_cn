@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>随喜 · 冬宫 Lore | BOWEN</title>
+  <title>持续练习 · 冬宫 Lore | BOWEN</title>
+  <link rel="stylesheet" href="../click-effect.css?v=20260620">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -19,19 +20,24 @@
     #app {
       position: fixed;
       inset: 0;
-      display: flex;
+      --scene-center-x: calc((100% - min(420px, 38vw)) / 2);
+    }
+
+    #app.sidebar-collapsed {
+      --scene-center-x: 50%;
     }
 
     #canvas-wrap {
-      flex: 1;
-      min-width: 0;
-      position: relative;
-      background: radial-gradient(ellipse 90% 80% at 28% 32%, #243a52 0%, #121a28 38%, #060a12 72%, #020306 100%);
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: radial-gradient(ellipse 90% 80% at var(--scene-center-x) 32%, #243a52 0%, #121a28 38%, #060a12 72%, #020306 100%);
+      transition: background 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .scan-hud {
       position: absolute;
-      left: 42%;
+      left: var(--scene-center-x);
       top: 44%;
       width: min(76vmin, 82%);
       max-width: 720px;
@@ -40,6 +46,7 @@
       pointer-events: none;
       z-index: 2;
       opacity: 0.9;
+      transition: left 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .scan-hud circle,
@@ -58,12 +65,14 @@
 
     #canvas-wrap.dragging #castle-canvas { cursor: grabbing; }
 
-  /* ── 终末地 Lore 侧栏 ── */
+  /* ── 终末地 Lore 侧栏（浮层覆盖，不挤压 canvas） ── */
     .lore-panel {
       --lore-panel-width: min(420px, 38vw);
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
       width: var(--lore-panel-width);
-      flex-shrink: 0;
-      position: relative;
       z-index: 10;
       overflow: visible;
       transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
@@ -85,6 +94,7 @@
       background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.55) 12%, rgba(4, 8, 14, 0.92) 28%, #050810 100%);
       opacity: 1;
       visibility: visible;
+      overflow: hidden;
       transition: opacity 0.22s ease, visibility 0.22s ease;
     }
 
@@ -183,13 +193,23 @@
       display: flex;
       align-items: center;
       gap: 0.65rem;
+      width: 100%;
       padding: 0.55rem 0.5rem;
       font-size: 0.82rem;
       letter-spacing: 0.06em;
       color: rgba(200, 210, 220, 0.55);
+      border: none;
       border-left: 2px solid transparent;
+      background: transparent;
+      font-family: inherit;
+      text-align: left;
       transition: color 0.2s, border-color 0.2s, background 0.2s;
-      cursor: default;
+      cursor: pointer;
+    }
+
+    .lore-nav-item:hover {
+      color: rgba(220, 228, 240, 0.82);
+      background: rgba(255, 200, 72, 0.04);
     }
 
     .lore-nav-item.is-active {
@@ -211,6 +231,15 @@
       line-height: 1.85;
       color: rgba(190, 200, 215, 0.78);
       padding-right: 0.5rem;
+      min-height: 0;
+    }
+
+    .lore-section {
+      display: none;
+    }
+
+    .lore-section.is-active {
+      display: block;
     }
 
     .lore-body p { margin-bottom: 1rem; }
@@ -254,17 +283,23 @@
     }
 
     @media (max-width: 768px) {
-      #app { flex-direction: column; }
+      #app {
+        --scene-center-x: 50%;
+      }
+
       .lore-panel {
         --lore-panel-width: 100%;
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
         max-height: 42vh;
-        transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), width 0.32s ease;
+        transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
         border-left: none;
         border-top: 1px solid rgba(255, 210, 80, 0.1);
       }
       .lore-panel.is-collapsed {
-        width: 100%;
         max-height: 0;
         border-top-color: transparent;
       }
@@ -287,7 +322,6 @@
       .lore-panel.is-collapsed .lore-toggle svg {
         transform: rotate(180deg);
       }
-      #canvas-wrap { flex: 1; min-height: 58vh; }
       .hint-drag { left: 1rem; bottom: 0.75rem; }
     }
   </style>
@@ -322,40 +356,81 @@
       <div class="lore-divider"></div>
 
       <nav class="lore-nav" aria-label="资料目录">
-        <div class="lore-nav-item is-active"><span class="lore-nav-num">01</span>极北王庭 · 总览</div>
-        <div class="lore-nav-item"><span class="lore-nav-num">02</span>冰川悬崖与浮空基座</div>
-        <div class="lore-nav-item"><span class="lore-nav-num">03</span>王庭尖塔群系</div>
-        <div class="lore-nav-item"><span class="lore-nav-num">04</span>云层之上的天空之城</div>
-        <div class="lore-nav-item"><span class="lore-nav-num">05</span>暴风雪与极光</div>
+        <button type="button" class="lore-nav-item is-active" data-lore="01" aria-current="page">
+          <span class="lore-nav-num">01</span>极北王庭 · 总览
+        </button>
+        <button type="button" class="lore-nav-item" data-lore="02">
+          <span class="lore-nav-num">02</span>冰川悬崖与浮空基座
+        </button>
+        <button type="button" class="lore-nav-item" data-lore="03">
+          <span class="lore-nav-num">03</span>王庭尖塔群系
+        </button>
+        <button type="button" class="lore-nav-item" data-lore="04">
+          <span class="lore-nav-num">04</span>云层之上的天空之城
+        </button>
+        <button type="button" class="lore-nav-item" data-lore="05">
+          <span class="lore-nav-num">05</span>暴风雪与极光
+        </button>
       </nav>
 
       <div class="lore-body">
-        <p>
-          <strong>冬宫（Zapolyarny Palace）</strong>坐落于极北冰原尽头，整座王城建于悬浮的冰川断崖之上，哥特式尖塔群刺破铅灰色风暴云层，顶端宫殿则在金光中若隐若现。
-        </p>
-        <p>
-          传说王庭核心封存着旧时代的寒光协议——冰蓝荧辉自城心向外流淌，而最高处的浮空尖顶则沐浴在天幕裂隙的暖金余晖之中，如同仍在燃烧的远古灯塔。
-        </p>
-        <p>
-          拖动左侧粒子城堡可 360° 环视其轮廓。粒子形态参照官方概念图：底部冰崖、中部主堡、顶部云间浮城三层结构。
-        </p>
+        <section class="lore-section is-active" data-lore="01">
+          <p>
+            <strong>冬宫（Zapolyarny Palace）</strong>坐落于极北冰原尽头，整座王城建于悬浮的冰川断崖之上，哥特式尖塔群刺破铅灰色风暴云层，顶端宫殿则在金光中若隐若现。
+          </p>
+          <p>
+            传说王庭核心封存着旧时代的寒光协议——冰蓝荧辉自城心向外流淌，而最高处的浮空尖顶则沐浴在天幕裂隙的暖金余晖之中，如同仍在燃烧的远古灯塔。
+          </p>
+          <p>
+            拖动左侧粒子城堡可 360° 环视其轮廓。粒子形态参照官方概念图：底部冰崖、中部主堡、顶部云间浮城三层结构。
+          </p>
+        </section>
+        <section class="lore-section" data-lore="02" hidden></section>
+        <section class="lore-section" data-lore="03" hidden></section>
+        <section class="lore-section" data-lore="04" hidden></section>
+        <section class="lore-section" data-lore="05" hidden></section>
       </div>
 
-      <p class="lore-footer">随喜 · SUIXI LORE · BOWEN</p>
+      <p class="lore-footer">持续练习 · PRACTICE LORE · BOWEN</p>
       </div>
     </aside>
   </div>
 
   <script>
     (function () {
+      const app = document.getElementById("app");
       const panel = document.getElementById("lore-panel");
       const toggle = document.getElementById("lore-toggle");
-      if (!panel || !toggle) return;
+      if (!app || !panel || !toggle) return;
 
       toggle.addEventListener("click", () => {
         const collapsed = panel.classList.toggle("is-collapsed");
+        app.classList.toggle("sidebar-collapsed", collapsed);
         toggle.setAttribute("aria-expanded", String(!collapsed));
         toggle.setAttribute("aria-label", collapsed ? "展开侧栏" : "收起侧栏");
+      });
+
+      const navItems = panel.querySelectorAll(".lore-nav-item[data-lore]");
+      const sections = panel.querySelectorAll(".lore-section[data-lore]");
+
+      navItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          const id = item.dataset.lore;
+          if (!id) return;
+
+          navItems.forEach((nav) => {
+            const active = nav.dataset.lore === id;
+            nav.classList.toggle("is-active", active);
+            if (active) nav.setAttribute("aria-current", "page");
+            else nav.removeAttribute("aria-current");
+          });
+
+          sections.forEach((section) => {
+            const active = section.dataset.lore === id;
+            section.classList.toggle("is-active", active);
+            section.hidden = !active;
+          });
+        });
       });
     })();
   </script>
@@ -384,6 +459,7 @@
     const MIST_ALONG_STEP = 0.28;
     const canvas = document.getElementById("castle-canvas");
     const wrap = document.getElementById("canvas-wrap");
+    const lorePanel = document.getElementById("lore-panel");
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
@@ -1118,12 +1194,31 @@
     let lastPointerX = 0;
     const AUTO_SPIN_SPEED = 0.14;
 
+    function getSidebarOffsetX() {
+      if (window.innerWidth <= 768) return 0;
+      return (lorePanel?.offsetWidth || 0) / 2;
+    }
+
+    function applyCameraViewport() {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      if (w < 1 || h < 1) return;
+      const offsetX = getSidebarOffsetX();
+      if (offsetX > 0.5) {
+        camera.setViewOffset(w, h, offsetX, 0, w, h);
+      } else {
+        camera.clearViewOffset();
+      }
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
     function onResize() {
       const w = wrap.clientWidth;
       const h = wrap.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      if (w < 1 || h < 1) return;
       renderer.setSize(w, h, false);
+      applyCameraViewport();
       const pr = renderer.getPixelRatio();
       endfieldMaterials.forEach((m) => {
         m.uniforms.uPixelRatio.value = pr;
@@ -1170,6 +1265,7 @@
       root.rotation.y = rotY;
 
       root.position.y = ROOT_Y + Math.sin(t * 0.35) * 0.25;
+      applyCameraViewport();
       const camSway = Math.sin(t * 0.12) * 6;
       camera.position.set(camSway, CAM_LOOK_Y + CAM_HEIGHT_OFFSET, camRadius);
       camera.lookAt(camSway * 0.35, CAM_LOOK_Y + Math.sin(t * 0.2) * 1.2, 0);
@@ -1180,6 +1276,17 @@
     window.addEventListener("resize", onResize);
     onResize();
     animate();
+
+
+
+
+
+
+
+
+
+
   </script>
+  <script src="../click-effect.js?v=20260620"></script>
 </body>
 </html>

@@ -18,13 +18,16 @@
   ];
 
   const FONT_SIZE = 8;
-  const CHAR_STEP = 6;
-  const ROW_STEP = 10;
+  const CHAR_STEP = 7;
+  const ROW_STEP = 12;
   const DPR_CAP = 1;
+  const RENDER_SCALE = 0.78;
   const TWIST_SPEED = 0.00011;
   const HOLE_OPEN_MS = 180;
   const HOLE_REPAIR_MS = 2400;
   const HOLE_SWIRL_ZONE = 50;
+  const FILL_COLOR = "#00d7ee";
+  const ATLAS_COLS = 16;
 
   let w = 0;
   let h = 0;
@@ -39,9 +42,24 @@
   let lastFrame = 0;
   let twist = 0;
   let holes = [];
+  let charAtlas = null;
+  let colSkip = 1;
+  let avgFrameMs = 16;
+  let activeHoles = [];
+  let holeBounds = null;
+  let frameNow = 0;
 
   function easeOutCubic(t) {
     return 1 - (1 - t) ** 3;
+  }
+
+  function clamp(v, a, b) {
+    return Math.max(a, Math.min(b, v));
+  }
+
+  function smoothstep(edge0, edge1, x) {
+    const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
   }
 
   function holeRadius(hole, now) {
@@ -54,17 +72,48 @@
     return 0;
   }
 
-  function smoothstep(edge0, edge1, x) {
-    const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
-    return t * t * (3 - 2 * t);
-  }
-
   function holeVigor(hole, now) {
     const age = now - hole.born;
     const open = smoothstep(0, HOLE_OPEN_MS, age);
     if (age < HOLE_OPEN_MS) return open;
     const repairT = clamp((age - HOLE_OPEN_MS) / HOLE_REPAIR_MS, 0, 1);
     return open * (1 - easeOutCubic(repairT));
+  }
+
+  function buildCharAtlas() {
+    const atlas = document.createElement("canvas");
+    const rows = Math.ceil(96 / ATLAS_COLS);
+    atlas.width = ATLAS_COLS * CHAR_STEP;
+    atlas.height = rows * ROW_STEP;
+    const actx = atlas.getContext("2d");
+    actx.font = `${FONT_SIZE}px Consolas, "Courier New", monospace`;
+    actx.textBaseline = "top";
+    actx.fillStyle = "#ffffff";
+    for (let i = 32; i < 128; i++) {
+      const code = i - 32;
+      const col = code % ATLAS_COLS;
+      const row = Math.floor(code / ATLAS_COLS);
+      actx.fillText(String.fromCharCode(i), col * CHAR_STEP, row * ROW_STEP);
+    }
+    charAtlas = atlas;
+  }
+
+  function drawGlyph(ch, x, y) {
+    const code = ch.charCodeAt(0) - 32;
+    if (code < 0 || code >= 96 || !charAtlas) return;
+    const col = code % ATLAS_COLS;
+    const row = Math.floor(code / ATLAS_COLS);
+    ctx.drawImage(
+      charAtlas,
+      col * CHAR_STEP,
+      row * ROW_STEP,
+      CHAR_STEP,
+      ROW_STEP,
+      x,
+      y,
+      CHAR_STEP,
+      ROW_STEP
+    );
   }
 
   function punchHole(x, y) {
@@ -77,24 +126,21 @@
       dir: Math.random() > 0.5 ? 1 : -1,
       strength: 0.48 + Math.random() * 0.12,
     });
-    if (holes.length > 10) holes.shift();
+    if (holes.length > 8) holes.shift();
   }
 
-  /**
-   * MJ 同款局部涡旋：l = k / r 旋转场（非径向拉扯，避免弹簧感）
-   * 参考 midjourney.com 首页 ASCII warp 与 1/r 角速度场
-   */
   function localVortexWarp(px, py, hole, now) {
-    const rMax = holeRadius(hole, now);
+    const rMax = hole.rMaxNow;
     if (rMax <= 0) return null;
 
     const relX = px - hole.x;
     const relY = py - hole.y;
-    const dist = Math.hypot(relX, relY);
+    const distSq = relX * relX + relY * relY;
     const outerR = rMax + HOLE_SWIRL_ZONE;
-    if (dist > outerR) return null;
+    if (distSq > outerR * outerR) return null;
 
-    const vigor = holeVigor(hole, now);
+    const dist = Math.sqrt(distSq);
+    const vigor = hole.vigorNow;
     if (vigor < 0.02) return null;
 
     const rMin = Math.max(rMax * 0.14, 12);
@@ -119,11 +165,32 @@
     return { cut, drawX, drawY, blend };
   }
 
-  function applyHoles(px, py, now) {
+  function applyHoles(px, py) {
     let cut = 0;
     let drawX = px;
     let drawY = py;
     let bestBlend = 0;
+
+    for (let i = 0; i < activeHoles.length; i++) {
+      const r = localVortexWarp(px, py, activeHoles[i], frameNow);
+      if (!r) continue;
+      cut = Math.max(cut, r.cut);
+      if (r.blend > bestBlend) {
+        bestBlend = r.blend;
+        drawX = r.drawX;
+        drawY = r.drawY;
+      }
+    }
+
+    return { cut, drawX, drawY, near: bestBlend > 0.02 };
+  }
+
+  function syncActiveHoles(now) {
+    activeHoles.length = 0;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
 
     for (let i = holes.length - 1; i >= 0; i--) {
       const hole = holes[i];
@@ -133,33 +200,28 @@
         if (age > HOLE_OPEN_MS + HOLE_REPAIR_MS + 80) holes.splice(i, 1);
         continue;
       }
+      const vigor = holeVigor(hole, now);
+      hole.rMaxNow = rMax;
+      hole.vigorNow = vigor;
+      activeHoles.push(hole);
 
-      const r = localVortexWarp(px, py, hole, now);
-      if (!r) continue;
-
-      cut = Math.max(cut, r.cut);
-      if (r.blend > bestBlend) {
-        bestBlend = r.blend;
-        drawX = r.drawX;
-        drawY = r.drawY;
-      }
+      const pad = rMax + HOLE_SWIRL_ZONE;
+      minX = Math.min(minX, hole.x - pad);
+      minY = Math.min(minY, hole.y - pad);
+      maxX = Math.max(maxX, hole.x + pad);
+      maxY = Math.max(maxY, hole.y + pad);
     }
 
-    return {
-      cut,
-      drawX,
-      drawY,
-      near: bestBlend > 0.02,
-    };
+    holeBounds = activeHoles.length
+      ? { minX, minY, maxX, maxY }
+      : null;
   }
 
-  function drawVortexEyes(now) {
-    for (const hole of holes) {
-      const rMax = holeRadius(hole, now);
-      const vigor = holeVigor(hole, now);
-      if (rMax < 6 || vigor < 0.12) continue;
-
-      const eyeR = rMax * 0.2 * vigor;
+  function drawVortexEyes() {
+    for (let i = 0; i < activeHoles.length; i++) {
+      const hole = activeHoles[i];
+      if (hole.rMaxNow < 6 || hole.vigorNow < 0.12) continue;
+      const eyeR = hole.rMaxNow * 0.2 * hole.vigorNow;
       ctx.fillStyle = "#01040c";
       ctx.beginPath();
       ctx.arc(hole.x, hole.y, eyeR, 0, Math.PI * 2);
@@ -170,11 +232,9 @@
   function onCanvasPointer(e) {
     if (!isVisible()) return;
     const rect = canvas.getBoundingClientRect();
-    punchHole(e.clientX - rect.left, e.clientY - rect.top);
-  }
-
-  function clamp(v, a, b) {
-    return Math.max(a, Math.min(b, v));
+    const scaleX = w / rect.width;
+    const scaleY = h / rect.height;
+    punchHole((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
   }
 
   function isVisible() {
@@ -184,9 +244,9 @@
 
   function buildStreams() {
     streams = [];
-    const count = Math.ceil(h / ROW_STEP) + 4;
+    const count = Math.ceil(h / ROW_STEP) + 3;
     for (let i = 0; i < count; i++) {
-      const text = (PROMPTS[i % PROMPTS.length] + "  --v 6  " + PROMPTS[(i + 2) % PROMPTS.length]).repeat(3);
+      const text = (PROMPTS[i % PROMPTS.length] + "  --v 6  " + PROMPTS[(i + 2) % PROMPTS.length]).repeat(2);
       streams.push({
         y: i * ROW_STEP,
         text,
@@ -203,13 +263,13 @@
     const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
     w = window.innerWidth;
     h = window.innerHeight;
-    canvas.width = Math.max(1, Math.floor(w * dpr));
-    canvas.height = Math.max(1, Math.floor(h * dpr));
+    const rw = Math.max(1, Math.floor(w * RENDER_SCALE * dpr));
+    const rh = Math.max(1, Math.floor(h * RENDER_SCALE * dpr));
+    canvas.width = rw;
+    canvas.height = rh;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.font = `${FONT_SIZE}px Consolas, "Courier New", monospace`;
-    ctx.textBaseline = "top";
+    ctx.setTransform(RENDER_SCALE * dpr, 0, 0, RENDER_SCALE * dpr, 0, 0);
     cx = w * 0.5;
     cy = h * 0.5;
     vortexRx = Math.max(w, h) * 0.72;
@@ -218,27 +278,42 @@
     startTime = performance.now();
   }
 
-  /** MJ 旋涡：水平流场 + 椭圆扭曲，中心同样弯曲 */
-  function warp(sx, sy, twist) {
-    let dx = sx - cx;
-    let dy = sy - cy;
-    const er = Math.hypot(dx / vortexRx, dy / vortexRy);
-    let ang = Math.atan2(dy / vortexRy, dx / vortexRx);
+  /** MJ 旋涡：水平流场 + 椭圆扭曲 */
+  function warp(sx, sy, twistVal) {
+    const dx = sx - cx;
+    const dy = sy - cy;
+    const nx = dx / vortexRx;
+    const ny = dy / vortexRy;
+    const er = Math.hypot(nx, ny);
+    let ang = Math.atan2(ny, nx);
 
     const fall = Math.exp(-er * er * 0.42) * 1.65 + Math.max(0, 1.05 - er) ** 2.8 * 0.75;
-    ang += twist * fall;
+    ang += twistVal * fall;
 
+    const cosA = Math.cos(ang);
+    const sinA = Math.sin(ang);
     return {
-      x: cx + Math.cos(ang) * er * vortexRx,
-      y: cy + Math.sin(ang) * er * vortexRy,
+      x: cx + cosA * er * vortexRx,
+      y: cy + sinA * er * vortexRy,
       er,
     };
   }
 
+  function inHoleBounds(x, y) {
+    if (!holeBounds) return false;
+    return x >= holeBounds.minX && x <= holeBounds.maxX && y >= holeBounds.minY && y <= holeBounds.maxY;
+  }
+
   function drawStreams(scrollT, now) {
+    syncActiveHoles(now);
+
     const ringSpan = streams.length * ROW_STEP;
-    const cols = Math.ceil((w + 200) / CHAR_STEP);
-    const margin = 14;
+    const cols = Math.ceil((w + 160) / CHAR_STEP);
+    const margin = 12;
+    const hasHoles = activeHoles.length > 0;
+    const twistVal = twist;
+
+    ctx.fillStyle = FILL_COLOR;
 
     for (let si = 0; si < streams.length; si++) {
       const s = streams[si];
@@ -246,33 +321,48 @@
       const scrollWrap = s.textLen * CHAR_STEP;
       const scroll = scrollT * s.speed * 42 + s.phase;
       const rowAlpha = clamp(s.bright, 0.3, 0.48);
+      ctx.globalAlpha = rowAlpha;
 
-      for (let c = 0; c < cols; c++) {
+      for (let c = 0; c < cols; c += colSkip) {
         const sx = c * CHAR_STEP - (scroll % scrollWrap);
         const ch = s.text[c % s.textLen];
         if (ch === " ") continue;
 
-        const p = warp(sx, baseY, twist);
+        const p = warp(sx, baseY, twistVal);
+        if (p.er > 1.55 && (p.x < -margin || p.x > w + margin || p.y < -margin || p.y > h + margin)) {
+          continue;
+        }
         if (p.x < -margin || p.x > w + margin || p.y < -margin || p.y > h + margin) continue;
 
-        const holeFx = applyHoles(p.x, p.y, now);
-        if (holeFx.cut >= 0.99) continue;
+        let drawX = p.x;
+        let drawY = p.y;
+        let alphaMul = 1;
 
-        const drawX = holeFx.near ? Math.round(holeFx.drawX) : p.x;
-        const drawY = holeFx.near ? Math.round(holeFx.drawY) : p.y;
-        const alpha = rowAlpha * (1 - holeFx.cut);
-        if (alpha < 0.05) continue;
-        ctx.fillStyle = `rgba(0, 215, 238, ${alpha})`;
-        ctx.fillText(ch, drawX, drawY);
+        if (hasHoles && inHoleBounds(p.x, p.y)) {
+          const holeFx = applyHoles(p.x, p.y);
+          if (holeFx.cut >= 0.99) continue;
+          if (holeFx.near) {
+            drawX = holeFx.drawX;
+            drawY = holeFx.drawY;
+          }
+          alphaMul = 1 - holeFx.cut;
+        }
+
+        if (alphaMul < 0.05) continue;
+        ctx.globalAlpha = rowAlpha * alphaMul;
+        drawGlyph(ch, drawX, drawY);
       }
     }
+
+    ctx.globalAlpha = 1;
   }
 
   function draw(scrollT, now) {
+    frameNow = now;
     ctx.fillStyle = "#01040c";
     ctx.fillRect(0, 0, w, h);
     drawStreams(scrollT, now);
-    drawVortexEyes(now);
+    drawVortexEyes();
     stage?.classList.add("slj-stage--ready");
   }
 
@@ -291,6 +381,11 @@
 
     const dt = Math.min(now - lastFrame, 32);
     lastFrame = now;
+    avgFrameMs = avgFrameMs * 0.9 + dt * 0.1;
+
+    if (avgFrameMs > 22 && colSkip < 2) colSkip = 2;
+    else if (avgFrameMs < 14 && colSkip > 1) colSkip = 1;
+
     twist += dt * TWIST_SPEED;
     draw((now - startTime) * 0.001, now);
   }
@@ -320,6 +415,10 @@
     lastFrame = 0;
     twist = 0;
     holes = [];
+    activeHoles = [];
+    holeBounds = null;
+    colSkip = 1;
+    avgFrameMs = 16;
     stage?.classList.remove("slj-stage--ready");
     replayLogo();
   }
@@ -330,6 +429,7 @@
   };
   window.sljVortexReplay = replay;
 
+  buildCharAtlas();
   resize();
   start();
 
