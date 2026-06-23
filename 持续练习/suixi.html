@@ -106,9 +106,9 @@
 
     .lore-toggle {
       position: absolute;
-      left: 0;
+      right: min(420px, 38vw);
       top: 50%;
-      transform: translate(-100%, -50%);
+      transform: translateY(-50%);
       width: 34px;
       height: 72px;
       display: flex;
@@ -123,7 +123,11 @@
       cursor: pointer;
       z-index: 30;
       pointer-events: auto;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      transition: right 0.32s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    #app.sidebar-collapsed .lore-toggle {
+      right: 0;
     }
 
     .lore-toggle:hover {
@@ -138,7 +142,7 @@
       transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .lore-panel.is-collapsed .lore-toggle svg {
+    #app.sidebar-collapsed .lore-toggle svg {
       transform: rotate(180deg);
     }
 
@@ -338,10 +342,6 @@
         overflow: hidden;
       }
 
-      .lore-panel.is-collapsed .lore-toggle {
-        pointer-events: auto;
-      }
-
       .lore-panel.is-collapsed .lore-panel-inner {
         opacity: 1;
         visibility: visible;
@@ -521,14 +521,21 @@
       .lore-toggle {
         position: fixed;
         left: 50%;
+        right: auto;
         top: auto;
         bottom: max(0.85rem, env(safe-area-inset-bottom));
         transform: translateX(-50%);
         width: 72px;
         height: 34px;
-        border-right: 1px solid rgba(255, 210, 80, 0.22);
+        border: 1px solid rgba(255, 210, 80, 0.22);
         border-bottom: none;
         border-radius: 10px 10px 0 0;
+        z-index: 35;
+        transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      #app:not(.sidebar-collapsed) .lore-toggle {
+        bottom: calc(min(52vh, 400px) - 1px);
       }
 
       .lore-toggle svg {
@@ -536,7 +543,7 @@
         transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      .lore-panel.is-collapsed .lore-toggle svg {
+      #app.sidebar-collapsed .lore-toggle svg {
         transform: rotate(90deg);
       }
     }
@@ -560,12 +567,13 @@
 
     <button type="button" class="lore-scrim" id="lore-scrim" aria-label="收起资料栏" hidden></button>
 
+    <button type="button" class="lore-toggle" id="lore-toggle" aria-label="收起侧栏" aria-expanded="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    </button>
+
     <aside class="lore-panel" id="lore-panel">
-      <button type="button" class="lore-toggle" id="lore-toggle" aria-label="收起侧栏" aria-expanded="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-        </svg>
-      </button>
       <div class="lore-panel-inner">
       <a class="back-link" href="../bowen.html">← 返回明殿</a>
       <div class="lore-tag">WORLD ARCHIVE / 世界观资料</div>
