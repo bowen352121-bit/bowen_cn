@@ -1435,8 +1435,30 @@ body {
 /* 广告卡片 */
 .sm-ad-card {
   position: relative;
-  padding: 12px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88px;
+  padding: 0 !important;
   border-radius: var(--sm-radius) !important;
+  overflow: hidden;
+}
+
+.sm-ad-wen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  padding: 0.5rem 0.75rem;
+  font-size: clamp(2rem, 9vw, 2.75rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: #333;
+  text-align: center;
+  user-select: none;
 }
 
 /* 手机侧栏抽屉 */
