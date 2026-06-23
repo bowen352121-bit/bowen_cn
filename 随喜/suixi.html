@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随喜 · 冬宫 Lore | BOWEN</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #e8e8e8;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      display: flex;
+    }
+
+    #canvas-wrap {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      background: radial-gradient(ellipse 90% 80% at 28% 32%, #243a52 0%, #121a28 38%, #060a12 72%, #020306 100%);
+    }
+
+    .scan-hud {
+      position: absolute;
+      left: 42%;
+      top: 44%;
+      width: min(76vmin, 82%);
+      max-width: 720px;
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.9;
+    }
+
+    .scan-hud circle,
+    .scan-hud line {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.14);
+    }
+
+    #castle-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #canvas-wrap.dragging #castle-canvas { cursor: grabbing; }
+
+  /* ── 终末地 Lore 侧栏 ── */
+    .lore-panel {
+      --lore-panel-width: min(420px, 38vw);
+      width: var(--lore-panel-width);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      overflow: visible;
+      transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      border-left: 1px solid rgba(255, 210, 80, 0.12);
+      pointer-events: auto;
+    }
+
+    .lore-panel.is-collapsed {
+      width: 0;
+      border-left-color: transparent;
+    }
+
+    .lore-panel-inner {
+      width: var(--lore-panel-width);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 2.5rem 2rem 2rem 1.75rem;
+      background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.55) 12%, rgba(4, 8, 14, 0.92) 28%, #050810 100%);
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.22s ease, visibility 0.22s ease;
+    }
+
+    .lore-panel.is-collapsed .lore-panel-inner {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .lore-toggle {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translate(-100%, -50%);
+      width: 34px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid rgba(255, 210, 80, 0.22);
+      border-right: none;
+      border-radius: 10px 0 0 10px;
+      background: rgba(5, 8, 14, 0.88);
+      color: rgba(255, 210, 100, 0.85);
+      cursor: pointer;
+      z-index: 25;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .lore-toggle:hover {
+      background: rgba(12, 18, 28, 0.95);
+      color: #ffe08a;
+      border-color: rgba(255, 210, 80, 0.45);
+    }
+
+    .lore-toggle svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .lore-panel.is-collapsed .lore-toggle svg {
+      transform: rotate(180deg);
+    }
+
+    .lore-tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.28em;
+      color: rgba(255, 196, 72, 0.75);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .lore-tag::before {
+      content: "";
+      width: 28px;
+      height: 1px;
+      background: rgba(255, 196, 72, 0.5);
+    }
+
+    .lore-title {
+      font-size: clamp(2.4rem, 4.5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      color: #f5f5f5;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+    }
+
+    .lore-subtitle {
+      font-size: 0.72rem;
+      letter-spacing: 0.35em;
+      color: rgba(255, 210, 100, 0.85);
+      font-weight: 600;
+      margin-bottom: 1.75rem;
+      text-transform: uppercase;
+    }
+
+    .lore-divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 200, 80, 0.45), transparent);
+      margin-bottom: 1.5rem;
+    }
+
+    .lore-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .lore-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.55rem 0.5rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      color: rgba(200, 210, 220, 0.55);
+      border-left: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      cursor: default;
+    }
+
+    .lore-nav-item.is-active {
+      color: #fff;
+      border-left-color: rgba(255, 200, 72, 0.9);
+      background: rgba(255, 200, 72, 0.06);
+    }
+
+    .lore-nav-num {
+      font-size: 0.62rem;
+      color: rgba(255, 200, 72, 0.45);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lore-body {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 0.84rem;
+      line-height: 1.85;
+      color: rgba(190, 200, 215, 0.78);
+      padding-right: 0.5rem;
+    }
+
+    .lore-body p { margin-bottom: 1rem; }
+
+    .lore-body strong {
+      color: rgba(140, 210, 255, 0.95);
+      font-weight: 600;
+    }
+
+    .lore-footer {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: rgba(120, 130, 145, 0.6);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.75rem;
+      color: rgba(0, 180, 230, 0.75);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+
+    .back-link:hover { color: #00e5ff; }
+
+    .hint-drag {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 1.5rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      color: rgba(120, 160, 200, 0.35);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    @media (max-width: 768px) {
+      #app { flex-direction: column; }
+      .lore-panel {
+        --lore-panel-width: 100%;
+        width: 100%;
+        max-height: 42vh;
+        transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), width 0.32s ease;
+        border-left: none;
+        border-top: 1px solid rgba(255, 210, 80, 0.1);
+      }
+      .lore-panel.is-collapsed {
+        width: 100%;
+        max-height: 0;
+        border-top-color: transparent;
+      }
+      .lore-panel-inner {
+        width: 100%;
+        max-height: 42vh;
+        padding: 1.25rem 1.25rem 1rem;
+        background: #050810;
+      }
+      .lore-toggle {
+        left: 50%;
+        top: 0;
+        transform: translate(-50%, -100%);
+        width: 72px;
+        height: 34px;
+        border: 1px solid rgba(255, 210, 80, 0.22);
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+      }
+      .lore-panel.is-collapsed .lore-toggle svg {
+        transform: rotate(180deg);
+      }
+      #canvas-wrap { flex: 1; min-height: 58vh; }
+      .hint-drag { left: 1rem; bottom: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="canvas-wrap">
+      <svg class="scan-hud" viewBox="0 0 400 400" aria-hidden="true">
+        <circle cx="200" cy="200" r="168" stroke-width="0.7" stroke-dasharray="6 14" opacity="0.55"/>
+        <circle cx="200" cy="200" r="152" stroke-width="0.45" stroke-dasharray="2 10" opacity="0.35"/>
+        <circle cx="200" cy="200" r="132" stroke-width="0.35" opacity="0.2"/>
+        <line x1="200" y1="24" x2="200" y2="48" stroke-width="0.6" opacity="0.4"/>
+        <line x1="200" y1="352" x2="200" y2="376" stroke-width="0.6" opacity="0.4"/>
+        <line x1="24" y1="200" x2="48" y2="200" stroke-width="0.6" opacity="0.4"/>
+        <line x1="352" y1="200" x2="376" y2="200" stroke-width="0.6" opacity="0.4"/>
+      </svg>
+      <canvas id="castle-canvas"></canvas>
+      <p class="hint-drag">DRAG TO ROTATE · 拖拽旋转</p>
+    </div>
+
+    <aside class="lore-panel" id="lore-panel">
+      <button type="button" class="lore-toggle" id="lore-toggle" aria-label="收起侧栏" aria-expanded="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </button>
+      <div class="lore-panel-inner">
+      <a class="back-link" href="../bowen.html">← 返回明殿</a>
+      <div class="lore-tag">WORLD ARCHIVE / 世界观资料</div>
+      <h1 class="lore-title">冬宫</h1>
+      <p class="lore-subtitle">ZAPOLYARNY PALACE</p>
+      <div class="lore-divider"></div>
+
+      <nav class="lore-nav" aria-label="资料目录">
+        <div class="lore-nav-item is-active"><span class="lore-nav-num">01</span>极北王庭 · 总览</div>
+        <div class="lore-nav-item"><span class="lore-nav-num">02</span>冰川悬崖与浮空基座</div>
+        <div class="lore-nav-item"><span class="lore-nav-num">03</span>王庭尖塔群系</div>
+        <div class="lore-nav-item"><span class="lore-nav-num">04</span>云层之上的天空之城</div>
+        <div class="lore-nav-item"><span class="lore-nav-num">05</span>暴风雪与极光</div>
+      </nav>
+
+      <div class="lore-body">
+        <p>
+          <strong>冬宫（Zapolyarny Palace）</strong>坐落于极北冰原尽头，整座王城建于悬浮的冰川断崖之上，哥特式尖塔群刺破铅灰色风暴云层，顶端宫殿则在金光中若隐若现。
+        </p>
+        <p>
+          传说王庭核心封存着旧时代的寒光协议——冰蓝荧辉自城心向外流淌，而最高处的浮空尖顶则沐浴在天幕裂隙的暖金余晖之中，如同仍在燃烧的远古灯塔。
+        </p>
+        <p>
+          拖动左侧粒子城堡可 360° 环视其轮廓。粒子形态参照官方概念图：底部冰崖、中部主堡、顶部云间浮城三层结构。
+        </p>
+      </div>
+
+      <p class="lore-footer">随喜 · SUIXI LORE · BOWEN</p>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (function () {
+      const panel = document.getElementById("lore-panel");
+      const toggle = document.getElementById("lore-toggle");
+      if (!panel || !toggle) return;
+
+      toggle.addEventListener("click", () => {
+        const collapsed = panel.classList.toggle("is-collapsed");
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+        toggle.setAttribute("aria-label", collapsed ? "展开侧栏" : "收起侧栏");
+      });
+    })();
+  </script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from "three";
+
+    const MAX_CASTLE_SURFACE = 320000;
+    const MAX_GLACIER_SURFACE = 28000;
+    const SNOW_PARTICLES = 900;
+    const MAX_MIST_SURFACE = 9000;
+    const CASTLE_LAYER_STEP = 0.155;
+    const CASTLE_ALONG_STEP = 0.125;
+    const GLACIER_LAYER_STEP = 0.38;
+    const GLACIER_ALONG_STEP = 0.3;
+    const MIST_LAYER_STEP = 0.34;
+    const MIST_ALONG_STEP = 0.28;
+    const canvas = document.getElementById("castle-canvas");
+    const wrap = document.getElementById("canvas-wrap");
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0x080c14, 1);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0a1420, 0.0025);
+
+    const LOCAL_Y_MIN = -13;
+    const LOCAL_Y_MAX = 27;
+    const LOCAL_Y_CENTER = (LOCAL_Y_MIN + LOCAL_Y_MAX) / 2;
+    const SCENE_SCALE = 6.0;
+    const ROOT_Y = -26;
+    const CAM_LOOK_LOCAL_Y = LOCAL_Y_CENTER;
+    const CAM_LOOK_Y = CAM_LOOK_LOCAL_Y * SCENE_SCALE - 16;
+    const camRadius = 240;
+    const CAM_HEIGHT_OFFSET = 10;
+
+    const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1500);
+    camera.position.set(0, CAM_LOOK_Y + CAM_HEIGHT_OFFSET, camRadius);
+    camera.lookAt(0, CAM_LOOK_Y, 0);
+
+    const root = new THREE.Group();
+    scene.add(root);
+
+    const dummyMat = new THREE.MeshBasicMaterial();
+    const blackHullMat = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      colorWrite: false,
+      depthWrite: true,
+    });
+    const castleGroup = new THREE.Group();
+    const hullGroup = new THREE.Group();
+
+    const endfieldMaterials = [];
+
+    function makeEndfieldMaterial(pixelSize, opacity = 1.0, sharp = false) {
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uPixelSize: { value: pixelSize },
+          uPixelRatio: { value: renderer.getPixelRatio() },
+          uOpacity: { value: opacity },
+          uSharp: { value: sharp ? 1.0 : 0.0 },
+        },
+        vertexShader: `
+          attribute vec3 color;
+          varying vec3 vColor;
+          uniform float uPixelSize;
+          uniform float uPixelRatio;
+          void main() {
+            vColor = color;
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * mvPosition;
+            gl_PointSize = max(1.0, uPixelSize * uPixelRatio);
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vColor;
+          uniform float uOpacity;
+          uniform float uSharp;
+          void main() {
+            vec2 c = gl_PointCoord - 0.5;
+            float d = length(c);
+            float dSq = max(abs(c.x), abs(c.y));
+            if (d > 0.5) discard;
+            float corePow = mix(36.0, 62.0, uSharp);
+            float core = exp(-d * d * corePow);
+            float rim = smoothstep(0.5, 0.05, d);
+            float sq = smoothstep(0.42, 0.08, dSq);
+            float alpha = mix(rim * uOpacity, core * uOpacity, uSharp);
+            alpha *= mix(1.0, sq, uSharp * 0.65);
+            vec3 col = vColor * (core * 1.35 + rim * 0.45);
+            gl_FragColor = vec4(col, alpha);
+          }
+        `,
+        transparent: true,
+        depthWrite: false,
+        depthTest: true,
+        blending: THREE.AdditiveBlending,
+      });
+      endfieldMaterials.push(mat);
+      return mat;
+    }
+
+    function addBlackHull(mesh) {
+      const hull = new THREE.Mesh(mesh.geometry, blackHullMat);
+      hull.position.copy(mesh.position);
+      hull.rotation.copy(mesh.rotation);
+      hull.scale.copy(mesh.scale);
+      hull.scale.multiplyScalar(0.94);
+      hullGroup.add(hull);
+    }
+
+    function addSamplingMesh(mesh, weight, opts = {}) {
+      mesh.visible = false;
+      castleGroup.add(mesh);
+      if (opts.hull) addBlackHull(mesh);
+      return {
+        mesh,
+        weight,
+        tag: opts.tag || "castle",
+        edge: opts.edge !== false,
+      };
+    }
+
+    function hash2(x, z) {
+      const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453;
+      return s - Math.floor(s);
+    }
+
+    function glacierHeight(x, z, jitter = 0) {
+      const dist = Math.hypot(x, z);
+      const radial = dist / 20;
+      let y =
+        1.2 +
+        Math.sin(x * 0.22) * Math.cos(z * 0.19) * 2.2 +
+        Math.sin(x * 0.41 + z * 0.33) * 1.1 +
+        Math.sin(x * 0.78 - z * 0.62) * 0.55 +
+        Math.sin(x * 1.35 + z * 1.05) * 0.28;
+      y += (hash2(x, z) - 0.5) * jitter;
+      const mound = Math.exp(-radial * radial * 0.55);
+      y = 0.4 + y * mound * 1.15;
+      if (radial > 0.52) {
+        const edge = (radial - 0.52) / 0.48;
+        y -= edge * edge * 9.5;
+        y -= hash2(x * 2, z * 2) * edge * 2.2;
+      }
+      return y;
+    }
+
+    function buildOrganicGlacier() {
+      const meshes = [];
+      const planeW = 48;
+      const planeH = 48;
+      const seg = 96;
+      const geo = new THREE.PlaneGeometry(planeW, planeH, seg, seg);
+      geo.rotateX(-Math.PI / 2);
+      const attr = geo.attributes.position;
+      for (let i = 0; i < attr.count; i++) {
+        const x = attr.getX(i);
+        const z = attr.getZ(i);
+        attr.setY(i, glacierHeight(x, z, 0.18));
+      }
+      geo.computeVertexNormals();
+      meshes.push(addSamplingMesh(new THREE.Mesh(geo, dummyMat), 26, { tag: "glacier", edge: true, hull: true }));
+
+      for (let ring = 0; ring < 3; ring++) {
+        const baseR = 14 + ring * 2.5;
+        const count = 55 + ring * 15;
+        for (let i = 0; i < count; i++) {
+          const a = (i / count) * Math.PI * 2 + hash2(i, ring) * 0.8;
+          const r = baseR + hash2(a, i) * 3.5;
+          const x = Math.cos(a) * r;
+          const z = Math.sin(a) * r;
+          const topY = glacierHeight(x, z, 0.2);
+          const h = 2.5 + hash2(x, z) * 8 + ring * 1.5;
+          const cone = new THREE.Mesh(
+            new THREE.ConeGeometry(0.15 + hash2(z, x) * 0.55, h, 5),
+            dummyMat
+          );
+          cone.position.set(x, topY - h * 0.55, z);
+          cone.rotation.x = Math.PI;
+          meshes.push(addSamplingMesh(cone, 2.5, { tag: "glacier", hull: true }));
+        }
+      }
+
+      for (let i = 0; i < 90; i++) {
+        const a = hash2(i, 1) * Math.PI * 2;
+        const r = 10 + hash2(i, 2) * 10;
+        const x = Math.cos(a) * r;
+        const z = Math.sin(a) * r;
+        const y0 = glacierHeight(x, z, 0.15);
+        const h = 1.2 + hash2(x + i, z) * 5;
+        const spike = new THREE.Mesh(
+          new THREE.ConeGeometry(0.12 + hash2(i, x) * 0.35, h, 4),
+          dummyMat
+        );
+        spike.position.set(x + (hash2(i, z) - 0.5) * 2, y0 - h * 0.4, z + (hash2(z, i) - 0.5) * 2);
+        spike.rotation.x = Math.PI + (hash2(i, a) - 0.5) * 0.25;
+        meshes.push(addSamplingMesh(spike, 2, { tag: "glacier", hull: true }));
+      }
+
+      return meshes;
+    }
+
+    function buildFoundationSupports() {
+      const meshes = [];
+      const SUPPORT_BOTTOM = -11.8;
+
+      const mainTop = glacierHeight(0, 0, 0.05);
+      const mainH = mainTop - SUPPORT_BOTTOM;
+      const mainPillar = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.6, 4.8, mainH, 12),
+        dummyMat
+      );
+      mainPillar.position.set(0, SUPPORT_BOTTOM + mainH / 2, 0);
+      meshes.push(addSamplingMesh(mainPillar, 16, { tag: "glacier", hull: true }));
+
+      const pedestal = new THREE.Mesh(
+        new THREE.CylinderGeometry(5.8, 8.2, 3.4, 12),
+        dummyMat
+      );
+      pedestal.position.set(0, SUPPORT_BOTTOM - 1.5, 0);
+      meshes.push(addSamplingMesh(pedestal, 12, { tag: "glacier", hull: true }));
+
+      for (let i = 0; i < 9; i++) {
+        const a = (i / 9) * Math.PI * 2 + hash2(i, 0.2) * 0.4;
+        const r = 3.8 + hash2(i, 1.1) * 3.2;
+        const x = Math.cos(a) * r;
+        const z = Math.sin(a) * r;
+        const top = glacierHeight(x, z, 0.08);
+        const bottom = SUPPORT_BOTTOM + hash2(i, 2.3) * 1.8;
+        const h = top - bottom;
+        if (h < 2.5) continue;
+        const rad = 0.45 + hash2(x, z) * 0.95;
+        const col = new THREE.Mesh(
+          new THREE.CylinderGeometry(rad * 0.62, rad * 1.4, h, 8),
+          dummyMat
+        );
+        col.position.set(x, bottom + h / 2, z);
+        col.rotation.z = (hash2(i, 3.1) - 0.5) * 0.1;
+        col.rotation.x = (hash2(i, 4.2) - 0.5) * 0.1;
+        meshes.push(addSamplingMesh(col, 5.5, { tag: "glacier", hull: true }));
+      }
+
+      for (let i = 0; i < 14; i++) {
+        const a = hash2(i, 5) * Math.PI * 2;
+        const r = 5.5 + hash2(i, 6) * 4.5;
+        const x = Math.cos(a) * r;
+        const z = Math.sin(a) * r;
+        const attachY = glacierHeight(x, z, 0.1);
+        if (attachY < -1.5) continue;
+        const h = 1.8 + hash2(i, 7) * 5.2;
+        const icicle = new THREE.Mesh(
+          new THREE.ConeGeometry(0.1 + hash2(i, 8) * 0.38, h, 5),
+          dummyMat
+        );
+        icicle.position.set(x, attachY - h * 0.42, z);
+        icicle.rotation.x = Math.PI + (hash2(i, 9) - 0.5) * 0.18;
+        icicle.rotation.z = (hash2(i, 10) - 0.5) * 0.15;
+        meshes.push(addSamplingMesh(icicle, 2.2, { tag: "glacier", hull: true }));
+      }
+
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2 + 0.15;
+        const innerR = 2.2 + hash2(i, 11) * 1.2;
+        const outerR = 5.5 + hash2(i, 12) * 2.5;
+        const yLow = SUPPORT_BOTTOM + 0.8 + hash2(i, 13) * 2.2;
+        const x0 = Math.cos(a) * innerR;
+        const z0 = Math.sin(a) * innerR;
+        const x1 = Math.cos(a) * outerR;
+        const z1 = Math.sin(a) * outerR;
+        const yHigh = glacierHeight(x1, z1, 0.06) - 0.6;
+        const midX = (x0 + x1) / 2;
+        const midZ = (z0 + z1) / 2;
+        const midY = (yLow + yHigh) / 2;
+        const span = Math.hypot(x1 - x0, z1 - z0);
+        const ribH = Math.max(1.2, yHigh - yLow);
+        const rib = new THREE.Mesh(
+          new THREE.BoxGeometry(0.35 + hash2(i, 14) * 0.25, ribH, span * 0.92),
+          dummyMat
+        );
+        rib.position.set(midX, midY, midZ);
+        rib.rotation.y = -a;
+        rib.rotation.x = (hash2(i, 15) - 0.5) * 0.12;
+        meshes.push(addSamplingMesh(rib, 3.5, { tag: "glacier", hull: true }));
+      }
+
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2 + hash2(i, 16) * 0.5;
+        const r = 2.8 + hash2(i, 17) * 2.2;
+        const spread = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.1 + hash2(i, 18) * 1.8, 3.2 + hash2(i, 19) * 2.2, 2.2 + hash2(i, 20) * 1.6, 8),
+          dummyMat
+        );
+        spread.position.set(
+          Math.cos(a) * r,
+          SUPPORT_BOTTOM + 0.6 + hash2(i, 21) * 1.1,
+          Math.sin(a) * r
+        );
+        meshes.push(addSamplingMesh(spread, 4.5, { tag: "glacier", hull: true }));
+      }
+
+      return meshes;
+    }
+
+    function buildGothicCastleCluster() {
+      const meshes = [];
+      const rng = (i, j) => hash2(i * 3.17, j * 9.41);
+
+      for (let i = 0; i < 110; i++) {
+        const angle = rng(i, 0) * Math.PI * 2;
+        const radius = 0.4 + rng(i, 1) * 7.8;
+        const cx = Math.cos(angle) * radius + (rng(i, 2) - 0.5) * 2.8;
+        const cz = Math.sin(angle) * radius + (rng(i, 3) - 0.5) * 2.8;
+        if (Math.hypot(cx, cz) > 9.2) continue;
+
+        const baseY = glacierHeight(cx, cz, 0.1) + 0.35;
+        const mainR = 0.28 + rng(i, 4) * 1.05;
+        const mainH = 1.2 + rng(i, 5) * 4.8;
+        const cyl = new THREE.Mesh(
+          new THREE.CylinderGeometry(mainR * 0.78, mainR * 1.05, mainH, 8),
+          dummyMat
+        );
+        cyl.position.set(cx, baseY + mainH / 2, cz);
+        meshes.push(addSamplingMesh(cyl, 7, { tag: "castle", edge: true, hull: true }));
+
+        const spireH = 0.7 + rng(i, 6) * 3.6;
+        const spire = new THREE.Mesh(
+          new THREE.ConeGeometry(mainR * 0.95, spireH, 8),
+          dummyMat
+        );
+        spire.position.set(cx, baseY + mainH + spireH / 2, cz);
+        meshes.push(addSamplingMesh(spire, 7, { tag: "castle", edge: true, hull: true }));
+
+        const miniCount = 2 + Math.floor(rng(i, 7) * 5);
+        for (let m = 0; m < miniCount; m++) {
+          const ma = rng(i, m + 10) * Math.PI * 2;
+          const mr = mainR * (0.9 + rng(m, i) * 1.4);
+          const mx = cx + Math.cos(ma) * mr;
+          const mz = cz + Math.sin(ma) * mr;
+          const my = baseY + mainH * (0.3 + rng(m, i + 1) * 0.55);
+          const sr = 0.12 + rng(m, i + 2) * 0.45;
+          const sh = 0.5 + rng(m, i + 3) * 2.2;
+          const mini = new THREE.Mesh(
+            new THREE.ConeGeometry(sr, sh, 6),
+            dummyMat
+          );
+          mini.position.set(mx, my + sh / 2, mz);
+          mini.rotation.z = (rng(m, i + 4) - 0.5) * 0.15;
+          mini.rotation.x = (rng(m, i + 5) - 0.5) * 0.12;
+          meshes.push(addSamplingMesh(mini, 3.5, { tag: "castle", hull: true }));
+        }
+      }
+
+      for (let gx = -7; gx <= 7; gx += 1.2) {
+        for (let gz = -7; gz <= 7; gz += 1.2) {
+          const dist = Math.hypot(gx, gz);
+          if (dist > 8.5 || rng(gx, gz) > 0.62) continue;
+          const jx = gx + (rng(gx + 1, gz) - 0.5) * 0.9;
+          const jz = gz + (rng(gz + 1, gx) - 0.5) * 0.9;
+          const by = glacierHeight(jx, jz, 0.08) + 0.2;
+          const h = 0.6 + rng(gx, gz + 1) * 2.8;
+          const r = 0.15 + rng(gz, gx + 1) * 0.55;
+          const pillar = new THREE.Mesh(
+            new THREE.CylinderGeometry(r * 0.7, r, h, 6),
+            dummyMat
+          );
+          pillar.position.set(jx, by + h / 2, jz);
+          meshes.push(addSamplingMesh(pillar, 2.5, { tag: "castle", hull: true }));
+
+          if (rng(gx + 2, gz + 2) > 0.35) {
+            const sh = 0.35 + rng(gx + 3, gz) * 1.6;
+            const sp = new THREE.Mesh(
+              new THREE.ConeGeometry(r * 0.9, sh, 6),
+              dummyMat
+            );
+            sp.position.set(jx, by + h + sh / 2, jz);
+            meshes.push(addSamplingMesh(sp, 2.5, { tag: "castle", hull: true }));
+          }
+        }
+      }
+
+      for (let i = 0; i < 28; i++) {
+        const a = (i / 28) * Math.PI * 2;
+        const r = 5.5 + rng(i, 20) * 3;
+        const wall = new THREE.Mesh(
+          new THREE.BoxGeometry(1.8 + rng(i, 21), 1.5 + rng(i, 22) * 2.5, 0.5 + rng(i, 23) * 0.4),
+          dummyMat
+        );
+        wall.position.set(Math.cos(a) * r, glacierHeight(Math.cos(a) * r, Math.sin(a) * r, 0) + 1.5, Math.sin(a) * r);
+        wall.rotation.y = -a + Math.PI / 2;
+        meshes.push(addSamplingMesh(wall, 2, { tag: "castle", hull: true }));
+      }
+
+      const majors = [
+        { x: 0, z: 0, r: 2.1, h: 10.5, sp: 5.5 },
+        { x: 3.2, z: 1.5, r: 1.6, h: 8.5, sp: 4.2 },
+        { x: -2.5, z: 2.8, r: 1.5, h: 7.8, sp: 3.8 },
+        { x: 2.5, z: -3.2, r: 1.45, h: 7.2, sp: 3.5 },
+        { x: -3.5, z: -2, r: 1.35, h: 6.8, sp: 3.2 },
+        { x: 4.8, z: -0.8, r: 1.2, h: 6, sp: 2.8 },
+        { x: -1, z: 4.5, r: 1.25, h: 6.5, sp: 3 },
+      ];
+      for (const t of majors) {
+        const by = glacierHeight(t.x, t.z, 0.05) + 0.5;
+        const cyl = new THREE.Mesh(
+          new THREE.CylinderGeometry(t.r * 0.8, t.r, t.h, 12),
+          dummyMat
+        );
+        cyl.position.set(t.x, by + t.h / 2, t.z);
+        meshes.push(addSamplingMesh(cyl, 12, { tag: "castle", edge: true, hull: true }));
+
+        const spire = new THREE.Mesh(
+          new THREE.ConeGeometry(t.r * 0.92, t.sp, 12),
+          dummyMat
+        );
+        spire.position.set(t.x, by + t.h + t.sp / 2, t.z);
+        meshes.push(addSamplingMesh(spire, 12, { tag: "castle", edge: true, hull: true }));
+      }
+
+      return meshes;
+    }
+
+    function buildFloatingSkyMist() {
+      const meshes = [];
+      const cloudCenters = [
+        { x: 0, y: 19, z: 0, spread: 5 },
+        { x: 2.5, y: 21, z: 1.2, spread: 3.5 },
+        { x: -2, y: 20.5, z: -1.5, spread: 3.8 },
+        { x: 1, y: 23, z: -2.5, spread: 3 },
+        { x: -3, y: 22, z: 2, spread: 3.2 },
+        { x: 3.5, y: 20, z: -0.5, spread: 2.8 },
+      ];
+
+      for (const c of cloudCenters) {
+        for (let i = 0; i < 18; i++) {
+          const sph = new THREE.Spherical(
+            c.spread * (0.3 + hash2(i, c.x) * 0.7),
+            Math.PI * (0.15 + hash2(i, c.y) * 0.55),
+            hash2(i, c.z) * Math.PI * 2
+          );
+          const pos = new THREE.Vector3().setFromSpherical(sph);
+          pos.x += c.x + (hash2(i, 1) - 0.5) * 2;
+          pos.y += c.y + (hash2(i, 2) - 0.5) * 1.5;
+          pos.z += c.z + (hash2(i, 3) - 0.5) * 2;
+
+          const r = 0.25 + hash2(i, 4) * 0.9;
+          const h = 0.8 + hash2(i, 5) * 2.5;
+          const cyl = new THREE.Mesh(
+            new THREE.CylinderGeometry(r * 0.65, r, h, 6),
+            dummyMat
+          );
+          cyl.position.copy(pos);
+          meshes.push(addSamplingMesh(cyl, 3, { tag: "mist" }));
+
+          const cone = new THREE.Mesh(
+            new THREE.ConeGeometry(r * 0.85, h * 0.7, 6),
+            dummyMat
+          );
+          cone.position.set(pos.x, pos.y + h * 0.55, pos.z);
+          meshes.push(addSamplingMesh(cone, 3, { tag: "mist" }));
+        }
+      }
+
+      return meshes;
+    }
+
+    function buildCastleMeshes() {
+      return [
+        ...buildOrganicGlacier(),
+        ...buildFoundationSupports(),
+        ...buildGothicCastleCluster(),
+        ...buildFloatingSkyMist(),
+      ];
+    }
+
+    function colorForPoint(x, y, z, kind = 0, edgeGlow = false) {
+      if (kind === 2) {
+        return new THREE.Color(0.72, 0.74, 0.78);
+      }
+      if (kind === 1) {
+        const flick = 0.5 + hash2(x, z) * 0.15;
+        return new THREE.Color(0.2 * flick, 0.48 * flick, 0.78 * flick);
+      }
+      if (edgeGlow) {
+        return new THREE.Color(1.0, 1.02, 1.08);
+      }
+      return new THREE.Color(0.86, 0.9, 0.95);
+    }
+
+    function writeParticle(buf, idx, x, y, z, kind, edgeGlow = false) {
+      const o = idx * 3;
+      buf.positions[o] = x;
+      buf.positions[o + 1] = y;
+      buf.positions[o + 2] = z;
+      const c = colorForPoint(x, y, z, kind, edgeGlow);
+      buf.colors[o] = c.r;
+      buf.colors[o + 1] = c.g;
+      buf.colors[o + 2] = c.b;
+      return idx + 1;
+    }
+
+    const _triA = new THREE.Vector3();
+    const _triB = new THREE.Vector3();
+    const _triC = new THREE.Vector3();
+    const _hitA = new THREE.Vector3();
+    const _hitB = new THREE.Vector3();
+    const _segP0 = new THREE.Vector3();
+    const _segP1 = new THREE.Vector3();
+    const _worldBox = new THREE.Box3();
+
+    function edgeHitAtY(a, b, y) {
+      const ay = a.y;
+      const by = b.y;
+      if (Math.abs(ay - by) < 1e-8) return null;
+      const t = (y - ay) / (by - ay);
+      if (t < 0 || t > 1) return null;
+      _hitA.set(a.x + (b.x - a.x) * t, y, a.z + (b.z - a.z) * t);
+      return _hitA;
+    }
+
+    function intersectTriangleAtY(vA, vB, vC, y) {
+      const hits = [];
+      const verts = [vA, vB, vC];
+      for (let i = 0; i < 3; i++) {
+        const a = verts[i];
+        const b = verts[(i + 1) % 3];
+        const p = edgeHitAtY(a, b, y);
+        if (!p) continue;
+        let dup = false;
+        for (let h = 0; h < hits.length; h++) {
+          if (hits[h].distanceTo(p) < 1e-5) dup = true;
+        }
+        if (!dup) hits.push(p.clone());
+      }
+      if (hits.length < 2) return null;
+      if (hits.length === 2) return [hits[0], hits[1]];
+      let best = 0;
+      let pair = [hits[0], hits[1]];
+      for (let i = 0; i < hits.length; i++) {
+        for (let j = i + 1; j < hits.length; j++) {
+          const d = hits[i].distanceTo(hits[j]);
+          if (d > best) {
+            best = d;
+            pair = [hits[i], hits[j]];
+          }
+        }
+      }
+      return pair;
+    }
+
+    function sampleSegmentLayer(p0, p1, alongStep, layerY, buf, idx, kind, layerKeys, maxIdx) {
+      const len = Math.hypot(p1.x - p0.x, p1.z - p0.z);
+      if (len < 1e-6) return idx;
+      const n = Math.max(1, Math.ceil(len / alongStep));
+      for (let i = 0; i < n && idx < maxIdx; i++) {
+        const t = n <= 1 ? 0.5 : i / (n - 1);
+        const x = p0.x + (p1.x - p0.x) * t;
+        const z = p0.z + (p1.z - p0.z) * t;
+        const key = `${Math.round(x * 64)}|${Math.round(layerY * 64)}|${Math.round(z * 64)}`;
+        if (layerKeys.has(key)) continue;
+        layerKeys.add(key);
+        idx = writeParticle(buf, idx, x, layerY, z, kind);
+      }
+      return idx;
+    }
+
+    function sampleMeshHorizontalLayers(mesh, matrix, layerStep, alongStep, buf, startIdx, kind, maxCount) {
+      const geo = mesh.geometry;
+      if (!geo.boundingBox) geo.computeBoundingBox();
+      _worldBox.copy(geo.boundingBox).applyMatrix4(matrix);
+      const minY = _worldBox.min.y;
+      const maxY = _worldBox.max.y;
+      const posAttr = geo.attributes.position;
+      const index = geo.index;
+      const triCount = index ? index.count / 3 : posAttr.count / 3;
+      let idx = startIdx;
+      const maxIdx = Math.min(buf.positions.length / 3, maxCount);
+      const layerKeys = new Set();
+      const yStart = Math.floor(minY / layerStep) * layerStep;
+
+      for (let layerY = yStart; layerY <= maxY + layerStep * 0.25 && idx < maxIdx; layerY += layerStep) {
+        layerKeys.clear();
+        for (let t = 0; t < triCount && idx < maxIdx; t++) {
+          const i0 = index ? index.getX(t * 3) : t * 3;
+          const i1 = index ? index.getX(t * 3 + 1) : t * 3 + 1;
+          const i2 = index ? index.getX(t * 3 + 2) : t * 3 + 2;
+          _triA.fromBufferAttribute(posAttr, i0).applyMatrix4(matrix);
+          _triB.fromBufferAttribute(posAttr, i1).applyMatrix4(matrix);
+          _triC.fromBufferAttribute(posAttr, i2).applyMatrix4(matrix);
+
+          const seg = intersectTriangleAtY(_triA, _triB, _triC, layerY);
+          if (!seg) continue;
+          _segP0.copy(seg[0]);
+          _segP1.copy(seg[1]);
+          idx = sampleSegmentLayer(
+            _segP0,
+            _segP1,
+            alongStep,
+            layerY,
+            buf,
+            idx,
+            kind,
+            layerKeys,
+            maxIdx
+          );
+        }
+      }
+      return idx;
+    }
+
+    function sampleAllSurfacesHorizontal(entries, maxTotal, kindValue, tagFilter, layerStep, alongStep) {
+      const filtered = entries.filter(tagFilter);
+      const buf = {
+        positions: new Float32Array(maxTotal * 3),
+        colors: new Float32Array(maxTotal * 3),
+      };
+      if (filtered.length === 0) return { buf, count: 0 };
+      let idx = 0;
+      const matrix = new THREE.Matrix4();
+      castleGroup.updateMatrixWorld(true);
+
+      for (const entry of filtered) {
+        if (idx >= maxTotal) break;
+        const mesh = entry.mesh;
+        mesh.updateMatrixWorld(true);
+        matrix.copy(mesh.matrixWorld);
+        idx = sampleMeshHorizontalLayers(
+          mesh,
+          matrix,
+          layerStep,
+          alongStep,
+          buf,
+          idx,
+          kindValue,
+          maxTotal
+        );
+      }
+
+      return { buf, count: idx };
+    }
+
+    function appendSnowParticles(buf, startIdx, count) {
+      let idx = startIdx;
+      let tries = 0;
+      const maxTries = count * 8;
+      while (idx < startIdx + count && tries < maxTries) {
+        tries++;
+        const i = tries;
+        const x = (hash2(i, 1) - 0.5) * 32;
+        const y = 4 + hash2(i, 2) * 20;
+        const z = (hash2(i, 3) - 0.5) * 32;
+        if (Math.hypot(x, z) > 20) continue;
+        idx = writeParticle(buf, idx, x, y, z, 1);
+      }
+      return idx;
+    }
+
+    function appendAmbientDust(buf, startIdx, count) {
+      let idx = startIdx;
+      for (let i = 0; i < count && idx < buf.positions.length / 3; i++) {
+        const x = (hash2(i, 5) - 0.5) * 40;
+        const y = hash2(i, 6) * 22 - 2;
+        const z = (hash2(i, 7) - 0.5) * 40;
+        idx = writeParticle(buf, idx, x, y, z, 1);
+      }
+      return idx;
+    }
+
+    function makePointsFromBuf(buf, count) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(buf.positions.subarray(0, count * 3), 3));
+      geo.setAttribute("color", new THREE.BufferAttribute(buf.colors.subarray(0, count * 3), 3));
+      return geo;
+    }
+
+    const meshEntries = buildCastleMeshes();
+
+    const castleSurface = sampleAllSurfacesHorizontal(
+      meshEntries,
+      MAX_CASTLE_SURFACE,
+      0,
+      (e) => e.tag === "castle",
+      CASTLE_LAYER_STEP,
+      CASTLE_ALONG_STEP
+    );
+    const glacierSurface = sampleAllSurfacesHorizontal(
+      meshEntries,
+      MAX_GLACIER_SURFACE,
+      0,
+      (e) => e.tag === "glacier",
+      GLACIER_LAYER_STEP,
+      GLACIER_ALONG_STEP
+    );
+
+    const snowBuf = {
+      positions: new Float32Array((SNOW_PARTICLES + 500) * 3),
+      colors: new Float32Array((SNOW_PARTICLES + 500) * 3),
+    };
+    let snowCount = appendSnowParticles(snowBuf, 0, SNOW_PARTICLES);
+    snowCount = appendAmbientDust(snowBuf, snowCount, 200);
+
+    const goldSample = sampleAllSurfacesHorizontal(
+      meshEntries,
+      MAX_MIST_SURFACE,
+      2,
+      (e) => e.tag === "mist",
+      MIST_LAYER_STEP,
+      MIST_ALONG_STEP
+    );
+
+    const castleSurfaceGeo = makePointsFromBuf(castleSurface.buf, castleSurface.count);
+    const glacierGeo = makePointsFromBuf(glacierSurface.buf, glacierSurface.count);
+    const snowGeo = makePointsFromBuf(snowBuf, snowCount);
+    const goldGeo = makePointsFromBuf(goldSample.buf, goldSample.count);
+
+    const castleMat = makeEndfieldMaterial(1.18, 0.9);
+    const glacierMat = makeEndfieldMaterial(1.1, 0.72);
+    const snowMat = makeEndfieldMaterial(0.95, 0.55);
+    const goldMat = makeEndfieldMaterial(1.1, 0.45);
+
+    const castlePoints = new THREE.Points(castleSurfaceGeo, castleMat);
+    const glacierPoints = new THREE.Points(glacierGeo, glacierMat);
+    const snowPoints = new THREE.Points(snowGeo, snowMat);
+    const goldPoints = new THREE.Points(goldGeo, goldMat);
+
+    hullGroup.renderOrder = 0;
+    castlePoints.renderOrder = 2;
+    glacierPoints.renderOrder = 2;
+    snowPoints.renderOrder = 1;
+    goldPoints.renderOrder = 1;
+
+    root.add(hullGroup);
+    root.add(castlePoints);
+    root.add(glacierPoints);
+    root.add(snowPoints);
+    root.add(goldPoints);
+
+    root.scale.set(SCENE_SCALE, SCENE_SCALE, SCENE_SCALE);
+    root.position.y = ROOT_Y;
+
+    let targetRotY = 0;
+    let rotY = 0;
+    let isDragging = false;
+    let lastPointerX = 0;
+    const AUTO_SPIN_SPEED = 0.14;
+
+    function onResize() {
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+      const pr = renderer.getPixelRatio();
+      endfieldMaterials.forEach((m) => {
+        m.uniforms.uPixelRatio.value = pr;
+      });
+    }
+
+    wrap.addEventListener("pointerdown", (e) => {
+      isDragging = true;
+      lastPointerX = e.clientX;
+      wrap.classList.add("dragging");
+      wrap.setPointerCapture(e.pointerId);
+    });
+
+    wrap.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - lastPointerX;
+      lastPointerX = e.clientX;
+      targetRotY += dx * 0.006;
+    });
+
+    wrap.addEventListener("pointerup", (e) => {
+      isDragging = false;
+      wrap.classList.remove("dragging");
+      wrap.releasePointerCapture(e.pointerId);
+    });
+
+    wrap.addEventListener("pointerleave", () => {
+      isDragging = false;
+      wrap.classList.remove("dragging");
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      const dt = clock.getDelta();
+
+      if (!isDragging) {
+        targetRotY += AUTO_SPIN_SPEED * dt;
+      }
+
+      rotY += (targetRotY - rotY) * 0.06;
+      root.rotation.y = rotY;
+
+      root.position.y = ROOT_Y + Math.sin(t * 0.35) * 0.25;
+      const camSway = Math.sin(t * 0.12) * 6;
+      camera.position.set(camSway, CAM_LOOK_Y + CAM_HEIGHT_OFFSET, camRadius);
+      camera.lookAt(camSway * 0.35, CAM_LOOK_Y + Math.sin(t * 0.2) * 1.2, 0);
+
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener("resize", onResize);
+    onResize();
+    animate();
+  </script>
+</body>
+</html>

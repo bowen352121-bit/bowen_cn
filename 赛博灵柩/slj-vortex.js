@@ -22,6 +22,9 @@
   const ROW_STEP = 10;
   const DPR_CAP = 1;
   const TWIST_SPEED = 0.00011;
+  const HOLE_OPEN_MS = 180;
+  const HOLE_REPAIR_MS = 2400;
+  const HOLE_SWIRL_ZONE = 50;
 
   let w = 0;
   let h = 0;
@@ -35,6 +38,140 @@
   let raf = 0;
   let lastFrame = 0;
   let twist = 0;
+  let holes = [];
+
+  function easeOutCubic(t) {
+    return 1 - (1 - t) ** 3;
+  }
+
+  function holeRadius(hole, now) {
+    const age = now - hole.born;
+    if (age < HOLE_OPEN_MS) return hole.rMax * (age / HOLE_OPEN_MS);
+    if (age < HOLE_OPEN_MS + HOLE_REPAIR_MS) {
+      const t = (age - HOLE_OPEN_MS) / HOLE_REPAIR_MS;
+      return hole.rMax * (1 - easeOutCubic(t));
+    }
+    return 0;
+  }
+
+  function smoothstep(edge0, edge1, x) {
+    const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+
+  function holeVigor(hole, now) {
+    const age = now - hole.born;
+    const open = smoothstep(0, HOLE_OPEN_MS, age);
+    if (age < HOLE_OPEN_MS) return open;
+    const repairT = clamp((age - HOLE_OPEN_MS) / HOLE_REPAIR_MS, 0, 1);
+    return open * (1 - easeOutCubic(repairT));
+  }
+
+  function punchHole(x, y) {
+    const rMax = clamp(Math.min(w, h) * 0.14, 80, 150);
+    holes.push({
+      x,
+      y,
+      rMax,
+      born: performance.now(),
+      dir: Math.random() > 0.5 ? 1 : -1,
+      strength: 0.48 + Math.random() * 0.12,
+    });
+    if (holes.length > 10) holes.shift();
+  }
+
+  /**
+   * MJ 同款局部涡旋：l = k / r 旋转场（非径向拉扯，避免弹簧感）
+   * 参考 midjourney.com 首页 ASCII warp 与 1/r 角速度场
+   */
+  function localVortexWarp(px, py, hole, now) {
+    const rMax = holeRadius(hole, now);
+    if (rMax <= 0) return null;
+
+    const relX = px - hole.x;
+    const relY = py - hole.y;
+    const dist = Math.hypot(relX, relY);
+    const outerR = rMax + HOLE_SWIRL_ZONE;
+    if (dist > outerR) return null;
+
+    const vigor = holeVigor(hole, now);
+    if (vigor < 0.02) return null;
+
+    const rMin = Math.max(rMax * 0.14, 12);
+    const age = now - hole.born;
+    const swirl = 1 + Math.min(age / 900, 0.35);
+    const l = hole.dir * hole.strength * vigor * swirl / Math.max(dist, rMin);
+
+    const cosL = Math.cos(l);
+    const sinL = Math.sin(l);
+    const rotX = relX * cosL - relY * sinL;
+    const rotY = relX * sinL + relY * cosL;
+
+    const blend = (1 - smoothstep(rMax * 0.42, outerR, dist)) * vigor;
+    const drawX = px + (rotX - relX) * blend;
+    const drawY = py + (rotY - relY) * blend;
+
+    const eyeR = rMax * 0.24 * smoothstep(0, HOLE_OPEN_MS, age);
+    let cut = 0;
+    if (dist < eyeR) cut = 1;
+    else if (dist < eyeR + 5) cut = 1 - smoothstep(eyeR, eyeR + 5, dist);
+
+    return { cut, drawX, drawY, blend };
+  }
+
+  function applyHoles(px, py, now) {
+    let cut = 0;
+    let drawX = px;
+    let drawY = py;
+    let bestBlend = 0;
+
+    for (let i = holes.length - 1; i >= 0; i--) {
+      const hole = holes[i];
+      const age = now - hole.born;
+      const rMax = holeRadius(hole, now);
+      if (rMax <= 0) {
+        if (age > HOLE_OPEN_MS + HOLE_REPAIR_MS + 80) holes.splice(i, 1);
+        continue;
+      }
+
+      const r = localVortexWarp(px, py, hole, now);
+      if (!r) continue;
+
+      cut = Math.max(cut, r.cut);
+      if (r.blend > bestBlend) {
+        bestBlend = r.blend;
+        drawX = r.drawX;
+        drawY = r.drawY;
+      }
+    }
+
+    return {
+      cut,
+      drawX,
+      drawY,
+      near: bestBlend > 0.02,
+    };
+  }
+
+  function drawVortexEyes(now) {
+    for (const hole of holes) {
+      const rMax = holeRadius(hole, now);
+      const vigor = holeVigor(hole, now);
+      if (rMax < 6 || vigor < 0.12) continue;
+
+      const eyeR = rMax * 0.2 * vigor;
+      ctx.fillStyle = "#01040c";
+      ctx.beginPath();
+      ctx.arc(hole.x, hole.y, eyeR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function onCanvasPointer(e) {
+    if (!isVisible()) return;
+    const rect = canvas.getBoundingClientRect();
+    punchHole(e.clientX - rect.left, e.clientY - rect.top);
+  }
 
   function clamp(v, a, b) {
     return Math.max(a, Math.min(b, v));
@@ -98,7 +235,7 @@
     };
   }
 
-  function drawStreams(scrollT) {
+  function drawStreams(scrollT, now) {
     const ringSpan = streams.length * ROW_STEP;
     const cols = Math.ceil((w + 200) / CHAR_STEP);
     const margin = 14;
@@ -109,7 +246,6 @@
       const scrollWrap = s.textLen * CHAR_STEP;
       const scroll = scrollT * s.speed * 42 + s.phase;
       const rowAlpha = clamp(s.bright, 0.3, 0.48);
-      ctx.fillStyle = `rgba(0, 215, 238, ${rowAlpha})`;
 
       for (let c = 0; c < cols; c++) {
         const sx = c * CHAR_STEP - (scroll % scrollWrap);
@@ -119,15 +255,24 @@
         const p = warp(sx, baseY, twist);
         if (p.x < -margin || p.x > w + margin || p.y < -margin || p.y > h + margin) continue;
 
-        ctx.fillText(ch, p.x, p.y);
+        const holeFx = applyHoles(p.x, p.y, now);
+        if (holeFx.cut >= 0.99) continue;
+
+        const drawX = holeFx.near ? Math.round(holeFx.drawX) : p.x;
+        const drawY = holeFx.near ? Math.round(holeFx.drawY) : p.y;
+        const alpha = rowAlpha * (1 - holeFx.cut);
+        if (alpha < 0.05) continue;
+        ctx.fillStyle = `rgba(0, 215, 238, ${alpha})`;
+        ctx.fillText(ch, drawX, drawY);
       }
     }
   }
 
-  function draw(scrollT) {
+  function draw(scrollT, now) {
     ctx.fillStyle = "#01040c";
     ctx.fillRect(0, 0, w, h);
-    drawStreams(scrollT);
+    drawStreams(scrollT, now);
+    drawVortexEyes(now);
     stage?.classList.add("slj-stage--ready");
   }
 
@@ -147,7 +292,7 @@
     const dt = Math.min(now - lastFrame, 32);
     lastFrame = now;
     twist += dt * TWIST_SPEED;
-    draw((now - startTime) * 0.001);
+    draw((now - startTime) * 0.001, now);
   }
 
   function start() {
@@ -174,6 +319,7 @@
     startTime = performance.now();
     lastFrame = 0;
     twist = 0;
+    holes = [];
     stage?.classList.remove("slj-stage--ready");
     replayLogo();
   }
@@ -186,6 +332,8 @@
 
   resize();
   start();
+
+  canvas.addEventListener("pointerdown", onCanvasPointer);
 
   let resizeTimer = 0;
   window.addEventListener("resize", () => {
