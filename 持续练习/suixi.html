@@ -83,6 +83,12 @@
     .lore-panel.is-collapsed {
       width: 0;
       border-left-color: transparent;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .lore-panel.is-collapsed .lore-toggle {
+      pointer-events: auto;
     }
 
     .lore-panel-inner {
@@ -513,6 +519,38 @@
         bottom: calc(max(0.85rem, env(safe-area-inset-bottom)) + 2.65rem);
       }
     }
+
+    @media (min-width: 769px) {
+      .lore-toggle {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: 34px;
+        height: 72px;
+        border-radius: 10px 0 0 10px;
+        border-bottom: 1px solid rgba(255, 210, 80, 0.22);
+      }
+
+      .lore-toggle svg {
+        transform: rotate(0deg);
+      }
+
+      .lore-panel.is-collapsed .lore-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      .hint-drag {
+        bottom: 1.25rem;
+        transform: translateX(calc(-50% - min(210px, 19vw)));
+        transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #app.sidebar-collapsed .hint-drag {
+        transform: translateX(-50%);
+      }
+    }
   </style>
 </head>
 <body>
@@ -620,9 +658,13 @@
         toggle.setAttribute("aria-expanded", String(!collapsed));
         toggle.setAttribute("aria-label", collapsed ? "展开资料栏" : "收起资料栏");
 
-        if (!isMobile() || !scrim) return;
+        if (!isMobile() || !scrim) {
+          app.dispatchEvent(new CustomEvent("suixi-sidebar-change"));
+          return;
+        }
         scrim.classList.toggle("is-visible", !collapsed);
         scrim.hidden = collapsed;
+        app.dispatchEvent(new CustomEvent("suixi-sidebar-change"));
       }
 
       toggle.addEventListener("click", (e) => {
@@ -732,14 +774,18 @@
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      "three": "../vendor/three/three.module.js"
     }
   }
   </script>
 
   <script type="module">
     import * as THREE from "three";
+
+    const canvas = document.getElementById("castle-canvas");
+    const wrap = document.getElementById("canvas-wrap");
+    const lorePanel = document.getElementById("lore-panel");
+    if (!canvas || !wrap) throw new Error("canvas 容器缺失");
 
     const MAX_CASTLE_SURFACE = 320000;
     const MAX_GLACIER_SURFACE = 28000;
@@ -751,9 +797,6 @@
     const GLACIER_ALONG_STEP = 0.3;
     const MIST_LAYER_STEP = 0.34;
     const MIST_ALONG_STEP = 0.28;
-    const canvas = document.getElementById("castle-canvas");
-    const wrap = document.getElementById("canvas-wrap");
-    const lorePanel = document.getElementById("lore-panel");
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
@@ -1490,20 +1533,22 @@
 
     function getSidebarOffsetX() {
       if (window.innerWidth <= 768) return 0;
-      return (lorePanel?.offsetWidth || 0) / 2;
+      return lorePanel?.offsetWidth || 0;
     }
 
     function applyCameraViewport() {
       const w = wrap.clientWidth;
       const h = wrap.clientHeight;
       if (w < 1 || h < 1) return;
-      const offsetX = getSidebarOffsetX();
-      if (offsetX > 0.5) {
-        camera.setViewOffset(w, h, offsetX, 0, w, h);
+      const sidebarW = getSidebarOffsetX();
+      if (sidebarW > 0.5) {
+        const visW = Math.max(1, w - sidebarW);
+        camera.setViewOffset(w, h, sidebarW / 2, 0, visW, h);
+        camera.aspect = visW / h;
       } else {
         camera.clearViewOffset();
+        camera.aspect = w / h;
       }
-      camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
 
@@ -1568,6 +1613,10 @@
     }
 
     window.addEventListener("resize", onResize);
+    document.getElementById("app")?.addEventListener("suixi-sidebar-change", onResize);
+    lorePanel?.addEventListener("transitionend", (e) => {
+      if (e.propertyName === "width" || e.propertyName === "transform") onResize();
+    });
     onResize();
     animate();
 
