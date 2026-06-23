@@ -2,32 +2,7 @@
  * 景教留言板 · Firebase v10 + Surmon 风格编辑器
  */
 import { firebaseConfig, isFirebaseReady, guestbookAdmin } from "./firebase-config.js";
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {
-  getAuth,
-  initializeAuth,
-  indexedDBLocalPersistence,
-  browserLocalPersistence,
-  browserPopupRedirectResolver,
-  GoogleAuthProvider,
-  GithubAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  onAuthStateChanged,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  doc,
-  writeBatch,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { loadFirebaseSdk } from "./firebase-sdk.js";
 
 const FIRESTORE_COLLECTION = "guestbook_comments";
 const PAGE_SIZE = 15;
@@ -43,6 +18,58 @@ let app = null;
 let auth = null;
 let db = null;
 let currentUser = null;
+
+let initializeApp;
+let getApps;
+let getAuth;
+let initializeAuth;
+let indexedDBLocalPersistence;
+let browserLocalPersistence;
+let browserPopupRedirectResolver;
+let GoogleAuthProvider;
+let GithubAuthProvider;
+let signInWithPopup;
+let signInWithRedirect;
+let getRedirectResult;
+let onAuthStateChanged;
+let signOut;
+let getFirestore;
+let collection;
+let addDoc;
+let doc;
+let writeBatch;
+let query;
+let orderBy;
+let onSnapshot;
+let serverTimestamp;
+
+function bindFirebaseApi(sdk) {
+  ({
+    initializeApp,
+    getApps,
+    getAuth,
+    initializeAuth,
+    indexedDBLocalPersistence,
+    browserLocalPersistence,
+    browserPopupRedirectResolver,
+    GoogleAuthProvider,
+    GithubAuthProvider,
+    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
+    onAuthStateChanged,
+    signOut,
+    getFirestore,
+    collection,
+    addDoc,
+    doc,
+    writeBatch,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp,
+  } = sdk);
+}
 let allComments = [];
 let displayedCount = PAGE_SIZE;
 let currentSort = "newest";
@@ -107,6 +134,17 @@ async function initFirebase() {
     showConfigBanner();
     return false;
   }
+
+  const sdk = await loadFirebaseSdk();
+  if (!sdk) {
+    els.configBanner.classList.remove("hidden");
+    els.configBanner.textContent =
+      "Firebase 服务暂不可用（国内网络可能无法加载）。页面可浏览，登录与留言需特殊网络。";
+    els.commentsList.innerHTML =
+      '<p class="comments-error">留言功能需加载 Firebase，当前网络无法连接。请稍后再试或使用特殊网络。</p>';
+    return false;
+  }
+  bindFirebaseApi(sdk);
 
   try {
     app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);

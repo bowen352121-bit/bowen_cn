@@ -2,22 +2,7 @@
  * 咖啡馆 · 米游社风格帖子流 + Firebase 发帖
  */
 import { firebaseConfig, isFirebaseReady } from "../景教/firebase-config.js";
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-  doc,
-  getDoc,
-  setDoc,
-  runTransaction,
-  increment,
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { loadFirebaseSdk } from "../景教/firebase-sdk.js";
 
 const PAGE_SIZE = 8;
 const FIRESTORE_COLLECTION = "cafe_posts";
@@ -253,6 +238,44 @@ const STATIC_POSTS = [
 
 let auth = null;
 let db = null;
+
+let initializeApp;
+let getApps;
+let getAuth;
+let onAuthStateChanged;
+let getFirestore;
+let collection;
+let addDoc;
+let query;
+let orderBy;
+let onSnapshot;
+let serverTimestamp;
+let doc;
+let getDoc;
+let setDoc;
+let runTransaction;
+let increment;
+
+function bindFirebaseApi(sdk) {
+  ({
+    initializeApp,
+    getApps,
+    getAuth,
+    onAuthStateChanged,
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp,
+    doc,
+    getDoc,
+    setDoc,
+    runTransaction,
+    increment,
+  } = sdk);
+}
 let currentUser = null;
 let dynamicPosts = [];
 let postsUnsubscribe = null;
@@ -934,11 +957,18 @@ async function submitPost(event) {
   }
 }
 
-function initFirebase() {
+async function initFirebase() {
   if (!isFirebaseReady()) {
     console.warn("Firebase 未配置，咖啡馆仅展示静态帖子。");
     return;
   }
+
+  const sdk = await loadFirebaseSdk();
+  if (!sdk) {
+    console.warn("Firebase SDK 加载失败，咖啡馆仅展示本地帖子。");
+    return;
+  }
+  bindFirebaseApi(sdk);
 
   try {
     const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
