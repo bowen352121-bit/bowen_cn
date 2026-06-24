@@ -212,8 +212,9 @@
       : null;
   }
 
-  function onCanvasPointer(e) {
+  function onStagePointer(e) {
     if (!isVisible()) return;
+    if (e.target.closest(".slj-pay, .slj-mj-logo, header, #sidebar-menu, #sidebar-overlay")) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = w / rect.width;
     const scaleY = h / rect.height;
@@ -410,7 +411,7 @@
   resize();
   start();
 
-  canvas.addEventListener("pointerdown", onCanvasPointer);
+  stage?.addEventListener("pointerdown", onStagePointer);
 
   let resizeTimer = 0;
   window.addEventListener("resize", () => {

@@ -11,23 +11,16 @@ html {
 body {
     min-height: 100vh;
     overflow-x: hidden;
-    padding-top: var(--site-header-h);
     background: #f4f6f9;
     color: #333;
-    font-family: system-ui, -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
 }
 
-main {
-    margin: 0;
-    padding: 0;
-}
-
-a {
+main a {
     color: inherit;
     text-decoration: none;
 }
 
-button {
+main button {
     border: 0;
     background: none;
     font: inherit;
@@ -35,7 +28,7 @@ button {
 
 .hero {
     position: relative;
-    height: 12rem;
+    height: 12.5rem;
     overflow: hidden;
     background: #e7e7e7;
 }
@@ -99,7 +92,7 @@ button {
 
 @media (min-width: 640px) {
     .hero {
-        height: 18rem;
+        height: 18.5rem;
     }
 }
 
@@ -388,7 +381,7 @@ button {
     }
 
     .hero-banner {
-        height: 12rem;
+        height: 12.5rem;
     }
 
     .channel-nav {
@@ -406,7 +399,7 @@ button {
     }
 
     .hero {
-        height: 12rem;
+        height: 12.5rem;
     }
 
     .gallery {

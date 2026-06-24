@@ -23,6 +23,7 @@
   --sm-header-h: 4rem;
   --sm-layout-pad-top: 1rem;
   --sm-sidebar-height-ratio: 0.9;
+  --site-topbar-h: calc(0.75rem + 2rem + 0.75rem + 1px);
 }
 
 html {
@@ -858,19 +859,31 @@ body {
 }
 
 .header-brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
   border: 0;
   background: none;
   padding: 0;
+  margin: 0;
   cursor: pointer;
   font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
+  font-size: 1.25rem;
   font-weight: 900;
+  line-height: 1.75rem;
+  letter-spacing: 0.05em;
+  color: #0284c7;
+  text-decoration: none;
   transition: opacity 0.15s;
 }
 
 .header-brand:hover {
   opacity: 0.72;
+}
+
+/* 频道子站（大千界/覺有情/咖啡馆/景教）：主区上移贴齐顶栏，消除 pt-16 缝隙 */
+body.channel-site > main {
+  margin-top: calc(-1 * var(--sm-header-h) + var(--site-topbar-h));
 }
 
 .sm-pin {

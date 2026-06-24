@@ -174,4 +174,51 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("music-icon"),
     { play: "../images/音乐打开键.jpg", mute: "../images/音乐关闭键.jpg" }
   );
+
+  initSljPay();
 });
+
+function initSljPay() {
+  const payRoot = document.querySelector(".slj-pay");
+  if (!payRoot) return;
+
+  const panel = payRoot.querySelector(".slj-pay-qr-panel");
+  const btns = payRoot.querySelectorAll(".slj-pay-btn[data-pay]");
+  const imgs = payRoot.querySelectorAll(".slj-pay-qr-img");
+  let activePay = null;
+
+  btns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const type = btn.dataset.pay;
+      if (!type || !panel) return;
+
+      if (activePay === type) {
+        activePay = null;
+        panel.hidden = true;
+        panel.setAttribute("aria-hidden", "true");
+        btns.forEach((b) => {
+          b.classList.remove("is-active");
+          b.setAttribute("aria-expanded", "false");
+        });
+        imgs.forEach((img) => {
+          img.hidden = true;
+        });
+        return;
+      }
+
+      activePay = type;
+      panel.hidden = false;
+      panel.setAttribute("aria-hidden", "false");
+      btns.forEach((b) => {
+        const on = b.dataset.pay === type;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-expanded", on ? "true" : "false");
+      });
+      imgs.forEach((img) => {
+        img.hidden = img.dataset.pay !== type;
+      });
+    });
+  });
+}

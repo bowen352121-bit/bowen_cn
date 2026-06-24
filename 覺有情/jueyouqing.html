@@ -5,27 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>覺有情 · Snippets</title>
-    <link rel="stylesheet" href="../site-header.css">
+    <link rel="stylesheet" href="../tailwind.css?v=20260624">
+    <link rel="stylesheet" href="../bowen.css?v=20260632">
     <link rel="stylesheet" href="jueyouqing.css">
     <link rel="stylesheet" href="../click-effect.css?v=20260620">
     <link rel="stylesheet" href="../bangboo-loader.css?v=20260630m">
     <script src="../bangboo-loader.js?v=20260630m"></script>
 </head>
 
-<body>
-    <header class="site-header">
-        <div class="header-inner">
-            <div class="header-left">
-                <a class="brand" href="../bowen.html" aria-label="返回首页">
-                    <span class="brand-text">&lt;/&gt; BOWEN</span>
-                </a>
-                <span class="site-slogan">孩子们骑士梦怎会如此......</span>
+<body class="channel-site bg-[#f4f7f6] text-[#333333] min-h-screen relative pt-16 font-sans">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-zinc-200 px-4 md:px-8 py-3 shadow-sm">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <button type="button" class="lg:hidden p-2 -ml-1 rounded-md invisible pointer-events-none shrink-0" tabindex="-1" aria-hidden="true">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <a href="../bowen.html" id="btn-brand-home" class="header-brand text-xl font-black tracking-wider text-sky-600" aria-label="返回明殿">&lt;/&gt; BOWEN</a>
+                <span class="text-xs text-zinc-500 border-l border-zinc-300 pl-2 hidden sm:inline font-medium">孩子们骑士梦怎会如此......</span>
             </div>
-
-            <div class="header-right">
-                <img src="../images/nuomu1压缩2.gif" alt="头像" class="header-avatar">
-                <button id="music-toggle" class="music-toggle" type="button" title="播放/暂停音乐">
-                    <img id="music-icon" src="../images/音乐打开键.jpg" alt="Music">
+            <div class="flex items-center space-x-3">
+                <div class="relative group cursor-pointer">
+                    <img src="../images/nuomu1压缩2.gif" alt="头像" class="w-8 h-8 rounded-full border border-zinc-300 object-cover shadow-sm transition-transform duration-500 group-hover:rotate-[360deg]">
+                </div>
+                <button id="music-toggle" class="w-6 h-6 rounded-md border border-zinc-200 bg-white shadow-xs hover:scale-105 active:scale-95 transition flex items-center justify-center cursor-pointer focus:outline-none shrink-0" type="button" title="播放/暂停音乐">
+                    <img id="music-icon" src="../images/音乐打开键.jpg" alt="Music" class="w-full h-full object-cover rounded-md">
                 </button>
             </div>
         </div>

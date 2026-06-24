@@ -21,18 +21,16 @@ html {
 body {
     min-height: 100vh;
     overflow-x: hidden;
-    padding-top: var(--site-header-h);
     background: var(--bg);
     color: var(--text);
-    font-family: system-ui, -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
 }
 
-a {
+main a {
     color: inherit;
     text-decoration: none;
 }
 
-button {
+main button {
     border: 0;
     background: none;
     font: inherit;
@@ -115,7 +113,7 @@ button {
 
 .hero-banner {
     position: relative;
-    height: 220px;
+    height: 228px;
     overflow: hidden;
     background: #111;
 }
@@ -1177,7 +1175,7 @@ button {
 }
 
 @media (min-width: 768px) {
-    .hero-banner { height: 260px; }
+    .hero-banner { height: 268px; }
 }
 
 @media (max-width: 1023px) {

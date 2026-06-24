@@ -205,9 +205,9 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
   width: 100vw;
   height: calc(100vh - var(--sm-header-h, 4rem));
   height: calc(100dvh - var(--sm-header-h, 4rem));
-  overflow: hidden;
+  overflow: visible;
   background: #01040c;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 #slj-vortex-canvas {
@@ -217,7 +217,7 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
   height: 100%;
   display: block;
   z-index: 1;
-  pointer-events: auto;
+  pointer-events: none;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
@@ -245,14 +245,28 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
   background: radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.38) 100%);
 }
 
-/* ── 中心 Bowen 字样（MJ 空心双线 + 赛博入场） ── */
-.slj-mj-logo {
+/* ── 中心 Bowen + 赞赏（同一锚点） ── */
+.slj-mj-center {
   position: absolute;
   left: 50%;
   top: 42%;
-  z-index: 4;
-  pointer-events: none;
+  z-index: 10;
   transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.slj-mj-center .slj-pay {
+  pointer-events: auto;
+}
+
+/* ── Bowen 字样（MJ 空心双线 + 赛博入场） ── */
+.slj-mj-logo {
+  position: relative;
+  pointer-events: none;
   opacity: 0;
 }
 
@@ -320,7 +334,7 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
 @keyframes slj-logo-enter {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.18);
+    transform: scale(1.18);
     filter: blur(14px) brightness(2.2);
     clip-path: inset(52% 0 48% 0);
   }
@@ -331,26 +345,26 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
   }
   28% {
     opacity: 0.25;
-    transform: translate(calc(-50% + 5px), -50%) scale(1.04);
+    transform: translateX(5px) scale(1.04);
     clip-path: inset(0 0 0 0);
     filter: blur(0) brightness(1.6);
   }
   38% {
     opacity: 0.75;
-    transform: translate(calc(-50% - 4px), -50%) scale(1);
+    transform: translateX(-4px) scale(1);
   }
   48% {
     opacity: 0.52;
-    transform: translate(calc(-50% + 2px), -50%) scale(1);
+    transform: translateX(2px) scale(1);
   }
   58% {
     opacity: 0.75;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
     filter: blur(0) brightness(1);
   }
   100% {
     opacity: 0.75;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
     filter: blur(0) brightness(1);
     clip-path: inset(0 0 0 0);
   }
