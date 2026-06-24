@@ -1,0 +1,51 @@
+/* 邦布 — 加载过场 / 明殿常驻挂件（精灵图 30 帧竖向） */
+.bangboo-loader-wrap {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  visibility: hidden;
+  overflow: visible;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.bangboo-loader-wrap.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 明殿：常驻右下角 */
+.bangboo-loader-wrap.is-persistent {
+  z-index: 25;
+  opacity: 1;
+  visibility: visible;
+}
+
+.bangboo-loader {
+  --bangboo-w: 50px;
+  width: var(--bangboo-w);
+  height: calc(var(--bangboo-w) * 150 / 123);
+  flex-shrink: 0;
+  overflow: hidden;
+  background-repeat: no-repeat;
+  background-size: var(--bangboo-w) auto;
+  background-position: 0 0;
+}
+
+@media (max-width: 768px) {
+  .bangboo-loader-wrap {
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .bangboo-loader {
+    --bangboo-w: 44px;
+  }
+}
