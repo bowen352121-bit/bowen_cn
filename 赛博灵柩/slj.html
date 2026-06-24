@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../bangboo-loader.css?v=20260630m">
   <script src="../bangboo-loader.js?v=20260630m"></script>
   <link rel="stylesheet" href="slj.css?v=20260627">
-  <link rel="stylesheet" href="slj-pay.css?v=20260628">
+  <link rel="stylesheet" href="slj-pay.css?v=20260629c">
 </head>
 <body class="slj-mj-page font-sans">
 
@@ -170,11 +170,11 @@
 
             <div class="slj-pay" aria-label="赞赏支持">
               <div class="slj-pay-btns">
-                <button type="button" class="slj-pay-btn slj-pay-btn--alipay" data-pay="alipay" aria-expanded="false" aria-controls="slj-pay-qr-panel" aria-label="支付宝收款码">
+                <button type="button" class="slj-pay-btn slj-pay-btn--alipay" data-pay="alipay" aria-expanded="false" aria-controls="slj-pay-panel" aria-label="支付宝收款码">
                   <span class="slj-pay-icon slj-pay-icon--alipay" aria-hidden="true">支</span>
                   <span>支付宝</span>
                 </button>
-                <button type="button" class="slj-pay-btn slj-pay-btn--wechat" data-pay="wechat" aria-expanded="false" aria-controls="slj-pay-qr-panel" aria-label="微信赞赏码">
+                <button type="button" class="slj-pay-btn slj-pay-btn--wechat" data-pay="wechat" aria-expanded="false" aria-controls="slj-pay-panel" aria-label="微信赞赏码">
                   <span class="slj-pay-icon slj-pay-icon--wechat" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                       <path d="M9.5 4C5.91 4 3 6.46 3 9.58c0 1.62.86 3.08 2.22 4.05L4.5 16.5l2.86-1.57c.77.22 1.58.34 2.41.34.08 0 .16 0 .23-.01-.14-.47-.23-.96-.23-1.46 0-2.87 2.69-5.2 6-5.2.34 0 .67.03 1 .08C15.64 6.05 12.78 4 9.5 4zm-2.3 4.55c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm4.6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
@@ -183,10 +183,25 @@
                   </span>
                   <span>微信赞赏</span>
                 </button>
+                <button type="button" class="slj-pay-btn slj-pay-btn--paypal" data-pay="paypal" aria-expanded="false" aria-controls="slj-pay-panel" aria-label="PayPal 赞助">
+                  <span class="slj-pay-icon slj-pay-icon--paypal" aria-hidden="true">P</span>
+                  <span>PayPal</span>
+                </button>
+                <button type="button" class="slj-pay-btn slj-pay-btn--btc" data-pay="btc" aria-expanded="false" aria-controls="slj-pay-panel" aria-label="BTC 赞助">
+                  <span class="slj-pay-icon slj-pay-icon--btc" aria-hidden="true">₿</span>
+                  <span>BTC</span>
+                </button>
+                <button type="button" class="slj-pay-btn slj-pay-btn--eth" data-pay="eth" aria-expanded="false" aria-controls="slj-pay-panel" aria-label="ETH 赞助">
+                  <span class="slj-pay-icon slj-pay-icon--eth" aria-hidden="true">Ξ</span>
+                  <span>ETH</span>
+                </button>
               </div>
-              <div id="slj-pay-qr-panel" class="slj-pay-qr-panel" hidden aria-hidden="true">
+              <div id="slj-pay-panel" class="slj-pay-panel" hidden aria-hidden="true">
                 <img class="slj-pay-qr-img" data-pay="alipay" src="images/支付宝收款.jpg" alt="支付宝收款码" width="148" height="148" hidden>
                 <img class="slj-pay-qr-img" data-pay="wechat" src="images/微信收款.JPG" alt="微信收款码" width="148" height="148" hidden>
+                <div class="slj-pay-info" data-pay="paypal" hidden></div>
+                <div class="slj-pay-info" data-pay="btc" hidden></div>
+                <div class="slj-pay-info" data-pay="eth" hidden></div>
               </div>
             </div>
           </div>
@@ -299,6 +314,6 @@
   <script src="../article-format.js?v=20260620"></script>
   <script src="../calendar.js?v=20260620"></script>
   <script src="slj-vortex.js?v=20260627"></script>
-  <script src="slj.js?v=20260628"></script>
+  <script src="slj.js?v=20260629"></script>
 </body>
 </html>

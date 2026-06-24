@@ -1,4 +1,4 @@
-/* 赛博灵柩 · 微信 / 支付宝收款（点击显示，位于两按钮下方居中） */
+/* 赛博灵柩 · 赞助（点击显示，位于按钮下方居中） */
 .slj-pay {
   position: relative;
   z-index: 20;
@@ -12,35 +12,50 @@
 
 .slj-pay-btns {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: 28px;
-  padding: 10px 16px;
-  border-radius: 10px;
+  gap: 22px;
+  width: max-content;
+  max-width: min(760px, 98vw);
+  padding: 14px 22px;
+  border-radius: 12px;
   background: rgba(8, 14, 24, 0.72);
   border: 1px solid rgba(0, 229, 255, 0.12);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-.slj-pay-qr-panel {
+.slj-pay-btns::-webkit-scrollbar {
+  display: none;
+}
+
+.slj-pay-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  z-index: 25;
   display: flex;
   justify-content: center;
-  margin-top: 14px;
+  margin-top: 0;
   padding: 8px;
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-6px);
+  transform: translateX(-50%) translateY(-6px);
   transition: opacity 0.22s ease, visibility 0.22s ease, transform 0.22s ease;
+  pointer-events: auto;
 }
 
-.slj-pay-qr-panel:not([hidden]) {
+.slj-pay-panel:not([hidden]) {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 .slj-pay-qr-img {
@@ -50,21 +65,100 @@
   border-radius: 4px;
 }
 
-.slj-pay-qr-img[hidden] {
+.slj-pay-qr-img[hidden],
+.slj-pay-info[hidden] {
   display: none;
+}
+
+.slj-pay-info {
+  padding: 10px 14px;
+  min-width: 200px;
+  max-width: min(320px, 88vw);
+  text-align: center;
+}
+
+.slj-pay-info-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.02em;
+}
+
+.slj-pay-address {
+  display: block;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  word-break: break-all;
+  color: #1f2937;
+}
+
+.slj-pay-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: #0070ba;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.slj-pay-link:hover {
+  background: #005ea6;
+  transform: translateY(-1px);
+}
+
+.slj-pay-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.slj-pay-copy-btn:hover {
+  background: #f9fafb;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.slj-pay-copy-btn.is-copied {
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.35);
+  background: #ecfdf5;
 }
 
 .slj-pay-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  flex-shrink: 0;
+  gap: 10px;
   padding: 0;
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: 0.02em;
+  white-space: nowrap;
   color: #9ca3af;
   filter: grayscale(1);
   opacity: 0.62;
@@ -92,26 +186,67 @@
   opacity: 1;
 }
 
+.slj-pay-btn--paypal:hover,
+.slj-pay-btn--paypal.is-active {
+  color: #0070ba;
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+.slj-pay-btn--btc:hover,
+.slj-pay-btn--btc.is-active {
+  color: #f7931a;
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+.slj-pay-btn--eth:hover,
+.slj-pay-btn--eth.is-active {
+  color: #627eea;
+  filter: grayscale(0);
+  opacity: 1;
+}
+
 .slj-pay-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
 }
 
 .slj-pay-icon--alipay {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
   font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 .slj-pay-icon--wechat svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: block;
+}
+
+.slj-pay-icon--paypal {
+  font-size: 22px;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.slj-pay-icon--btc {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.slj-pay-icon--eth {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 @media (max-width: 640px) {
@@ -120,16 +255,48 @@
   }
 
   .slj-pay-btns {
-    gap: 18px;
-    padding: 8px 12px;
+    gap: 16px;
+    padding: 12px 16px;
+    justify-content: flex-start;
   }
 
   .slj-pay-btn {
-    font-size: 13px;
-    gap: 6px;
+    font-size: 14px;
+    gap: 8px;
+  }
+
+  .slj-pay-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .slj-pay-icon--alipay {
+    font-size: 22px;
+  }
+
+  .slj-pay-icon--wechat svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .slj-pay-icon--paypal {
+    font-size: 20px;
+  }
+
+  .slj-pay-icon--btc {
+    font-size: 22px;
+  }
+
+  .slj-pay-icon--eth {
+    font-size: 20px;
   }
 
   .slj-pay-qr-img {
     width: 128px;
+  }
+
+  .slj-pay-info {
+    min-width: 180px;
+    padding: 8px 10px;
   }
 }

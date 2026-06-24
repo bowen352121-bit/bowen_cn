@@ -178,14 +178,60 @@ document.addEventListener("DOMContentLoaded", () => {
   initSljPay();
 });
 
+const SLJ_PAY_CONFIG = {
+  paypal: {
+    url: "https://paypal.me/bowen352121",
+    linkText: "前往 PayPal 赞助",
+  },
+  btc: {
+    address: "YOUR_BTC_ADDRESS",
+  },
+  eth: {
+    address: "YOUR_ETH_ADDRESS",
+  },
+};
+
 function initSljPay() {
   const payRoot = document.querySelector(".slj-pay");
   if (!payRoot) return;
 
-  const panel = payRoot.querySelector(".slj-pay-qr-panel");
+  const panel = payRoot.querySelector(".slj-pay-panel");
   const btns = payRoot.querySelectorAll(".slj-pay-btn[data-pay]");
-  const imgs = payRoot.querySelectorAll(".slj-pay-qr-img");
+  const qrImgs = payRoot.querySelectorAll(".slj-pay-qr-img");
+  const infoBlocks = payRoot.querySelectorAll(".slj-pay-info");
   let activePay = null;
+
+  buildSljPayInfoPanels(payRoot);
+
+  function hidePanelContent() {
+    qrImgs.forEach((img) => {
+      img.hidden = true;
+    });
+    infoBlocks.forEach((block) => {
+      block.hidden = true;
+    });
+  }
+
+  function showPanelContent(type) {
+    hidePanelContent();
+    const qr = payRoot.querySelector(`.slj-pay-qr-img[data-pay="${type}"]`);
+    const info = payRoot.querySelector(`.slj-pay-info[data-pay="${type}"]`);
+    if (qr) qr.hidden = false;
+    if (info) info.hidden = false;
+  }
+
+  function closePanel() {
+    activePay = null;
+    if (panel) {
+      panel.hidden = true;
+      panel.setAttribute("aria-hidden", "true");
+    }
+    hidePanelContent();
+    btns.forEach((b) => {
+      b.classList.remove("is-active");
+      b.setAttribute("aria-expanded", "false");
+    });
+  }
 
   btns.forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -195,16 +241,7 @@ function initSljPay() {
       if (!type || !panel) return;
 
       if (activePay === type) {
-        activePay = null;
-        panel.hidden = true;
-        panel.setAttribute("aria-hidden", "true");
-        btns.forEach((b) => {
-          b.classList.remove("is-active");
-          b.setAttribute("aria-expanded", "false");
-        });
-        imgs.forEach((img) => {
-          img.hidden = true;
-        });
+        closePanel();
         return;
       }
 
@@ -216,9 +253,81 @@ function initSljPay() {
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-expanded", on ? "true" : "false");
       });
-      imgs.forEach((img) => {
-        img.hidden = img.dataset.pay !== type;
-      });
+      showPanelContent(type);
     });
   });
+}
+
+function buildSljPayInfoPanels(payRoot) {
+  const paypalEl = payRoot.querySelector('.slj-pay-info[data-pay="paypal"]');
+  const btcEl = payRoot.querySelector('.slj-pay-info[data-pay="btc"]');
+  const ethEl = payRoot.querySelector('.slj-pay-info[data-pay="eth"]');
+  const { paypal, btc, eth } = SLJ_PAY_CONFIG;
+
+  if (paypalEl && paypal?.url) {
+    paypalEl.replaceChildren();
+
+    const title = document.createElement("p");
+    title.className = "slj-pay-info-title";
+    title.textContent = "PayPal";
+
+    const link = document.createElement("a");
+    link.className = "slj-pay-link";
+    link.href = paypal.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = paypal.linkText || "前往 PayPal 赞助";
+
+    paypalEl.append(title, link);
+  }
+
+  if (btcEl && btc?.address) {
+    buildSljCryptoPanel(btcEl, "BTC", btc.address);
+  }
+
+  if (ethEl && eth?.address) {
+    buildSljCryptoPanel(ethEl, "ETH", eth.address);
+  }
+}
+
+function buildSljCryptoPanel(container, label, address) {
+  container.replaceChildren();
+
+  const title = document.createElement("p");
+  title.className = "slj-pay-info-title";
+  title.textContent = `${label} 地址`;
+
+  const code = document.createElement("code");
+  code.className = "slj-pay-address";
+  code.textContent = address;
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "slj-pay-copy-btn";
+  copyBtn.textContent = "复制地址";
+  copyBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    copySljPayText(address, copyBtn);
+  });
+
+  container.append(title, code, copyBtn);
+}
+
+async function copySljPayText(text, btn) {
+  const original = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "已复制";
+    btn.classList.add("is-copied");
+    window.setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove("is-copied");
+    }, 1600);
+  } catch {
+    btn.textContent = "复制失败";
+    window.setTimeout(() => {
+      btn.textContent = original;
+    }, 1600);
+  }
 }
