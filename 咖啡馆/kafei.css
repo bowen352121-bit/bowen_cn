@@ -20,18 +20,16 @@ html {
 
 body {
     min-height: 100vh;
-    padding-top: var(--site-header-h);
     background: var(--mhy-bg);
     color: var(--mhy-text);
-    font-family: system-ui, -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
 }
 
-a {
+main a {
     color: inherit;
     text-decoration: none;
 }
 
-button {
+main button:not(.cafe-reply-toggle):not(.cafe-like-btn):not(.cafe-sort-btn):not(.cafe-publish-btn):not(.cafe-mihoyo-refresh):not(.cafe-load-more):not(.cafe-modal-btn):not(.cafe-compose-close):not(.cafe-lightbox-close) {
     border: 0;
     background: none;
     font: inherit;
@@ -41,7 +39,7 @@ button {
 /* ── Hero ── */
 .hero {
     position: relative;
-    height: 10rem;
+    height: 10.5rem;
     overflow: hidden;
     background: #2a2a2a;
 }
@@ -250,6 +248,43 @@ button {
 
 .cafe-mihoyo-section {
     margin-bottom: 0.65rem;
+}
+
+.cafe-mihoyo-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+    padding: 0 0.15rem;
+}
+
+.cafe-mihoyo-sync {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--mhy-muted);
+}
+
+.cafe-mihoyo-refresh {
+    flex-shrink: 0;
+    border: 1px solid var(--mhy-border);
+    background: #fff;
+    color: var(--mhy-text);
+    border-radius: 999px;
+    padding: 0.28rem 0.75rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.cafe-mihoyo-refresh:hover:not(:disabled) {
+    border-color: var(--mhy-orange);
+    color: var(--mhy-orange);
+}
+
+.cafe-mihoyo-refresh:disabled {
+    opacity: 0.6;
+    cursor: wait;
 }
 
 .cafe-mihoyo-feed {

@@ -313,6 +313,11 @@ const tagsInput = document.getElementById("cafe-post-tags");
 const imagesInput = document.getElementById("cafe-post-images");
 const mihoyoFeedEl = document.getElementById("cafe-mihoyo-feed");
 const mihoyoEmptyEl = document.getElementById("cafe-mihoyo-empty");
+const mihoyoSyncEl = document.getElementById("cafe-mihoyo-sync");
+const mihoyoRefreshBtn = document.getElementById("btn-mihoyo-refresh");
+const MIHOYO_REFRESH_MS = 5 * 60 * 1000;
+let mihoyoFetchedAt = "";
+let mihoyoRefreshTimer = 0;
 
 function escapeHtml(str) {
   return String(str)
@@ -521,11 +526,31 @@ function renderReplyImages(images) {
   return `<div class="cafe-reply-images">${thumbs}</div>`;
 }
 
+function formatMihoyoSyncLabel(iso) {
+  if (!iso) return "米游社评论尚未同步";
+  const dt = new Date(iso);
+  if (Number.isNaN(dt.getTime())) return "米游社评论已同步";
+  const local = dt.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return `米游社评论同步于 ${local}`;
+}
+
+function updateMihoyoSyncLabel() {
+  if (!mihoyoSyncEl) return;
+  mihoyoSyncEl.textContent = formatMihoyoSyncLabel(mihoyoFetchedAt);
+}
+
 function renderReplyItem(comment) {
+  const avatar = comment.avatar_local || comment.avatar_url;
   const cls = comment.is_sub ? "cafe-reply cafe-reply--sub" : "cafe-reply";
   return `<div class="${cls}">
     <div class="cafe-reply-head">
-      ${renderAvatarHtml(comment.author, comment.avatar_local)}
+      ${renderAvatarHtml(comment.author, avatar)}
       <div class="cafe-reply-meta">
         <span class="cafe-reply-author">${escapeHtml(comment.author)}</span>
         ${comment.time ? `<span class="cafe-reply-time">${escapeHtml(comment.time)}</span>` : ""}
@@ -756,11 +781,12 @@ function renderMihoyoPost(post) {
   const likeKey = getMihoyoStatKey(post);
   const liked = likeKey ? userLikedKeys.has(likeKey) : false;
   const comments = Array.isArray(post.comments) ? post.comments : [];
-  const replyTargetId = comments.length ? `cafe-replies-${post.post_id}` : null;
+  const replyCount = Number(post.replies) || comments.length || 0;
+  const replyTargetId = comments.length || replyCount > 0 ? `cafe-replies-${post.post_id}` : null;
 
   article.innerHTML = `
     <div class="cafe-post-head">
-      ${renderAvatarHtml(post.author, post.avatar_local)}
+      ${renderAvatarHtml(post.author, post.avatar_local || post.avatar_url)}
       <div class="cafe-post-meta">
         <span class="cafe-post-author">${escapeHtml(post.author)}</span>
         <span class="cafe-post-time">${escapeHtml(timeLabel)}</span>
@@ -773,7 +799,7 @@ function renderMihoyoPost(post) {
       ${renderImages(images)}
     </div>
     ${renderPostFoot(
-      { comments: post.replies ?? 0, views: post.views ?? 0, likes: post.likes ?? 0 },
+      { comments: replyCount, views: post.views ?? 0, likes: post.likes ?? 0 },
       {
         className: "cafe-post-foot cafe-mihoyo-foot",
         likeKey,
@@ -796,14 +822,22 @@ function renderMihoyoFeed() {
   updateViewCountsInDom();
 }
 
-async function loadMihoyoFeed() {
+async function loadMihoyoFeed(options = {}) {
   if (!mihoyoFeedEl) return;
+  const { silent = false } = options;
+
+  if (!silent && mihoyoRefreshBtn) {
+    mihoyoRefreshBtn.disabled = true;
+    mihoyoRefreshBtn.textContent = "刷新中…";
+  }
 
   try {
-    const resp = await fetch(`mihoyo_data.json?_=${Date.now()}`);
+    const resp = await fetch(`mihoyo_data.json?_=${Date.now()}`, { cache: "no-store" });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
     const data = await resp.json();
+    mihoyoFetchedAt = data.fetched_at || "";
+    updateMihoyoSyncLabel();
     const posts = Array.isArray(data.posts) ? data.posts : [];
 
     if (!posts.length) {
@@ -823,7 +857,23 @@ async function loadMihoyoFeed() {
     console.warn("米游社数据加载失败：", err);
     mihoyoFeedEl.replaceChildren();
     mihoyoEmptyEl?.classList.remove("hidden");
+    if (mihoyoSyncEl) {
+      mihoyoSyncEl.textContent = "米游社评论加载失败，请稍后重试";
+    }
+  } finally {
+    if (mihoyoRefreshBtn) {
+      mihoyoRefreshBtn.disabled = false;
+      mihoyoRefreshBtn.textContent = "刷新评论";
+    }
   }
+}
+
+function scheduleMihoyoRefresh() {
+  clearInterval(mihoyoRefreshTimer);
+  mihoyoRefreshTimer = window.setInterval(() => {
+    if (document.hidden) return;
+    loadMihoyoFeed({ silent: true });
+  }, MIHOYO_REFRESH_MS);
 }
 
 function renderFeed() {
@@ -1129,7 +1179,14 @@ document.addEventListener("keydown", (e) => {
 
 initFirebase();
 loadMihoyoFeed();
+scheduleMihoyoRefresh();
 renderFeed();
+
+mihoyoRefreshBtn?.addEventListener("click", () => loadMihoyoFeed());
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadMihoyoFeed({ silent: true });
+});
 
 window.addEventListener("beforeunload", () => {
   postsUnsubscribe?.();

@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """
-米游社 · 绝区零「咖啡馆」版块最新回复同步脚本
-抓取帖子列表，下载头像与配图到本地，输出 mihoyo_data.json
+米游社 · 绝区零「咖啡馆」版块每日同步脚本
+
+- 每天抓取最新回复排序的前 10 条帖子（LIMIT=10）
+- 每条帖子抓取若干条评论及子回复（REPLIES_PER_POST / MAX_SUB_REPLIES）
+- 输出 mihoyo_data.json，供 kafei.html 展示
+
+定时：
+  - GitHub Actions：北京时间 12:00（UTC 04:00）
+  - 本地 Windows：运行 register-daily-task.ps1 注册计划任务
 """
 from __future__ import annotations
 
@@ -26,7 +33,9 @@ GAME_ID = 8
 LIMIT = 10
 REPLIES_PER_POST = 6
 MAX_SUB_REPLIES = 3
-MAX_WORKERS = 6
+MAX_WORKERS = 8
+DOWNLOAD_TIMEOUT = 12
+DOWNLOAD_RETRIES = 1
 # 米游社违规/删除占位图，不下载、不展示
 VIOLATION_IMAGE_MARKERS = (
     "weigui.png",
@@ -103,7 +112,7 @@ def safe_filename(prefix: str, url: str, index: int = 0) -> str:
     return f"{prefix}{suffix}_{digest}.{ext}"
 
 
-def download_image(url: str, dest: Path, retries: int = 2) -> Path | None:
+def download_image(url: str, dest: Path, retries: int = DOWNLOAD_RETRIES) -> Path | None:
     if not url or not url.startswith("http"):
         return None
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -114,7 +123,7 @@ def download_image(url: str, dest: Path, retries: int = 2) -> Path | None:
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=25) as resp:
+            with urllib.request.urlopen(req, timeout=DOWNLOAD_TIMEOUT) as resp:
                 content_type = resp.headers.get("Content-Type", "")
                 data = resp.read()
             if not data:
@@ -376,6 +385,59 @@ def download_all(jobs: list[tuple[str, Path]]) -> dict[str, str]:
     return downloaded
 
 
+def load_previous_asset_map() -> dict[str, str]:
+    """Reuse local paths from last sync so failed downloads do not drop assets."""
+    mapping: dict[str, str] = {}
+    if not OUTPUT_JSON.exists():
+        return mapping
+    try:
+        data = json.loads(OUTPUT_JSON.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return mapping
+
+    def remember(url: str, local: str) -> None:
+        url = (url or "").strip()
+        local = (local or "").strip()
+        if url and local:
+            mapping[url] = local
+
+    for post in data.get("posts") or []:
+        remember(post.get("avatar_url"), post.get("avatar_local"))
+        for url, local in zip(post.get("images_url") or [], post.get("images_local") or []):
+            remember(url, local)
+        for comment in post.get("comments") or []:
+            remember(comment.get("avatar_url"), comment.get("avatar_local"))
+            for url, local in zip(comment.get("images_url") or [], comment.get("images_local") or []):
+                remember(url, local)
+    return mapping
+
+
+def write_output(posts: list[dict]) -> None:
+    output = {
+        "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source_api": API_URL,
+        "forum_id": FORUM_ID,
+        "forum_name": "咖啡馆",
+        "game": "绝区零",
+        "sort_type": 1,
+        "sort_label": "最新回复",
+        "count": len(posts),
+        "posts": posts,
+    }
+    OUTPUT_JSON.write_text(
+        json.dumps(output, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+    day_key = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    archive_path = ARCHIVE_DIR / f"mihoyo_{day_key}.json"
+    archive_path.write_text(
+        json.dumps(output, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    log(f"saved {OUTPUT_JSON} ({len(posts)} items)")
+
+
 def apply_downloads_to_post(post: dict, downloaded: dict[str, str]) -> None:
     avatar_url = (post.get("avatar_url") or "").strip()
     if avatar_url and avatar_url in downloaded:
@@ -410,8 +472,16 @@ def main() -> int:
         parsed["comments"] = fetch_post_replies(post_id, {})
         posts.append(parsed)
 
+    prev_assets = load_previous_asset_map()
+    for post in posts:
+        apply_downloads_to_post(post, prev_assets)
+
+    # Save text/comments first — do not block on slow image downloads
+    write_output(posts)
+    log("comments saved; downloading images …")
+
     jobs = collect_download_jobs(raw_list, posts)
-    downloaded = download_all(jobs)
+    downloaded = {**prev_assets, **download_all(jobs)}
 
     for post in posts:
         apply_downloads_to_post(post, downloaded)
@@ -419,33 +489,7 @@ def main() -> int:
         reply_count = len(post.get("comments") or [])
         log(f"  ok [{post['author']}] {label} ({reply_count} replies)")
 
-    output = {
-        "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "source_api": API_URL,
-        "forum_id": FORUM_ID,
-        "forum_name": "咖啡馆",
-        "game": "绝区零",
-        "sort_type": 1,
-        "sort_label": "最新回复",
-        "count": len(posts),
-        "posts": posts,
-    }
-
-    OUTPUT_JSON.write_text(
-        json.dumps(output, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-
-    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    day_key = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    archive_path = ARCHIVE_DIR / f"mihoyo_{day_key}.json"
-    archive_path.write_text(
-        json.dumps(output, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-
-    log(f"saved {OUTPUT_JSON} ({len(posts)} items)")
-    log(f"archived {archive_path.name}")
+    write_output(posts)
     return 0
 
 

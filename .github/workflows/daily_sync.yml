@@ -2,8 +2,8 @@ name: Daily MiHoYo Cafe Sync
 
 on:
   schedule:
-    # 每天 UTC 01:30（北京时间 09:30）
-    - cron: "30 1 * * *"
+    # 每天 UTC 04:00 = 北京时间 12:00
+    - cron: "0 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Fetch MiHoYo cafe posts
+      - name: Fetch MiHoYo cafe posts (10 threads + replies)
         run: python 咖啡馆/fetch_bbs.py
 
       - name: Commit and push if changed
@@ -40,7 +40,7 @@ jobs:
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "chore(cafe): sync MiHoYo latest replies $(date -u +%Y-%m-%d)"
+          git commit -m "chore(cafe): daily sync MiHoYo 10 posts with replies $(date -u +%Y-%m-%d)"
           git push origin HEAD:master
 
       - name: Trigger Vercel redeploy
