@@ -217,7 +217,8 @@ body.slj-mj-page #sidebar-menu .sm-nav-divider {
   height: 100%;
   display: block;
   z-index: 1;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: default;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
