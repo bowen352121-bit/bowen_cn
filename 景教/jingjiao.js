@@ -2,7 +2,32 @@
  * 景教留言板 · Firebase v10 + Surmon 风格编辑器
  */
 import { firebaseConfig, isFirebaseReady, guestbookAdmin } from "./firebase-config.js";
-import { loadFirebaseSdk } from "./firebase-sdk.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  initializeAuth,
+  getAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  writeBatch,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const FIRESTORE_COLLECTION = "guestbook_comments";
 const PAGE_SIZE = 15;
@@ -19,57 +44,6 @@ let auth = null;
 let db = null;
 let currentUser = null;
 
-let initializeApp;
-let getApps;
-let getAuth;
-let initializeAuth;
-let indexedDBLocalPersistence;
-let browserLocalPersistence;
-let browserPopupRedirectResolver;
-let GoogleAuthProvider;
-let GithubAuthProvider;
-let signInWithPopup;
-let signInWithRedirect;
-let getRedirectResult;
-let onAuthStateChanged;
-let signOut;
-let getFirestore;
-let collection;
-let addDoc;
-let doc;
-let writeBatch;
-let query;
-let orderBy;
-let onSnapshot;
-let serverTimestamp;
-
-function bindFirebaseApi(sdk) {
-  ({
-    initializeApp,
-    getApps,
-    getAuth,
-    initializeAuth,
-    indexedDBLocalPersistence,
-    browserLocalPersistence,
-    browserPopupRedirectResolver,
-    GoogleAuthProvider,
-    GithubAuthProvider,
-    signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
-    onAuthStateChanged,
-    signOut,
-    getFirestore,
-    collection,
-    addDoc,
-    doc,
-    writeBatch,
-    query,
-    orderBy,
-    onSnapshot,
-    serverTimestamp,
-  } = sdk);
-}
 let allComments = [];
 let displayedCount = PAGE_SIZE;
 let currentSort = "newest";
@@ -114,10 +88,31 @@ const els = {
   imageLightboxImg: document.querySelector("#image-lightbox .img-lightbox-img"),
 };
 
+function isMobileLikeDevice() {
+  return (
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    window.matchMedia("(hover: none) and (pointer: coarse)").matches
+  );
+}
+
+function isIOSDevice() {
+  return (
+    /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+function isInAppBrowser() {
+  return /MicroMessenger|QQ\/|Weibo|DingTalk|Aweme|BytedanceWebView|Line\//i.test(
+    navigator.userAgent
+  );
+}
+
 function createAuth(appInstance) {
+  const persistence = isMobileLikeDevice() ? browserLocalPersistence : indexedDBLocalPersistence;
   try {
     return initializeAuth(appInstance, {
-      persistence: indexedDBLocalPersistence,
+      persistence,
       popupRedirectResolver: browserPopupRedirectResolver,
     });
   } catch (err) {
@@ -138,18 +133,6 @@ async function initFirebase() {
     return false;
   }
 
-  const sdk = await loadFirebaseSdk();
-  if (!sdk) {
-    els.configBanner.classList.remove("hidden");
-    els.configBanner.textContent =
-      "Firebase 服务暂不可用（国内网络可能无法加载）。页面可浏览，登录与留言需特殊网络。";
-    els.commentsList.innerHTML =
-      '<p class="comments-error">留言功能需加载 Firebase，当前网络无法连接。请稍后再试或使用特殊网络。</p>';
-    authInitFailed = true;
-    return false;
-  }
-  bindFirebaseApi(sdk);
-
   try {
     app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
     auth = createAuth(app);
@@ -158,12 +141,27 @@ async function initFirebase() {
     console.error("Firebase 初始化失败：", err);
     els.configBanner.classList.remove("hidden");
     els.configBanner.textContent =
-      "Firebase 初始化失败，请强制刷新页面（Ctrl+F5）后重试：" + (err.message || "未知错误");
+      "Firebase 初始化失败，请强制刷新页面后重试：" + (err.message || "未知错误");
     authInitFailed = true;
     return false;
   }
 
   els.configBanner.classList.add("hidden");
+
+  // OAuth 回跳后必须尽早 await，否则移动端会丢失登录态
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) cacheProfileMeta(result);
+  } catch (err) {
+    if (err.code === "auth/popup-closed-by-user") {
+      /* ignore */
+    } else {
+      console.error("登录回调失败：", err);
+      els.configBanner.classList.remove("hidden");
+      els.configBanner.textContent =
+        "登录失败：" + (err.message || err.code || "未知错误");
+    }
+  }
 
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
@@ -187,29 +185,7 @@ async function initFirebase() {
     }
   });
 
-  void consumeRedirectResult();
-
   return true;
-}
-
-function consumeRedirectResult() {
-  if (!auth || !getRedirectResult) return;
-
-  const timeoutMs = 10000;
-  Promise.race([
-    getRedirectResult(auth),
-    new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs)),
-  ])
-    .then((result) => {
-      if (result?.user) cacheProfileMeta(result);
-    })
-    .catch((err) => {
-      if (err.code === "auth/popup-closed-by-user") return;
-      console.error("登录回调失败：", err);
-      els.configBanner.classList.remove("hidden");
-      els.configBanner.textContent =
-        "登录失败：" + (err.message || err.code || "未知错误");
-    });
 }
 
 function showConfigBanner() {
@@ -229,13 +205,9 @@ function getAuthProvider(name) {
   return provider;
 }
 
-function prefersRedirectLogin() {
-  const coarseTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-  const narrow = window.matchMedia("(max-width: 1024px)").matches;
-  const mobileUa = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
-  return coarseTouch || narrow || mobileUa;
+function shouldUseRedirectLogin() {
+  if (isInAppBrowser()) return false;
+  return isIOSDevice();
 }
 
 function showLoginError(label, err) {
@@ -263,7 +235,9 @@ function setLoginButtonsState(state) {
   });
   const tip = els.authPanel?.querySelector(".gb-auth-tip");
   if (tip) {
-    if (busy) tip.textContent = "正在连接登录服务…";
+    if (isInAppBrowser()) {
+      tip.textContent = "请用 Safari / Chrome 打开本页后再登录（微信/QQ 内置浏览器不支持）";
+    } else if (busy) tip.textContent = "正在连接登录服务…";
     else if (loginRedirectPending) tip.textContent = "正在跳转，请稍候…";
     else if (authInitFailed) tip.textContent = "登录服务暂不可用，请检查网络后刷新";
     else if (!auth) tip.textContent = "正在准备登录…";
@@ -281,10 +255,17 @@ function loginWithProvider(name) {
     return;
   }
 
+  if (isInAppBrowser()) {
+    alert(
+      "微信 / QQ 等内置浏览器无法完成 Google / GitHub 登录。\n\n请点右上角「在浏览器中打开」，用 Safari 或 Chrome 访问后再试。"
+    );
+    return;
+  }
+
   const label = name === "github" ? "GitHub" : "Google";
   const provider = getAuthProvider(name);
 
-  if (prefersRedirectLogin()) {
+  if (shouldUseRedirectLogin()) {
     loginRedirectPending = true;
     setLoginButtonsState("busy");
     signInWithRedirect(auth, provider).catch((err) => {
@@ -307,8 +288,17 @@ async function loginWithPopup(name, label, provider) {
     console.error(`${label} 登录失败：`, err);
     if (err.code === "auth/popup-closed-by-user") return;
 
-    if (err.code === "auth/popup-blocked") {
+    const redirectFallback =
+      err.code === "auth/popup-blocked" ||
+      err.code === "auth/cancelled-popup-request" ||
+      (isMobileLikeDevice() && err.code !== "auth/account-exists-with-different-credential");
+
+    if (redirectFallback) {
+      loginRedirectPending = true;
+      setLoginButtonsState("busy");
       signInWithRedirect(auth, getAuthProvider(name)).catch((redirectErr) => {
+        loginRedirectPending = false;
+        setLoginButtonsState("ready");
         console.error("跳转登录失败：", redirectErr);
         showLoginError(label, redirectErr);
       });
