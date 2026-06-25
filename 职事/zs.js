@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  [btnDaqianjie, btnJueyouqing, btnMingdian, btnWeian, btnZhaimen].forEach((link) => {
+  [btnDaqianjie, btnJueyouqing, btnMingdian, btnWeian, btnZhaimen, document.getElementById("btn-suixi")].forEach((link) => {
     link?.addEventListener("click", () => {
       window.BowenMusic?.saveMusicTime();
       if (isMobile()) closeMobileSidebar();

@@ -17,6 +17,7 @@
   var SKIP =
     "#sig-prev,#sig-next,#article-view,input,textarea,select," +
     "#music-toggle,#sidebar-menu,#sidebar-overlay," +
+    "#btn-login-google,#btn-login-github,#auth-panel," +
     "#mobile-menu-toggle,#mobile-menu-close," +
     "#preview,#close,#image-lightbox,.img-lightbox,#cafe-image-lightbox,.cafe-lightbox";
 

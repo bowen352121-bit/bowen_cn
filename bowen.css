@@ -2046,6 +2046,11 @@ body.channel-site > main {
     align-self: start;
   }
 
+  #sidebar-overlay {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
   .sidebar-drawer {
     position: sticky !important;
     top: 5rem !important;
@@ -2053,5 +2058,15 @@ body.channel-site > main {
     inset: auto !important;
     align-self: start !important;
     overflow: visible !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    height: auto !important;
+    padding-top: 0 !important;
+  }
+
+  .sm-drawer-head,
+  .sm-drawer-tools,
+  .sm-drawer-foot {
+    display: none !important;
   }
 }

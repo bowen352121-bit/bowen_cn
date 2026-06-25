@@ -78,6 +78,8 @@ let previewMode = false;
 let isSubmitting = false;
 let unsubscribe = null;
 const profileMetaByUid = {};
+let authInitFailed = false;
+let loginRedirectPending = false;
 
 const els = {
   configBanner: document.getElementById("config-banner"),
@@ -132,6 +134,7 @@ function createAuth(appInstance) {
 async function initFirebase() {
   if (!isFirebaseReady()) {
     showConfigBanner();
+    authInitFailed = true;
     return false;
   }
 
@@ -142,6 +145,7 @@ async function initFirebase() {
       "Firebase 服务暂不可用（国内网络可能无法加载）。页面可浏览，登录与留言需特殊网络。";
     els.commentsList.innerHTML =
       '<p class="comments-error">留言功能需加载 Firebase，当前网络无法连接。请稍后再试或使用特殊网络。</p>';
+    authInitFailed = true;
     return false;
   }
   bindFirebaseApi(sdk);
@@ -155,24 +159,11 @@ async function initFirebase() {
     els.configBanner.classList.remove("hidden");
     els.configBanner.textContent =
       "Firebase 初始化失败，请强制刷新页面（Ctrl+F5）后重试：" + (err.message || "未知错误");
+    authInitFailed = true;
     return false;
   }
 
   els.configBanner.classList.add("hidden");
-
-  try {
-    const result = await getRedirectResult(auth);
-    if (result?.user) cacheProfileMeta(result);
-  } catch (err) {
-    if (err.code === "auth/popup-closed-by-user") {
-      /* ignore */
-    } else {
-      console.error("登录回调失败：", err);
-      els.configBanner.classList.remove("hidden");
-      els.configBanner.textContent =
-        "登录失败：" + (err.message || err.code || "未知错误");
-    }
-  }
 
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
@@ -196,7 +187,29 @@ async function initFirebase() {
     }
   });
 
+  void consumeRedirectResult();
+
   return true;
+}
+
+function consumeRedirectResult() {
+  if (!auth || !getRedirectResult) return;
+
+  const timeoutMs = 10000;
+  Promise.race([
+    getRedirectResult(auth),
+    new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+  ])
+    .then((result) => {
+      if (result?.user) cacheProfileMeta(result);
+    })
+    .catch((err) => {
+      if (err.code === "auth/popup-closed-by-user") return;
+      console.error("登录回调失败：", err);
+      els.configBanner.classList.remove("hidden");
+      els.configBanner.textContent =
+        "登录失败：" + (err.message || err.code || "未知错误");
+    });
 }
 
 function showConfigBanner() {
@@ -237,17 +250,46 @@ function showLoginError(label, err) {
   alert(`${label} 登录失败（${err?.code || "error"}）：${err?.message || "请稍后重试"}${hint}`);
 }
 
+function setLoginButtonsState(state) {
+  const busy = state === "busy";
+  const ready = state === "ready";
+  const failed = state === "idle";
+  [els.btnLoginGoogle, els.btnLoginGithub].forEach((btn) => {
+    if (!btn) return;
+    btn.disabled = busy || failed;
+    btn.classList.toggle("is-busy", busy);
+    btn.classList.toggle("is-ready", ready);
+    btn.classList.toggle("is-disabled", failed);
+  });
+  const tip = els.authPanel?.querySelector(".gb-auth-tip");
+  if (tip) {
+    if (busy) tip.textContent = "正在连接登录服务…";
+    else if (loginRedirectPending) tip.textContent = "正在跳转，请稍候…";
+    else if (authInitFailed) tip.textContent = "登录服务暂不可用，请检查网络后刷新";
+    else if (!auth) tip.textContent = "正在准备登录…";
+    else tip.textContent = "使用 Google 或 GitHub 登录后即可留言";
+  }
+}
+
 function loginWithProvider(name) {
   if (!auth) {
-    alert("Firebase 尚未初始化。请强制刷新页面（Ctrl+F5），若仍失败请查看页面顶部黄色提示。");
+    if (authInitFailed) {
+      alert("Firebase 尚未就绪。请查看页面顶部黄色提示，或检查网络后刷新页面。");
+      return;
+    }
+    alert("登录服务仍在加载，请稍等 1～2 秒后再点一次。");
     return;
   }
+
   const label = name === "github" ? "GitHub" : "Google";
   const provider = getAuthProvider(name);
 
   if (prefersRedirectLogin()) {
-    // 移动端须在用户手势内同步发起跳转，不能 await（iOS Safari 会拦截）
+    loginRedirectPending = true;
+    setLoginButtonsState("busy");
     signInWithRedirect(auth, provider).catch((err) => {
+      loginRedirectPending = false;
+      setLoginButtonsState("ready");
       console.error(`${label} 跳转登录失败：`, err);
       showLoginError(label, err);
     });
@@ -574,6 +616,7 @@ function updateAuthUI() {
     els.authPanel.classList.remove("hidden");
     els.loggedBar.classList.add("hidden");
     els.composePanel.classList.add("hidden");
+    setLoginButtonsState(auth ? "ready" : authInitFailed ? "idle" : "busy");
   }
   updateSubmitState();
   if (allComments.length) renderComments();
@@ -1336,6 +1379,7 @@ function bindAuthEvents() {
       "click",
       (e) => {
         e.preventDefault();
+        e.stopPropagation();
         loginWithProvider(name);
       },
       { passive: false }
@@ -1419,9 +1463,14 @@ function bindEditorEvents() {
 }
 
 async function boot() {
-  await initFirebase();
   bindAuthEvents();
   bindLightboxEvents();
+  setLoginButtonsState("busy");
+
+  const ok = await initFirebase();
+  loginRedirectPending = false;
+  setLoginButtonsState(ok && auth ? "ready" : authInitFailed ? "idle" : "busy");
+
   try {
     buildEmojiPanel();
     bindEditorEvents();

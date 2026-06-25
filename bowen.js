@@ -503,6 +503,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const btnSuixi = document.getElementById("btn-suixi");
+  if (btnSuixi) {
+    btnSuixi.addEventListener("click", () => {
+      window.BowenMusic?.saveMusicTime();
+      if (isMobile()) closeMobileSidebar();
+    });
+  }
+
   window.addEventListener("popstate", () => {
     if (articleView && !articleView.classList.contains("hidden")) {
       showHomeList();
