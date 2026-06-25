@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>窄门 • Insight | BOWEN</title>
   <link rel="stylesheet" href="../tailwind.css?v=20260624">
-  <link rel="stylesheet" href="../bowen.css?v=20260619">
+  <link rel="stylesheet" href="../bowen.css?v=20260634">
   <link rel="stylesheet" href="../click-effect.css?v=20260620">
   <link rel="stylesheet" href="../bangboo-loader.css?v=20260630m">
   <script src="../bangboo-loader.js?v=20260630m"></script>
@@ -61,7 +61,9 @@
     <aside id="sidebar-menu" class="sidebar-drawer fixed inset-y-0 left-0 w-3/5 max-w-[280px] z-[80] overflow-y-auto flex flex-col lg:sticky lg:top-20 lg:self-start lg:inset-auto lg:overflow-visible lg:z-auto">
       <div class="sm-drawer-head lg:hidden">
         <div class="sm-drawer-brand">
-          <img src="../images/nuomu1压缩2.gif" alt="BOWEN" class="sm-drawer-avatar">
+          <div class="sm-drawer-logo-wrap">
+            <img src="../images/nuomu1压缩2.gif" alt="BOWEN" class="sm-drawer-avatar">
+          </div>
           <div class="sm-drawer-brand-text">
             <div class="sm-drawer-title">BOWEN</div>
             <div class="sm-drawer-subtitle">孩子们骑士梦怎会如此......</div>
@@ -72,7 +74,18 @@
         </button>
       </div>
 
-      <nav class="sm-nav-list">
+      <div class="sm-drawer-tools lg:hidden" aria-label="快捷入口">
+        <a href="../bowen.html" class="sm-drawer-tool-btn">
+          <svg class="sm-drawer-tool-icon" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>明殿</span>
+        </a>
+        <a href="https://github.com/bowen352121-bit/bowen_cn" class="sm-drawer-tool-btn" target="_blank" rel="noopener noreferrer">
+          <svg class="sm-drawer-tool-icon" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+
+      <nav class="sm-nav-list flex-1 min-h-0">
         <a id="btn-mingdian" href="../bowen.html" class="sm-nav-item">
           <span class="sm-nav-left">
             <span class="sm-nav-icon"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
@@ -150,6 +163,14 @@
           <span class="sm-badge sm-badge-new">NEW</span>
         </a>
       </nav>
+
+      <div class="sm-drawer-foot lg:hidden">
+        <a href="https://github.com/bowen352121-bit/bowen_cn" target="_blank" rel="noopener noreferrer">
+          <svg class="sm-drawer-foot-icon" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          <span>Source Code</span>
+          <svg class="sm-drawer-foot-external" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        </a>
+      </div>
     </aside>
 
     <section id="main-content" class="relative z-10">

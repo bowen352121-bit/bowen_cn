@@ -140,16 +140,16 @@ body.slj-mj-page #sidebar-menu {
     bottom: 0 !important;
     left: 0 !important;
     right: auto !important;
-    width: min(70vw, 300px) !important;
-    max-width: 300px !important;
+    width: min(78vw, 320px) !important;
+    max-width: 320px !important;
     z-index: 195 !important;
     transform: translate3d(-100%, 0, 0) !important;
-    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
     pointer-events: none !important;
-    overflow-y: auto !important;
-    background: rgba(1, 8, 20, 0.97) !important;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45) !important;
-    border-right: 1px solid rgba(0, 229, 255, 0.12) !important;
+    overflow: hidden !important;
+    background: var(--sm-drawer-bg, #3d4349) !important;
+    box-shadow: 6px 0 28px rgba(0, 0, 0, 0.35) !important;
+    border-right: none !important;
   }
 
   body.slj-mj-page > #sidebar-menu.sidebar-drawer.is-open {
@@ -173,22 +173,26 @@ body.slj-mj-page .sm-nav-list {
 }
 
 body.slj-mj-page #sidebar-menu .sm-nav-item {
-  color: rgba(228, 240, 245, 0.9) !important;
+  color: var(--sm-drawer-text, rgba(255, 255, 255, 0.9)) !important;
 }
 
 body.slj-mj-page #sidebar-menu .sm-nav-icon {
-  color: rgba(0, 229, 255, 0.7) !important;
+  color: rgba(255, 255, 255, 0.82) !important;
 }
 
 body.slj-mj-page #sidebar-menu .sm-nav-item:hover:not(.sm-nav-hot):not(.sm-nav-new):not(.is-active) {
-  background: rgba(0, 229, 255, 0.08) !important;
-  color: #00e5ff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #fff !important;
 }
 
 body.slj-mj-page #sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) {
-  background: rgba(0, 229, 255, 0.12) !important;
+  background: var(--sm-drawer-active-bg, #e8eaed) !important;
   box-shadow: none !important;
-  color: #00e5ff !important;
+  color: var(--sm-accent) !important;
+}
+
+body.slj-mj-page #sidebar-menu .sm-nav-item.is-active:not(.sm-nav-hot):not(.sm-nav-new) .sm-nav-icon {
+  color: var(--sm-accent) !important;
 }
 
 body.slj-mj-page #sidebar-menu .sm-nav-divider {
