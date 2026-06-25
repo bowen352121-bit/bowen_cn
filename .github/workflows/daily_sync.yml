@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Fetch MiHoYo cafe posts (10 threads + replies)
+      - name: Fetch MiHoYo cafe posts (10 new + accumulate)
         run: python 咖啡馆/fetch_bbs.py
 
       - name: Commit and push if changed
@@ -40,7 +40,7 @@ jobs:
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "chore(cafe): daily sync MiHoYo 10 posts with replies $(date -u +%Y-%m-%d)"
+          git commit -m "chore(cafe): daily sync MiHoYo +10 posts accumulated $(date -u +%Y-%m-%d)"
           git push origin HEAD:master
 
       - name: Trigger Vercel redeploy

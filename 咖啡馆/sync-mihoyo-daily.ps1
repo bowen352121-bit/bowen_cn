@@ -1,4 +1,4 @@
-# 咖啡馆 · 米游社每日同步（10 条最新回复帖 + 每条下的评论/子回复）
+# 咖啡馆 · 米游社每日同步（新增 10 条 + 累积保留历史帖）
 $ErrorActionPreference = "Continue"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $LogDir = Join-Path $Root "logs"

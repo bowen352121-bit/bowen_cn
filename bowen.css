@@ -454,13 +454,15 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* 源图右上角 ZZZ 水印 — 轻微放大并偏左下取景裁切 */
+  /* 源图右上角 ZZZ 水印 — 轻微放大并偏左下取景裁切（桌面） */
   object-position: 42% 54%;
   transform: scale(1.1);
   transform-origin: center center;
 }
 
 #carousel-wrapper {
+  position: relative;
+  width: 100%;
   height: 260px;
   border-radius: var(--sm-radius) !important;
   border: none !important;
@@ -470,6 +472,22 @@ body {
 
 @media (min-width: 640px) {
   #carousel-wrapper { height: 280px; }
+}
+
+@media (max-width: 1023px) {
+  #carousel-container .carousel-slide img {
+    object-fit: cover;
+    object-position: center center;
+    transform: none;
+  }
+
+  #carousel-wrapper .carousel-gradient {
+    display: none;
+  }
+
+  #carousel-dots {
+    bottom: 10px !important;
+  }
 }
 
 #carousel-dots {
@@ -544,16 +562,6 @@ body {
 
 #carousel-title {
   display: none;
-}
-
-@media (max-width: 1023px) {
-  #carousel-title {
-    display: block;
-    font-size: 12px;
-    line-height: 1.35;
-    max-height: 2.7em;
-    overflow: hidden;
-  }
 }
 
 /* ---- 近时 / 一念 签名栏 ---- */
@@ -1500,12 +1508,27 @@ body.channel-site > main {
   }
 
   #carousel-wrapper {
-    height: 200px !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
     border-radius: 10px !important;
   }
 
   .sm-featured-thumbs {
-    display: none !important;
+    display: flex !important;
+    gap: 6px;
+    margin-top: 0;
+  }
+
+  .sm-featured-thumb {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 52px;
+    border-radius: 6px;
+  }
+
+  .sm-featured-thumb img {
+    object-position: center center;
+    transform: none;
   }
 
   .sm-thread-bar {

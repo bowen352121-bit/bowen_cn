@@ -2,7 +2,8 @@
 """
 米游社 · 绝区零「咖啡馆」版块每日同步脚本
 
-- 每天抓取最新回复排序的前 10 条帖子（LIMIT=10）
+- 每天抓取最新回复排序的前 10 条帖子（DAILY_FETCH=10）
+- 与已有 mihoyo_data.json 合并：今日新帖置顶，保留昨日及更早未重复帖子
 - 每条帖子抓取若干条评论及子回复（REPLIES_PER_POST / MAX_SUB_REPLIES）
 - 输出 mihoyo_data.json，供 kafei.html 展示
 
@@ -30,7 +31,8 @@ API_URL = (
 )
 FORUM_ID = 57
 GAME_ID = 8
-LIMIT = 10
+DAILY_FETCH = 10
+MAX_ACCUMULATED = 100
 REPLIES_PER_POST = 6
 MAX_SUB_REPLIES = 3
 MAX_WORKERS = 8
@@ -323,7 +325,7 @@ def collect_download_jobs(raw_list: list[dict], posts: list[dict]) -> list[tuple
     jobs: list[tuple[str, Path]] = []
     seen: set[str] = set()
 
-    for item in raw_list[:LIMIT]:
+    for item in raw_list[:DAILY_FETCH]:
         post = item.get("post") or {}
         user = item.get("user") or {}
         post_id = str(post.get("post_id") or "")
@@ -412,7 +414,54 @@ def load_previous_asset_map() -> dict[str, str]:
     return mapping
 
 
-def write_output(posts: list[dict]) -> None:
+def load_previous_posts() -> list[dict]:
+    """Load accumulated posts from current output or yesterday's archive."""
+    if OUTPUT_JSON.exists():
+        try:
+            data = json.loads(OUTPUT_JSON.read_text(encoding="utf-8"))
+            posts = data.get("posts") or []
+            if posts:
+                return list(posts)
+        except (OSError, json.JSONDecodeError) as err:
+            log(f"warning: failed to read {OUTPUT_JSON.name}: {err}")
+
+    if not ARCHIVE_DIR.exists():
+        return []
+
+    archives = sorted(ARCHIVE_DIR.glob("mihoyo_*.json"), reverse=True)
+    for path in archives:
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            posts = data.get("posts") or []
+            if posts:
+                log(f"loaded {len(posts)} posts from archive {path.name}")
+                return list(posts)
+        except (OSError, json.JSONDecodeError):
+            continue
+    return []
+
+
+def merge_posts(fresh: list[dict], previous: list[dict]) -> list[dict]:
+    """Put today's fetch first, then append older posts not duplicated by post_id."""
+    fresh_ids = {str(p.get("post_id") or "") for p in fresh if p.get("post_id")}
+    merged = list(fresh)
+    kept_old = 0
+    for post in previous:
+        post_id = str(post.get("post_id") or "")
+        if not post_id or post_id in fresh_ids:
+            continue
+        merged.append(post)
+        kept_old += 1
+    if kept_old:
+        log(f"merged {len(fresh)} new + {kept_old} previous = {len(merged)} total")
+    if len(merged) > MAX_ACCUMULATED:
+        trimmed = len(merged) - MAX_ACCUMULATED
+        merged = merged[:MAX_ACCUMULATED]
+        log(f"trimmed {trimmed} oldest posts (cap={MAX_ACCUMULATED})")
+    return merged
+
+
+def write_output(posts: list[dict], *, daily_fetch_count: int | None = None) -> None:
     output = {
         "fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source_api": API_URL,
@@ -421,6 +470,7 @@ def write_output(posts: list[dict]) -> None:
         "game": "绝区零",
         "sort_type": 1,
         "sort_label": "最新回复",
+        "daily_fetch_count": daily_fetch_count if daily_fetch_count is not None else DAILY_FETCH,
         "count": len(posts),
         "posts": posts,
     }
@@ -455,29 +505,35 @@ def apply_downloads_to_post(post: dict, downloaded: dict[str, str]) -> None:
 
 
 def main() -> int:
-    log(f"fetch MiHoYo cafe forum_id={FORUM_ID}")
+    log(f"fetch MiHoYo cafe forum_id={FORUM_ID} (daily {DAILY_FETCH}, accumulate on previous)")
+    previous_posts = load_previous_posts()
+    if previous_posts:
+        log(f"previous accumulated posts: {len(previous_posts)}")
+
     payload = fetch_json(API_URL)
     raw_list = (payload.get("data") or {}).get("list") or []
     if not raw_list:
         log("warning: empty API list")
         return 1
 
-    posts: list[dict] = []
-    for item in raw_list[:LIMIT]:
+    fresh_posts: list[dict] = []
+    for item in raw_list[:DAILY_FETCH]:
         parsed = parse_item(item, {})
         if not parsed:
             continue
         post_id = parsed["post_id"]
         log(f"  fetching replies for {post_id} …")
         parsed["comments"] = fetch_post_replies(post_id, {})
-        posts.append(parsed)
+        fresh_posts.append(parsed)
+
+    posts = merge_posts(fresh_posts, previous_posts)
 
     prev_assets = load_previous_asset_map()
     for post in posts:
         apply_downloads_to_post(post, prev_assets)
 
     # Save text/comments first — do not block on slow image downloads
-    write_output(posts)
+    write_output(posts, daily_fetch_count=len(fresh_posts))
     log("comments saved; downloading images …")
 
     jobs = collect_download_jobs(raw_list, posts)
@@ -489,7 +545,7 @@ def main() -> int:
         reply_count = len(post.get("comments") or [])
         log(f"  ok [{post['author']}] {label} ({reply_count} replies)")
 
-    write_output(posts)
+    write_output(posts, daily_fetch_count=len(fresh_posts))
     return 0
 
 

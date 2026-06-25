@@ -317,6 +317,7 @@ const mihoyoSyncEl = document.getElementById("cafe-mihoyo-sync");
 const mihoyoRefreshBtn = document.getElementById("btn-mihoyo-refresh");
 const MIHOYO_REFRESH_MS = 5 * 60 * 1000;
 let mihoyoFetchedAt = "";
+let mihoyoPostCount = 0;
 let mihoyoRefreshTimer = 0;
 
 function escapeHtml(str) {
@@ -526,10 +527,12 @@ function renderReplyImages(images) {
   return `<div class="cafe-reply-images">${thumbs}</div>`;
 }
 
-function formatMihoyoSyncLabel(iso) {
+function formatMihoyoSyncLabel(iso, count) {
   if (!iso) return "米游社评论尚未同步";
   const dt = new Date(iso);
-  if (Number.isNaN(dt.getTime())) return "米游社评论已同步";
+  if (Number.isNaN(dt.getTime())) {
+    return count ? `米游社评论已同步 · 共 ${count} 条` : "米游社评论已同步";
+  }
   const local = dt.toLocaleString("zh-CN", {
     month: "2-digit",
     day: "2-digit",
@@ -537,12 +540,13 @@ function formatMihoyoSyncLabel(iso) {
     minute: "2-digit",
     hour12: false,
   });
-  return `米游社评论同步于 ${local}`;
+  const countLabel = count ? ` · 共 ${count} 条` : "";
+  return `米游社评论同步于 ${local}${countLabel}`;
 }
 
 function updateMihoyoSyncLabel() {
   if (!mihoyoSyncEl) return;
-  mihoyoSyncEl.textContent = formatMihoyoSyncLabel(mihoyoFetchedAt);
+  mihoyoSyncEl.textContent = formatMihoyoSyncLabel(mihoyoFetchedAt, mihoyoPostCount);
 }
 
 function renderReplyItem(comment) {
@@ -837,6 +841,7 @@ async function loadMihoyoFeed(options = {}) {
 
     const data = await resp.json();
     mihoyoFetchedAt = data.fetched_at || "";
+    mihoyoPostCount = Number(data.count) || posts.length;
     updateMihoyoSyncLabel();
     const posts = Array.isArray(data.posts) ? data.posts : [];
 
