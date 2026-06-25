@@ -140,8 +140,8 @@ body.slj-mj-page #sidebar-menu {
     bottom: 0 !important;
     left: 0 !important;
     right: auto !important;
-    width: min(78vw, 320px) !important;
-    max-width: 320px !important;
+    width: var(--sm-drawer-w, min(56vw, 252px)) !important;
+    max-width: 252px !important;
     z-index: 195 !important;
     transform: translate3d(-100%, 0, 0) !important;
     transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;

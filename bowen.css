@@ -27,6 +27,7 @@
   --sm-drawer-active-bg: #e8eaed;
   --sm-drawer-text: rgba(255, 255, 255, 0.9);
   --sm-drawer-muted: rgba(255, 255, 255, 0.48);
+  --sm-drawer-w: min(56vw, 252px);
   --site-topbar-h: calc(0.75rem + 2rem + 0.75rem + 1px);
 }
 
@@ -1713,8 +1714,8 @@ body.channel-site > main {
     bottom: 0;
     left: 0 !important;
     right: auto !important;
-    width: min(78vw, 320px) !important;
-    max-width: 320px !important;
+    width: var(--sm-drawer-w) !important;
+    max-width: 252px !important;
     z-index: 80;
     transform: translate3d(-100%, 0, 0);
     transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1729,12 +1730,24 @@ body.channel-site > main {
     border-radius: 0 !important;
   }
 
+  /* 顶栏下方左侧条带：与抽屉同色，消除顶部缺口 */
+  .sidebar-drawer::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: calc(-1 * var(--sm-header-h, 4rem));
+    height: var(--sm-header-h, 4rem);
+    background: var(--sm-drawer-bg);
+    pointer-events: none;
+  }
+
   .sm-drawer-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
-    padding: 20px 18px 14px;
+    padding: 16px 14px 12px;
     flex-shrink: 0;
   }
 
@@ -1808,8 +1821,8 @@ body.channel-site > main {
   .sm-drawer-tools {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 0 16px 14px;
+    gap: 8px;
+    padding: 0 14px 12px;
     flex-shrink: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
@@ -1860,8 +1873,8 @@ body.channel-site > main {
     background: transparent !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    padding: 13px 18px !important;
-    min-height: 48px !important;
+    padding: 12px 14px !important;
+    min-height: 46px !important;
     font-size: 14px !important;
     font-weight: 500 !important;
     cursor: pointer;
@@ -1920,7 +1933,7 @@ body.channel-site > main {
 
   #sidebar-menu .sm-nav-divider {
     background: rgba(255, 255, 255, 0.1);
-    margin: 6px 18px;
+    margin: 6px 14px;
     height: 1px;
   }
 
@@ -1982,7 +1995,7 @@ body.channel-site > main {
 
   .sm-drawer-foot {
     flex-shrink: 0;
-    padding: 14px 18px calc(16px + env(safe-area-inset-bottom, 0px));
+    padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
