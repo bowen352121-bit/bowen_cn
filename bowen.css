@@ -27,7 +27,7 @@
   --sm-drawer-active-bg: #e8eaed;
   --sm-drawer-text: rgba(255, 255, 255, 0.9);
   --sm-drawer-muted: rgba(255, 255, 255, 0.48);
-  --sm-drawer-w: min(56vw, 252px);
+  --sm-drawer-w: 66.6667vw;
   --site-topbar-h: calc(0.75rem + 2rem + 0.75rem + 1px);
 }
 
@@ -1710,12 +1710,14 @@ body.channel-site > main {
 
   .sidebar-drawer {
     position: fixed !important;
-    top: var(--sm-header-h, 4rem);
+    top: 0;
     bottom: 0;
     left: 0 !important;
     right: auto !important;
     width: var(--sm-drawer-w) !important;
-    max-width: 252px !important;
+    max-width: none !important;
+    height: 100dvh;
+    height: 100vh;
     z-index: 80;
     transform: translate3d(-100%, 0, 0);
     transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1725,21 +1727,10 @@ body.channel-site > main {
     flex-direction: column !important;
     background: var(--sm-drawer-bg) !important;
     padding: 0 !important;
+    padding-top: env(safe-area-inset-top, 0px);
     border-right: none;
     box-shadow: 6px 0 28px rgba(0, 0, 0, 0.22);
     border-radius: 0 !important;
-  }
-
-  /* 顶栏下方左侧条带：与抽屉同色，消除顶部缺口 */
-  .sidebar-drawer::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    width: 100%;
-    top: calc(-1 * var(--sm-header-h, 4rem));
-    height: var(--sm-header-h, 4rem);
-    background: var(--sm-drawer-bg);
-    pointer-events: none;
   }
 
   .sm-drawer-head {
