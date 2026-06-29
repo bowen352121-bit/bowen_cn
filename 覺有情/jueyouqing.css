@@ -101,7 +101,7 @@ main button {
 }
 
 .snippet-section::before {
-    content: "const snippets = await fetch('/覺有情'); return snippets.filter(s => s.tag === 'ZZZ');";
+    content: "const snippets = ['FTL', '5π²/72', 'lab-notes']; return snippets.map(s => fetchMemo(s));";
     position: absolute;
     inset: 18px -60px auto -60px;
     color: rgba(180, 180, 180, 0.16);
