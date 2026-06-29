@@ -23,8 +23,8 @@
   const DPR_CAP = 1;
   const RENDER_SCALE = 0.78;
   const TWIST_SPEED = 0.00011;
-  const HOLE_OPEN_MS = 260;
-  const HOLE_REPAIR_MS = 4200;
+  const HOLE_OPEN_MS = 420;
+  const HOLE_REPAIR_MS = 5200;
   const HOLE_SWIRL_ZONE = 72;
   const CLICK_VORTEX_SCALE = 0.32;
   const CLICK_VORTEX_MIN = 200;
@@ -56,8 +56,18 @@
   let holeBounds = null;
   let frameNow = 0;
 
-  function easeOutCubic(t) {
-    return 1 - (1 - t) ** 3;
+  function easeOutQuart(t) {
+    return 1 - (1 - t) ** 4;
+  }
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+  }
+
+  function easeOutBack(t) {
+    const c1 = 1.55;
+    const c3 = c1 + 1;
+    return 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2;
   }
 
   function clamp(v, a, b) {
@@ -71,20 +81,34 @@
 
   function holeRadius(hole, now) {
     const age = now - hole.born;
-    if (age < HOLE_OPEN_MS) return hole.rMax * (age / HOLE_OPEN_MS);
+    if (age < HOLE_OPEN_MS) {
+      const t = age / HOLE_OPEN_MS;
+      return hole.rMax * clamp(easeOutBack(t), 0, 1.04);
+    }
     if (age < HOLE_OPEN_MS + HOLE_REPAIR_MS) {
       const t = (age - HOLE_OPEN_MS) / HOLE_REPAIR_MS;
-      return hole.rMax * (1 - easeOutCubic(t));
+      return hole.rMax * (1 - easeInOutCubic(t));
     }
     return 0;
   }
 
   function holeVigor(hole, now) {
     const age = now - hole.born;
-    const open = smoothstep(0, HOLE_OPEN_MS, age);
+    const openT = clamp(age / HOLE_OPEN_MS, 0, 1);
+    const open = easeOutQuart(openT);
     if (age < HOLE_OPEN_MS) return open;
     const repairT = clamp((age - HOLE_OPEN_MS) / HOLE_REPAIR_MS, 0, 1);
-    return open * (1 - easeOutCubic(repairT));
+    const sustain = 1 - easeOutQuart(repairT);
+    return open * sustain;
+  }
+
+  function holeCenter(hole, age, vigor) {
+    const drift = vigor * hole.rMaxNow * 0.07;
+    const wobble = 1 + 0.35 * Math.exp(-age / 680);
+    return {
+      x: hole.x + Math.sin(age * 0.0016 + hole.driftPhase) * drift * wobble,
+      y: hole.y + Math.cos(age * 0.0013 + hole.driftPhase * 1.37) * drift * wobble,
+    };
   }
 
   function buildCharAtlas() {
@@ -157,9 +181,11 @@
       swirlZone,
       born: performance.now(),
       dir: Math.random() > 0.5 ? 1 : -1,
-      strength: 1.2 + Math.random() * 0.25,
-      spin: 0.004 + Math.random() * 0.0015,
+      strength: 0.95 + Math.random() * 0.2,
+      spin: 0.0032 + Math.random() * 0.0012,
       phase: Math.random() * Math.PI * 2,
+      driftPhase: Math.random() * Math.PI * 2,
+      wobbleSeed: Math.random() * Math.PI * 2,
     });
     if (holes.length > MAX_HOLES) holes.splice(0, holes.length - MAX_HOLES);
   }
@@ -168,29 +194,40 @@
     const rMax = hole.rMaxNow;
     if (rMax <= 0) return null;
 
-    const relX = px - hole.x;
-    const relY = py - hole.y;
+    const age = now - hole.born;
+    const vigor = hole.vigorNow;
+    if (vigor < 0.02) return null;
+
+    const center = holeCenter(hole, age, vigor);
+    const relX = px - center.x;
+    const relY = py - center.y;
     const distSq = relX * relX + relY * relY;
     const outerR = rMax + (hole.swirlZone ?? HOLE_SWIRL_ZONE);
     if (distSq > outerR * outerR) return null;
 
     const dist = Math.sqrt(distSq);
-    const vigor = hole.vigorNow;
-    if (vigor < 0.02) return null;
-
-    const rMin = Math.max(rMax * 0.1, 8);
-    const age = now - hole.born;
-    const swirl = 4.2 + Math.min(age / 380, 1.6);
-    const l = hole.dir * hole.strength * vigor * swirl / Math.max(dist, rMin);
+    const rNorm = dist / outerR;
+    const accel = smoothstep(0, 520, age);
+    const swirlBase = 2.4 + 2.1 * accel * (1 - rNorm * 0.35);
+    const wobble = 1 + 0.12 * Math.sin(age * 0.011 + dist * 0.05 + hole.wobbleSeed);
+    const l =
+      hole.dir *
+      hole.strength *
+      vigor *
+      swirlBase *
+      wobble /
+      (1 + dist * 0.016);
 
     const cosL = Math.cos(l);
     const sinL = Math.sin(l);
     const rotX = relX * cosL - relY * sinL;
     const rotY = relX * sinL + relY * cosL;
 
-    const blend = (1 - smoothstep(rMax * 0.15, outerR, dist)) * vigor * 0.85;
-    const inward = blend * vigor * 0.38 * (1 - dist / outerR);
-    const invDist = 1 / Math.max(dist, rMin);
+    const inner = rMax * 0.06;
+    const falloff = Math.exp(-((dist - inner) / (outerR * 0.62)) ** 2);
+    const blend = falloff * vigor * 0.92;
+    const inward = blend * vigor * 0.28 * (1 - rNorm) ** 1.4;
+    const invDist = 1 / Math.max(dist, rMax * 0.08);
     const drawX = px + (rotX - relX) * blend - relX * inward * invDist;
     const drawY = py + (rotY - relY) * blend - relY * inward * invDist;
 
@@ -198,15 +235,18 @@
   }
 
   function vortexSpin(hole, age) {
-    const burst = Math.exp(-age / 720);
-    return age * (hole.spin + burst * 0.009) * hole.dir + (hole.phase ?? 0);
+    const accel = smoothstep(0, 480, age);
+    const burst = Math.exp(-age / 920) * 0.0055;
+    const decay = 0.72 + 0.28 * Math.exp(-age / 2400);
+    return age * (hole.spin * accel * decay + burst) * hole.dir + (hole.phase ?? 0);
   }
 
-  function vortexArmAlpha(t, vigor) {
-    const edgeIn = smoothstep(0, 0.08, t);
-    const edgeOut = 1 - smoothstep(0.82, 1, t);
-    const midGlow = 0.72 + 0.28 * Math.sin(t * Math.PI);
-    return clamp(vigor * edgeIn * edgeOut * midGlow, 0.12, 1);
+  function vortexArmAlpha(t, vigor, age, step) {
+    const edgeIn = smoothstep(0, 0.14, t);
+    const edgeOut = 1 - smoothstep(0.78, 1, t);
+    const midGlow = 0.68 + 0.32 * Math.sin(t * Math.PI);
+    const pulse = 1 + 0.08 * Math.sin(age * 0.009 + step * 0.18);
+    return clamp(vigor * edgeIn * edgeOut * midGlow * pulse, 0.1, 1);
   }
 
   function drawVortexOverlay(now) {
@@ -220,43 +260,54 @@
 
       const age = now - hole.born;
       const spin = vortexSpin(hole, age);
-      const steps = Math.max(48, Math.floor(rMax / 4.8));
-      const turns = 2.65;
+      const center = holeCenter(hole, age, vigor);
+      const steps = Math.max(52, Math.floor(rMax / 4.2));
+      const turns = 2.45 + 0.35 * Math.sin(age * 0.0018 + hole.wobbleSeed);
 
       for (let arm = 0; arm < VORTEX_ARMS; arm++) {
-        const armBase = (arm / VORTEX_ARMS) * Math.PI * 2;
+        const armBase = (arm / VORTEX_ARMS) * Math.PI * 2 + hole.wobbleSeed * 0.08;
 
         for (let step = 0; step < steps; step++) {
-          const t = step / (steps - 1);
-          const radius = rMax * Math.pow(1 - t, 0.82);
-          const theta = spin + armBase + t * turns * Math.PI * 2;
-          const px = hole.x + Math.cos(theta) * radius;
-          const py = hole.y + Math.sin(theta) * radius;
+          const tRaw = step / (steps - 1);
+          const t = easeOutQuart(tRaw);
+          const ripple = 1 + 0.045 * Math.sin(age * 0.01 + step * 0.24 + arm);
+          const radius = rMax * Math.pow(1 - t, 0.68) * ripple;
+          const theta =
+            spin +
+            armBase +
+            t * turns * Math.PI * 2 +
+            Math.sin(age * 0.008 + t * 5.5 + hole.wobbleSeed) * 0.14 * vigor;
+          const px = center.x + Math.cos(theta) * radius;
+          const py = center.y + Math.sin(theta) * radius;
 
           if (px < -24 || px > w + 24 || py < -24 || py > h + 24) continue;
 
-          const alpha = vortexArmAlpha(t, vigor);
+          const alpha = vortexArmAlpha(tRaw, vigor, age, step);
           const charIdx = (arm * 97 + step * 13 + hi * 31) % VORTEX_CHARS.length;
           const ch = VORTEX_CHARS[charIdx];
-          const tangent = theta + (Math.PI * 0.5 * hole.dir);
+          const tangent = theta + Math.PI * 0.5 * hole.dir + Math.sin(age * 0.007 + step * 0.1) * 0.08;
 
-          ctx.fillStyle = t < 0.22 ? VORTEX_CORE : FILL_COLOR;
+          ctx.fillStyle = tRaw < 0.24 ? VORTEX_CORE : FILL_COLOR;
           drawGlyphRotated(ch, px, py, tangent, alpha);
         }
       }
 
       const ripples = 2;
       for (let ring = 0; ring < ripples; ring++) {
-        const ringT = 0.58 + ring * 0.28;
-        const radius = rMax * ringT;
+        const expand = smoothstep(0, HOLE_OPEN_MS * 1.2, age);
+        const ringT = (0.42 + ring * 0.22 + expand * 0.18) * (1 - ring * 0.04);
+        const radius = rMax * ringT * (1 + 0.03 * Math.sin(age * 0.012 + ring));
         const count = Math.max(18, Math.floor(radius * 0.22));
-        const ringSpin = spin * (1.15 - ring * 0.12);
+        const ringSpin = spin * (1.08 - ring * 0.1);
 
         for (let i = 0; i < count; i++) {
-          const theta = ringSpin + (i / count) * Math.PI * 2;
-          const px = hole.x + Math.cos(theta) * radius;
-          const py = hole.y + Math.sin(theta) * radius;
-          const alpha = clamp(vigor * (0.22 - ring * 0.06), 0.08, 0.35);
+          const theta =
+            ringSpin +
+            (i / count) * Math.PI * 2 +
+            Math.sin(age * 0.006 + i * 0.35) * 0.06 * vigor;
+          const px = center.x + Math.cos(theta) * radius;
+          const py = center.y + Math.sin(theta) * radius;
+          const alpha = clamp(vigor * (0.2 - ring * 0.05) * expand, 0.06, 0.32);
           const ch = VORTEX_CHARS[(ring * 41 + i * 5) % VORTEX_CHARS.length];
 
           ctx.fillStyle = FILL_COLOR;
@@ -266,14 +317,14 @@
 
       const coreCount = 6;
       for (let i = 0; i < coreCount; i++) {
-        const theta = spin * 1.8 + (i / coreCount) * Math.PI * 2;
-        const radius = rMax * 0.07 * (0.6 + (i % 3) * 0.2);
-        const px = hole.x + Math.cos(theta) * radius;
-        const py = hole.y + Math.sin(theta) * radius;
+        const theta = spin * 1.65 + (i / coreCount) * Math.PI * 2;
+        const radius = rMax * 0.07 * (0.55 + (i % 3) * 0.18) * (1 + 0.08 * Math.sin(age * 0.014 + i));
+        const px = center.x + Math.cos(theta) * radius;
+        const py = center.y + Math.sin(theta) * radius;
         const ch = VORTEX_CHARS[(i * 19) % VORTEX_CHARS.length];
 
         ctx.fillStyle = VORTEX_CORE;
-        drawGlyphRotated(ch, px, py, theta, clamp(vigor * 0.95, 0.35, 1));
+        drawGlyphRotated(ch, px, py, theta, clamp(vigor * 0.92, 0.3, 1));
       }
     }
 

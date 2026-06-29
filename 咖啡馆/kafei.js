@@ -319,6 +319,8 @@ const MIHOYO_REFRESH_MS = 5 * 60 * 1000;
 let mihoyoFetchedAt = "";
 let mihoyoPostCount = 0;
 let mihoyoRefreshTimer = 0;
+let mihoyoLoadSeq = 0;
+const MIHOYO_DATA_URL = new URL("./mihoyo_data.json", import.meta.url);
 
 function escapeHtml(str) {
   return String(str)
@@ -544,9 +546,18 @@ function formatMihoyoSyncLabel(iso, count) {
   return `米游社评论同步于 ${local}${countLabel}`;
 }
 
-function updateMihoyoSyncLabel() {
+function updateMihoyoSyncLabel(options = {}) {
   if (!mihoyoSyncEl) return;
-  mihoyoSyncEl.textContent = formatMihoyoSyncLabel(mihoyoFetchedAt, mihoyoPostCount);
+  let text = formatMihoyoSyncLabel(mihoyoFetchedAt, mihoyoPostCount);
+  if (options.manual) {
+    const now = new Date().toLocaleTimeString("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    text += ` · 页面已刷新 ${now}`;
+  }
+  mihoyoSyncEl.textContent = text;
 }
 
 function renderReplyItem(comment) {
@@ -828,7 +839,8 @@ function renderMihoyoFeed() {
 
 async function loadMihoyoFeed(options = {}) {
   if (!mihoyoFeedEl) return;
-  const { silent = false } = options;
+  const { silent = false, manual = false } = options;
+  const seq = ++mihoyoLoadSeq;
 
   if (!silent && mihoyoRefreshBtn) {
     mihoyoRefreshBtn.disabled = true;
@@ -836,37 +848,52 @@ async function loadMihoyoFeed(options = {}) {
   }
 
   try {
-    const resp = await fetch(`mihoyo_data.json?_=${Date.now()}`, { cache: "no-store" });
+    const dataUrl = new URL(MIHOYO_DATA_URL);
+    dataUrl.searchParams.set("_", String(Date.now()));
+    const resp = await fetch(dataUrl, { cache: "no-store" });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
     const data = await resp.json();
+    if (seq !== mihoyoLoadSeq) return;
+
+    const posts = Array.isArray(data.posts) ? data.posts : [];
     mihoyoFetchedAt = data.fetched_at || "";
     mihoyoPostCount = Number(data.count) || posts.length;
-    updateMihoyoSyncLabel();
-    const posts = Array.isArray(data.posts) ? data.posts : [];
 
     if (!posts.length) {
+      mihoyoPosts = [];
       mihoyoFeedEl.replaceChildren();
       mihoyoEmptyEl?.classList.remove("hidden");
+      updateMihoyoSyncLabel({ manual });
       return;
     }
 
     mihoyoEmptyEl?.classList.add("hidden");
     mihoyoPosts = posts;
-    await loadUserLikedKeys(collectLikeKeys());
+
+    try {
+      await loadUserLikedKeys(collectLikeKeys());
+    } catch (likeErr) {
+      console.warn("米游社点赞状态加载失败：", likeErr);
+    }
+
+    if (seq !== mihoyoLoadSeq) return;
+
     renderMihoyoFeed();
     subscribeLikes();
     subscribeViews();
     setupViewTracking();
+    updateMihoyoSyncLabel({ manual });
   } catch (err) {
     console.warn("米游社数据加载失败：", err);
+    if (seq !== mihoyoLoadSeq) return;
     mihoyoFeedEl.replaceChildren();
     mihoyoEmptyEl?.classList.remove("hidden");
     if (mihoyoSyncEl) {
       mihoyoSyncEl.textContent = "米游社评论加载失败，请稍后重试";
     }
   } finally {
-    if (mihoyoRefreshBtn) {
+    if (seq === mihoyoLoadSeq && mihoyoRefreshBtn) {
       mihoyoRefreshBtn.disabled = false;
       mihoyoRefreshBtn.textContent = "刷新评论";
     }
@@ -1187,7 +1214,7 @@ loadMihoyoFeed();
 scheduleMihoyoRefresh();
 renderFeed();
 
-mihoyoRefreshBtn?.addEventListener("click", () => loadMihoyoFeed());
+mihoyoRefreshBtn?.addEventListener("click", () => loadMihoyoFeed({ manual: true }));
 
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) loadMihoyoFeed({ silent: true });
