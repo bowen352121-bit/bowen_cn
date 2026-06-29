@@ -224,7 +224,8 @@
     const rotY = relX * sinL + relY * cosL;
 
     const inner = rMax * 0.06;
-    const falloff = Math.exp(-((dist - inner) / (outerR * 0.62)) ** 2);
+    const fallNorm = (dist - inner) / (outerR * 0.62);
+    const falloff = Math.exp(-(fallNorm * fallNorm));
     const blend = falloff * vigor * 0.92;
     const inward = blend * vigor * 0.28 * (1 - rNorm) ** 1.4;
     const invDist = 1 / Math.max(dist, rMax * 0.08);
