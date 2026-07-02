@@ -589,7 +589,7 @@
           <span class="lore-nav-num">01</span>极北王庭 · 总览
         </button>
         <button type="button" class="lore-nav-item" data-lore="02">
-          <span class="lore-nav-num">02</span>冰川悬崖与浮空基座
+          <span class="lore-nav-num">02</span>魔方立体 · 像素线框
         </button>
         <button type="button" class="lore-nav-item" data-lore="03">
           <span class="lore-nav-num">03</span>王庭尖塔群系
@@ -630,7 +630,14 @@
             拖动左侧粒子城堡可 360° 环视其轮廓。粒子形态参照官方概念图：底部冰崖、中部主堡、顶部云间浮城三层结构。
           </p>
         </section>
-        <section class="lore-section" data-lore="02" hidden></section>
+        <section class="lore-section" data-lore="02" hidden>
+          <p>
+            <strong>02 · 魔方立体</strong>——3×3×3 结构采用终末地式水平扫描：外层只有稀疏截面轮廓，内部可见网格梁与轴心，不是实心白块。
+          </p>
+          <p>
+            点击本目录后，左侧主画布会直接切换为魔方场景（与 01 相同交互：拖拽 360° 环视）。与 FTL 飞行魔方同属「几何体 + 控制」的练习方向。
+          </p>
+        </section>
         <section class="lore-section" data-lore="03" hidden></section>
         <section class="lore-section" data-lore="04" hidden></section>
         <section class="lore-section" data-lore="05" hidden></section>
@@ -736,6 +743,9 @@
           section.hidden = !active;
         });
         updateCarousel(id);
+        document.getElementById("app")?.dispatchEvent(
+          new CustomEvent("suixi-lore-change", { detail: { id } })
+        );
       }
 
       buildCarouselBars();
@@ -781,6 +791,7 @@
 
   <script type="module">
     import * as THREE from "three";
+    import { createRubikCubeLayer } from "./02/rubik-cube.js";
 
     const canvas = document.getElementById("castle-canvas");
     const wrap = document.getElementById("canvas-wrap");
@@ -1516,14 +1527,71 @@
     snowPoints.renderOrder = 1;
     goldPoints.renderOrder = 1;
 
-    root.add(hullGroup);
-    root.add(castlePoints);
-    root.add(glacierPoints);
-    root.add(snowPoints);
-    root.add(goldPoints);
+    const castleLayer = new THREE.Group();
+    castleLayer.name = "castle-layer";
+    castleLayer.add(hullGroup);
+    castleLayer.add(castlePoints);
+    castleLayer.add(glacierPoints);
+    castleLayer.add(snowPoints);
+    castleLayer.add(goldPoints);
+    castleLayer.scale.set(SCENE_SCALE, SCENE_SCALE, SCENE_SCALE);
+    castleLayer.position.y = ROOT_Y;
+    root.add(castleLayer);
 
-    root.scale.set(SCENE_SCALE, SCENE_SCALE, SCENE_SCALE);
-    root.position.y = ROOT_Y;
+    const { layer: rubikLayer, materials: rubikMaterials } = createRubikCubeLayer({
+      makeEndfieldMaterial,
+      dummyMat,
+      blackHullMat,
+      addBlackHull: (mesh, targetHullGroup, hullMat) => {
+        const hull = new THREE.Mesh(mesh.geometry, hullMat);
+        hull.position.copy(mesh.position);
+        hull.rotation.copy(mesh.rotation);
+        hull.scale.copy(mesh.scale);
+        hull.scale.multiplyScalar(0.92);
+        targetHullGroup.add(hull);
+      },
+    });
+    rubikLayer.scale.setScalar(rubikLayer.userData.sceneScale);
+    rubikLayer.position.y = rubikLayer.userData.rootY;
+    root.add(rubikLayer);
+    endfieldMaterials.push(...rubikMaterials);
+
+    let activeSceneId = "01";
+    let camLookYActive = CAM_LOOK_Y;
+    let camRadiusActive = camRadius;
+    let camHeightActive = CAM_HEIGHT_OFFSET;
+    let floatBaseY = ROOT_Y;
+    let floatLayer = castleLayer;
+
+    function setActiveScene(id) {
+      activeSceneId = id;
+      const isRubik = id === "02";
+      castleLayer.visible = !isRubik;
+      rubikLayer.visible = isRubik;
+      targetRotY = 0;
+      rotY = 0;
+      root.rotation.x = isRubik ? 0.14 : 0;
+
+      if (isRubik) {
+        camLookYActive = rubikLayer.userData.camLookY;
+        camRadiusActive = rubikLayer.userData.camRadius;
+        camHeightActive = rubikLayer.userData.camHeight;
+        floatBaseY = rubikLayer.userData.rootY;
+        floatLayer = rubikLayer;
+        scene.fog.density = 0.00085;
+      } else {
+        camLookYActive = CAM_LOOK_Y;
+        camRadiusActive = camRadius;
+        camHeightActive = CAM_HEIGHT_OFFSET;
+        floatBaseY = ROOT_Y;
+        floatLayer = castleLayer;
+        scene.fog.density = 0.0025;
+      }
+    }
+
+    document.getElementById("app")?.addEventListener("suixi-lore-change", (e) => {
+      setActiveScene(e.detail?.id || "01");
+    });
 
     let targetRotY = 0;
     let rotY = 0;
@@ -1601,11 +1669,11 @@
       rotY += (targetRotY - rotY) * 0.06;
       root.rotation.y = rotY;
 
-      root.position.y = ROOT_Y + Math.sin(t * 0.35) * 0.25;
+      floatLayer.position.y = floatBaseY + Math.sin(t * 0.35) * 0.25;
       applyCameraViewport();
       const camSway = Math.sin(t * 0.12) * 6;
-      camera.position.set(camSway, CAM_LOOK_Y + CAM_HEIGHT_OFFSET, camRadius);
-      camera.lookAt(camSway * 0.35, CAM_LOOK_Y + Math.sin(t * 0.2) * 1.2, 0);
+      camera.position.set(camSway, camLookYActive + camHeightActive, camRadiusActive);
+      camera.lookAt(camSway * 0.35, camLookYActive + Math.sin(t * 0.2) * 1.2, 0);
 
       renderer.render(scene, camera);
     }
