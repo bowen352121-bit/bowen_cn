@@ -237,6 +237,14 @@
       display: none;
     }
 
+    .lore-mobile-tabs {
+      display: none;
+    }
+
+    .lore-panel-handle {
+      display: none;
+    }
+
     .lore-body {
       flex: 1;
       overflow-y: auto;
@@ -321,7 +329,7 @@
 
       .lore-panel {
         --lore-panel-width: 100%;
-        --lore-panel-h: min(52vh, 400px);
+        --lore-panel-h: min(40vh, 320px);
         top: auto;
         left: 0;
         right: 0;
@@ -379,19 +387,28 @@
         width: 100%;
         height: 100%;
         max-height: none;
-        padding: 0.65rem 0 0;
-        padding-bottom: max(2.75rem, calc(0.65rem + env(safe-area-inset-bottom)));
+        padding: 0 0 max(0.5rem, env(safe-area-inset-bottom));
         background: linear-gradient(180deg, rgba(8, 12, 20, 0.97) 0%, #050810 100%);
         gap: 0;
       }
 
+      .lore-panel-handle {
+        display: block;
+        flex-shrink: 0;
+        width: 2.5rem;
+        height: 0.22rem;
+        margin: 0.45rem auto 0.35rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.22);
+      }
+
       .back-link {
-        margin: 0 1rem 0.5rem;
+        margin: 0 1rem 0.35rem;
         font-size: 0.7rem;
       }
 
       .lore-tag {
-        margin: 0 1rem 0.55rem;
+        margin: 0 1rem 0.45rem;
         font-size: 0.58rem;
       }
 
@@ -405,7 +422,48 @@
       .lore-carousel {
         display: block;
         flex-shrink: 0;
-        margin-bottom: 0.65rem;
+        margin-bottom: 0.45rem;
+      }
+
+      .lore-mobile-tabs {
+        display: flex;
+        gap: 0.35rem;
+        padding: 0 0.85rem 0.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-shrink: 0;
+      }
+
+      .lore-mobile-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .lore-mobile-tab {
+        flex-shrink: 0;
+        min-width: 2.35rem;
+        padding: 0.38rem 0.72rem;
+        border: 1px solid rgba(255, 200, 72, 0.18);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(200, 210, 220, 0.62);
+        font-size: 0.72rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.06em;
+        font-family: inherit;
+        cursor: pointer;
+        transition: color 0.2s, border-color 0.2s, background 0.2s;
+      }
+
+      .lore-mobile-tab.is-active {
+        color: #1a1408;
+        background: #ffc448;
+        border-color: #ffc448;
+      }
+
+      .lore-mobile-tab:active {
+        transform: scale(0.97);
       }
 
       .lore-carousel-row {
@@ -509,16 +567,36 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      .lore-body:not(:has(.lore-section.is-active p)) {
+        display: none;
+        flex: 0;
+        padding: 0;
+        margin: 0;
+      }
+
       .lore-footer {
-        margin-top: 0.65rem;
-        padding: 0.55rem 1rem 0;
+        margin-top: 0.35rem;
+        padding: 0.45rem 1rem 0;
         font-size: 0.58rem;
       }
 
       .hint-drag {
         left: 50%;
-        bottom: calc(max(0.85rem, env(safe-area-inset-bottom)) + 2.65rem);
+        bottom: calc(max(0.85rem, env(safe-area-inset-bottom)) + 2.15rem);
         transition: bottom 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      #app:not(.sidebar-collapsed) .hint-drag {
+        bottom: calc(min(40vh, 320px) + max(0.85rem, env(safe-area-inset-bottom)) + 0.35rem);
+      }
+
+      #app.scene-rubik .scan-hud {
+        top: 36%;
+        width: min(68vmin, 88%);
+      }
+
+      #app.scene-rubik.sidebar-collapsed .scan-hud {
+        top: 40%;
       }
 
       .lore-toggle {
@@ -538,7 +616,7 @@
       }
 
       #app:not(.sidebar-collapsed) .lore-toggle {
-        bottom: calc(min(52vh, 400px) - 1px);
+        bottom: calc(min(40vh, 320px) - 1px);
       }
 
       .lore-toggle svg {
@@ -578,6 +656,7 @@
 
     <aside class="lore-panel" id="lore-panel">
       <div class="lore-panel-inner">
+      <div class="lore-panel-handle" aria-hidden="true"></div>
       <a class="back-link" href="../bowen.html">← 返回明殿</a>
       <div class="lore-tag">WORLD LORE / 世界档案</div>
       <h1 class="lore-title">冬宫</h1>
@@ -618,6 +697,8 @@
         <div class="lore-carousel-bars" id="lore-carousel-bars" aria-hidden="true"></div>
       </div>
 
+      <div class="lore-mobile-tabs" id="lore-mobile-tabs" aria-label="快速切换目录"></div>
+
       <div class="lore-body">
         <section class="lore-section is-active" data-lore="01">
           <p>
@@ -630,14 +711,7 @@
             拖动左侧粒子城堡可 360° 环视其轮廓。粒子形态参照官方概念图：底部冰崖、中部主堡、顶部云间浮城三层结构。
           </p>
         </section>
-        <section class="lore-section" data-lore="02" hidden>
-          <p>
-            <strong>02 · 魔方立体</strong>——3×3×3 结构采用终末地式水平扫描：外层只有稀疏截面轮廓，内部可见网格梁与轴心，不是实心白块。
-          </p>
-          <p>
-            点击本目录后，左侧主画布会直接切换为魔方场景（与 01 相同交互：拖拽 360° 环视）。与 FTL 飞行魔方同属「几何体 + 控制」的练习方向。
-          </p>
-        </section>
+        <section class="lore-section" data-lore="02" hidden></section>
         <section class="lore-section" data-lore="03" hidden></section>
         <section class="lore-section" data-lore="04" hidden></section>
         <section class="lore-section" data-lore="05" hidden></section>
@@ -696,6 +770,8 @@
       const carouselIndex = document.getElementById("lore-carousel-index");
       const carouselTitle = document.getElementById("lore-carousel-title");
       const carouselBars = document.getElementById("lore-carousel-bars");
+      const mobileTabs = document.getElementById("lore-mobile-tabs");
+      const carousel = document.getElementById("lore-carousel");
       const prevBtn = document.getElementById("lore-prev");
       const nextBtn = document.getElementById("lore-next");
 
@@ -704,6 +780,28 @@
         let text = item.textContent.trim();
         if (num) text = text.replace(num.textContent, "").trim();
         return text;
+      }
+
+      function buildMobileTabs() {
+        if (!mobileTabs) return;
+        mobileTabs.replaceChildren();
+        navItems.forEach((item) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "lore-mobile-tab";
+          btn.dataset.lore = item.dataset.lore || "";
+          btn.textContent = item.dataset.lore || "";
+          btn.setAttribute("aria-label", navEntryTitle(item));
+          if (item.classList.contains("is-active")) btn.classList.add("is-active");
+          btn.addEventListener("click", () => activateLore(item.dataset.lore));
+          mobileTabs.appendChild(btn);
+        });
+      }
+
+      function updateMobileTabs(activeId) {
+        mobileTabs?.querySelectorAll(".lore-mobile-tab").forEach((tab) => {
+          tab.classList.toggle("is-active", tab.dataset.lore === activeId);
+        });
       }
 
       function buildCarouselBars() {
@@ -727,9 +825,16 @@
         carouselBars?.querySelectorAll(".lore-carousel-bar").forEach((bar, i) => {
           bar.classList.toggle("is-active", i === idx);
         });
+        updateMobileTabs(activeId);
       }
 
-      function activateLore(id) {
+      function getLoreFromUrl() {
+        const hash = location.hash.replace(/^#/, "");
+        if (/^0[1-5]$/.test(hash)) return hash;
+        return null;
+      }
+
+      function activateLore(id, opts = {}) {
         if (!id) return;
         navItems.forEach((nav) => {
           const active = nav.dataset.lore === id;
@@ -743,12 +848,19 @@
           section.hidden = !active;
         });
         updateCarousel(id);
+        if (!opts.skipHash) {
+          history.replaceState(null, "", `#${id}`);
+        }
         document.getElementById("app")?.dispatchEvent(
           new CustomEvent("suixi-lore-change", { detail: { id } })
         );
+        if (isMobile() && !opts.keepPanelOpen) {
+          setPanelCollapsed(true);
+        }
       }
 
       buildCarouselBars();
+      buildMobileTabs();
 
       navItems.forEach((item) => {
         item.addEventListener("click", () => {
@@ -776,8 +888,43 @@
         activateLore(bar.dataset.lore);
       });
 
-      const activeItem = panel.querySelector(".lore-nav-item.is-active");
-      if (activeItem?.dataset.lore) updateCarousel(activeItem.dataset.lore);
+      let carouselTouchX = 0;
+      carousel?.addEventListener(
+        "touchstart",
+        (e) => {
+          carouselTouchX = e.changedTouches[0]?.clientX ?? 0;
+        },
+        { passive: true }
+      );
+      carousel?.addEventListener(
+        "touchend",
+        (e) => {
+          const endX = e.changedTouches[0]?.clientX ?? 0;
+          const dx = endX - carouselTouchX;
+          if (Math.abs(dx) < 42) return;
+          const items = [...navItems];
+          const idx = items.findIndex((item) => item.classList.contains("is-active"));
+          if (idx < 0) return;
+          const nextIdx = dx < 0
+            ? (idx + 1) % items.length
+            : (idx - 1 + items.length) % items.length;
+          activateLore(items[nextIdx].dataset.lore);
+        },
+        { passive: true }
+      );
+
+      window.addEventListener("hashchange", () => {
+        const id = getLoreFromUrl();
+        if (id) activateLore(id, { skipHash: true });
+      });
+
+      const initialLore = getLoreFromUrl()
+        || panel.querySelector(".lore-nav-item.is-active")?.dataset.lore
+        || "01";
+      activateLore(initialLore, {
+        skipHash: Boolean(getLoreFromUrl()),
+        keepPanelOpen: isMobile() && !getLoreFromUrl(),
+      });
     })();
   </script>
 
@@ -791,7 +938,7 @@
 
   <script type="module">
     import * as THREE from "three";
-    import { createRubikCubeLayer } from "./02/rubik-cube.js";
+    import { createRubikCubeLayer } from "./02/rubik-cube.js?v=20260703i";
 
     const canvas = document.getElementById("castle-canvas");
     const wrap = document.getElementById("canvas-wrap");
@@ -815,7 +962,7 @@
       alpha: false,
       powerPreference: "high-performance",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth <= 768 ? 1.5 : 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setClearColor(0x080c14, 1);
 
@@ -1542,18 +1689,15 @@
       makeEndfieldMaterial,
       dummyMat,
       blackHullMat,
-      addBlackHull: (mesh, targetHullGroup, hullMat) => {
-        const hull = new THREE.Mesh(mesh.geometry, hullMat);
-        hull.position.copy(mesh.position);
-        hull.rotation.copy(mesh.rotation);
-        hull.scale.copy(mesh.scale);
-        hull.scale.multiplyScalar(0.92);
-        targetHullGroup.add(hull);
-      },
     });
     rubikLayer.scale.setScalar(rubikLayer.userData.sceneScale);
-    rubikLayer.position.y = rubikLayer.userData.rootY;
-    root.add(rubikLayer);
+
+    const rubikPivot = new THREE.Group();
+    rubikPivot.name = "rubik-pivot";
+    rubikPivot.visible = false;
+    rubikPivot.position.y = rubikLayer.userData.pivotY;
+    rubikPivot.add(rubikLayer);
+    root.add(rubikPivot);
     endfieldMaterials.push(...rubikMaterials);
 
     let activeSceneId = "01";
@@ -1563,23 +1707,57 @@
     let floatBaseY = ROOT_Y;
     let floatLayer = castleLayer;
 
+    let targetRotY = 0;
+    let rotY = 0;
+    let targetRotX = 0;
+    let rotX = 0;
+    let isDragging = false;
+    let lastPointerX = 0;
+    let lastPointerY = 0;
+    const AUTO_SPIN_SPEED = 0.14;
+
+    const appEl = document.getElementById("app");
+
+    function isMobileView() {
+      return window.innerWidth <= 768;
+    }
+
+    function applyRubikLayout() {
+      const mobile = isMobileView();
+      rubikLayer.scale.setScalar(
+        mobile ? rubikLayer.userData.sceneScaleMobile : rubikLayer.userData.sceneScale
+      );
+      if (activeSceneId !== "02") return;
+      rubikPivot.position.y = mobile ? rubikLayer.userData.pivotYMobile : rubikLayer.userData.pivotY;
+      camLookYActive = rubikPivot.position.y;
+      camRadiusActive = mobile ? rubikLayer.userData.camRadiusMobile : rubikLayer.userData.camRadius;
+      camHeightActive = mobile ? rubikLayer.userData.camHeightMobile : rubikLayer.userData.camHeight;
+      floatBaseY = rubikPivot.position.y;
+    }
+
     function setActiveScene(id) {
       activeSceneId = id;
       const isRubik = id === "02";
+      appEl?.classList.toggle("scene-rubik", isRubik);
       castleLayer.visible = !isRubik;
-      rubikLayer.visible = isRubik;
+      rubikPivot.visible = isRubik;
       targetRotY = 0;
       rotY = 0;
-      root.rotation.x = isRubik ? 0.14 : 0;
 
       if (isRubik) {
-        camLookYActive = rubikLayer.userData.camLookY;
-        camRadiusActive = rubikLayer.userData.camRadius;
-        camHeightActive = rubikLayer.userData.camHeight;
-        floatBaseY = rubikLayer.userData.rootY;
-        floatLayer = rubikLayer;
-        scene.fog.density = 0.00085;
+        targetRotX = 0.32;
+        rotX = 0.32;
+        rubikPivot.rotation.order = "YXZ";
+        rubikPivot.rotation.x = 0.32;
+        rubikPivot.rotation.y = 0;
+        floatLayer = rubikPivot;
+        scene.fog.density = 0.0025;
+        applyRubikLayout();
       } else {
+        targetRotX = 0;
+        rotX = 0;
+        rubikPivot.rotation.set(0, 0, 0);
+        root.rotation.x = 0;
         camLookYActive = CAM_LOOK_Y;
         camRadiusActive = camRadius;
         camHeightActive = CAM_HEIGHT_OFFSET;
@@ -1593,11 +1771,13 @@
       setActiveScene(e.detail?.id || "01");
     });
 
-    let targetRotY = 0;
-    let rotY = 0;
-    let isDragging = false;
-    let lastPointerX = 0;
-    const AUTO_SPIN_SPEED = 0.14;
+    function getInitialLoreId() {
+      const hash = location.hash.replace(/^#/, "");
+      if (/^0[1-5]$/.test(hash)) return hash;
+      return document.querySelector(".lore-nav-item.is-active")?.dataset.lore || "01";
+    }
+
+    setActiveScene(getInitialLoreId());
 
     function getSidebarOffsetX() {
       if (window.innerWidth <= 768) return 0;
@@ -1608,11 +1788,15 @@
       const w = wrap.clientWidth;
       const h = wrap.clientHeight;
       if (w < 1 || h < 1) return;
-      const offsetX = getSidebarOffsetX();
-      if (offsetX > 0.5) {
-        camera.setViewOffset(w, h, offsetX, 0, w, h);
+      if (activeSceneId === "02" && isMobileView()) {
+        camera.setViewOffset(w, h, 0, Math.round(h * 0.11), w, h);
       } else {
-        camera.clearViewOffset();
+        const offsetX = getSidebarOffsetX();
+        if (offsetX > 0.5) {
+          camera.setViewOffset(w, h, offsetX, 0, w, h);
+        } else {
+          camera.clearViewOffset();
+        }
       }
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -1622,9 +1806,11 @@
       const w = wrap.clientWidth;
       const h = wrap.clientHeight;
       if (w < 1 || h < 1) return;
+      const pr = Math.min(window.devicePixelRatio, isMobileView() ? 1.5 : 2);
+      renderer.setPixelRatio(pr);
       renderer.setSize(w, h, false);
+      applyRubikLayout();
       applyCameraViewport();
-      const pr = renderer.getPixelRatio();
       endfieldMaterials.forEach((m) => {
         m.uniforms.uPixelRatio.value = pr;
       });
@@ -1633,6 +1819,7 @@
     wrap.addEventListener("pointerdown", (e) => {
       isDragging = true;
       lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
       wrap.classList.add("dragging");
       wrap.setPointerCapture(e.pointerId);
     });
@@ -1640,8 +1827,13 @@
     wrap.addEventListener("pointermove", (e) => {
       if (!isDragging) return;
       const dx = e.clientX - lastPointerX;
+      const dy = e.clientY - lastPointerY;
       lastPointerX = e.clientX;
-      targetRotY += dx * 0.006;
+      lastPointerY = e.clientY;
+      targetRotY += dx * 0.007;
+      if (activeSceneId === "02") {
+        targetRotX += dy * 0.007;
+      }
     });
 
     wrap.addEventListener("pointerup", (e) => {
@@ -1662,18 +1854,32 @@
       const t = clock.getElapsedTime();
       const dt = clock.getDelta();
 
-      if (!isDragging) {
+      if (!isDragging && activeSceneId !== "02") {
         targetRotY += AUTO_SPIN_SPEED * dt;
       }
 
-      rotY += (targetRotY - rotY) * 0.06;
-      root.rotation.y = rotY;
+      if (activeSceneId === "02") {
+        rotY += (targetRotY - rotY) * 0.06;
+        rotX += (targetRotX - rotX) * 0.06;
+        rubikPivot.rotation.order = "YXZ";
+        rubikPivot.rotation.y = rotY;
+        rubikPivot.rotation.x = rotX;
+        root.rotation.y = 0;
+        root.rotation.x = 0;
+        rubikLayer.userData.updateScan?.(t);
+      } else {
+        rotY += (targetRotY - rotY) * 0.06;
+        root.rotation.y = rotY;
+        root.rotation.x = 0;
+        root.rotation.order = "XYZ";
+      }
 
-      floatLayer.position.y = floatBaseY + Math.sin(t * 0.35) * 0.25;
+      floatLayer.position.y = floatBaseY + (activeSceneId === "02" ? Math.sin(t * 0.35) * 0.15 : Math.sin(t * 0.35) * 0.25);
       applyCameraViewport();
-      const camSway = Math.sin(t * 0.12) * 6;
+      const camSway = activeSceneId === "02" || isMobileView() ? 0 : Math.sin(t * 0.12) * 6;
       camera.position.set(camSway, camLookYActive + camHeightActive, camRadiusActive);
-      camera.lookAt(camSway * 0.35, camLookYActive + Math.sin(t * 0.2) * 1.2, 0);
+      const lookSway = isMobileView() ? 0 : camSway * 0.35;
+      camera.lookAt(lookSway, camLookYActive + (isMobileView() ? 0 : Math.sin(t * 0.2) * 1.2), 0);
 
       renderer.render(scene, camera);
     }

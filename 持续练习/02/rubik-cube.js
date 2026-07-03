@@ -12,8 +12,7 @@ const HALF = CUBELET / 2;
 const EXTENT = (CELLS * CELL) / 2;
 
 const MAX_CONTOUR = 52000;
-const MAX_SCAN = 26000;
-const MAX_GHOST = 6000;
+const MAX_SCAN = 48000;
 
 function hash2(x, z) {
   const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453;
@@ -337,11 +336,6 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
   const alongStep = 0.08;
 
   const scanShellColor = () => ({ r: 0.72, g: 0.76, b: 0.86 });
-  const scanInnerColor = (x, y, z) => {
-    const d = Math.hypot(x, z);
-    const core = Math.exp(-d * 2.0) * 0.35;
-    return { r: 0.78 + core, g: 0.82 + core, b: 0.92 + core };
-  };
 
   for (let layerY = -EXTENT; layerY <= EXTENT && idx < maxIdx; layerY += layerStep) {
     for (let ix = -1; ix <= 1; ix++) {
@@ -358,8 +352,12 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
           const z0 = cz - HALF;
           const z1 = cz + HALF;
           const y = layerY;
-          const isMidLayer = Math.abs(layerY - cy) < HALF * 0.35;
-          const colorFn = isMidLayer ? scanInnerColor : scanShellColor;
+          const topCap = cy + HALF;
+          const botCap = cy - HALF;
+          const onCap =
+            Math.abs(layerY - topCap) <= layerStep * 0.55 ||
+            Math.abs(layerY - botCap) <= layerStep * 0.55;
+          if (!onCap) continue;
 
           idx = sampleEdgeLine(
             new THREE.Vector3(x0, y, z0),
@@ -368,7 +366,7 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
             buf,
             idx,
             maxIdx,
-            colorFn
+            scanShellColor
           );
           idx = sampleEdgeLine(
             new THREE.Vector3(x1, y, z0),
@@ -377,7 +375,7 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
             buf,
             idx,
             maxIdx,
-            colorFn
+            scanShellColor
           );
           idx = sampleEdgeLine(
             new THREE.Vector3(x1, y, z1),
@@ -386,7 +384,7 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
             buf,
             idx,
             maxIdx,
-            colorFn
+            scanShellColor
           );
           idx = sampleEdgeLine(
             new THREE.Vector3(x0, y, z1),
@@ -395,31 +393,8 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
             buf,
             idx,
             maxIdx,
-            colorFn
+            scanShellColor
           );
-
-          if (isMidLayer && idx < maxIdx) {
-            for (let t = -0.5; t <= 0.5 && idx < maxIdx; t += 0.5) {
-              idx = sampleEdgeLine(
-                new THREE.Vector3(cx + t * HALF * 0.8, y, cz - HALF * 0.6),
-                new THREE.Vector3(cx + t * HALF * 0.8, y, cz + HALF * 0.6),
-                alongStep * 1.2,
-                buf,
-                idx,
-                maxIdx,
-                scanInnerColor
-              );
-              idx = sampleEdgeLine(
-                new THREE.Vector3(cx - HALF * 0.6, y, cz + t * HALF * 0.8),
-                new THREE.Vector3(cx + HALF * 0.6, y, cz + t * HALF * 0.8),
-                alongStep * 1.2,
-                buf,
-                idx,
-                maxIdx,
-                scanInnerColor
-              );
-            }
-          }
         }
       }
     }
@@ -427,17 +402,60 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
   return idx;
 }
 
+function buildScanMaterial(makeEndfieldMaterial) {
+  const base = makeEndfieldMaterial(1.08, 0.55, false);
+  base.uniforms.uScanY = { value: -EXTENT };
+  base.uniforms.uScanBand = { value: 0.42 };
+  base.uniforms.uScanBase = { value: 0.14 };
+
+  base.vertexShader = `
+    attribute vec3 color;
+    varying vec3 vColor;
+    varying float vLocalY;
+    uniform float uPixelSize;
+    uniform float uPixelRatio;
+    void main() {
+      vColor = color;
+      vLocalY = position.y;
+      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+      gl_Position = projectionMatrix * mvPosition;
+      gl_PointSize = max(1.0, uPixelSize * uPixelRatio);
+    }
+  `;
+  base.fragmentShader = `
+    varying vec3 vColor;
+    varying float vLocalY;
+    uniform float uOpacity;
+    uniform float uScanY;
+    uniform float uScanBand;
+    uniform float uScanBase;
+    void main() {
+      vec2 c = gl_PointCoord - 0.5;
+      float d = length(c);
+      if (d > 0.5) discard;
+      float core = exp(-d * d * 36.0);
+      float rim = smoothstep(0.5, 0.08, d);
+      float dy = abs(vLocalY - uScanY);
+      float band = exp(-(dy * dy) / (uScanBand * uScanBand));
+      float scanMix = uScanBase + band * (1.0 - uScanBase);
+      float alpha = rim * uOpacity * scanMix;
+      gl_FragColor = vec4(vColor * (core * 1.15 + rim * 0.35), alpha);
+    }
+  `;
+  base.depthWrite = false;
+  return base;
+}
+
 /**
  * @param {object} opts
  * @param {function} opts.makeEndfieldMaterial - suixi 共用像素材质工厂
  * @param {THREE.Material} opts.dummyMat
  * @param {THREE.Material} opts.blackHullMat
- * @param {function} opts.addBlackHull - (mesh) => void
  */
-export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHullMat, addBlackHull }) {
+export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHullMat }) {
   const layer = new THREE.Group();
   layer.name = "rubik-layer";
-  layer.visible = false;
+  layer.visible = true;
 
   const hullGroup = new THREE.Group();
   const meshGroup = new THREE.Group();
@@ -445,72 +463,89 @@ export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHull
   layer.add(meshGroup);
 
   const cubeletMeshes = buildCubeletMeshes(dummyMat);
-  const latticeMeshes = buildInnerLatticeMeshes(dummyMat);
   const outerFrame = buildOuterFrameMesh(dummyMat);
   outerFrame.visible = false;
 
   for (const mesh of cubeletMeshes) {
     mesh.visible = false;
     meshGroup.add(mesh);
-    addBlackHull(mesh, hullGroup, blackHullMat);
-  }
-  for (const mesh of latticeMeshes) {
-    mesh.visible = false;
-    meshGroup.add(mesh);
+    const hull = new THREE.Mesh(mesh.geometry, blackHullMat);
+    hull.position.copy(mesh.position);
+    hull.rotation.copy(mesh.rotation);
+    hull.scale.setScalar(1.004);
+    hullGroup.add(hull);
   }
   meshGroup.add(outerFrame);
 
-  const contourColor = () => ({ r: 1.1, g: 1.12, b: 1.2 });
-  const scanColor = (x, y, z) => {
-    const flick = 0.88 + hash2(x * 3, z * 3) * 0.1;
-    return { r: 0.68 * flick, g: 0.72 * flick, b: 0.82 * flick };
-  };
+  const contourColor = () => ({ r: 1.18, g: 1.22, b: 1.3 });
 
   const contourBuf = buildParticleBuf(MAX_CONTOUR);
+  let contourIdx = 0;
   sampleMeshesInto(
     contourBuf,
-    [...cubeletMeshes, outerFrame, ...latticeMeshes],
+    [...cubeletMeshes, outerFrame],
     MAX_CONTOUR,
     0,
     0,
-    0.018,
+    0.012,
     contourColor,
     true
   );
-  contourBuf.count = sampleGridSeams(contourBuf, contourBuf.count, MAX_CONTOUR);
+  contourIdx = contourBuf.count;
+  contourBuf.count = sampleGridSeams(contourBuf, contourIdx, MAX_CONTOUR);
 
-  const scanBuf = buildParticleBuf(MAX_SCAN);
-  scanBuf.count = sampleVolumeScan(scanBuf, 0, MAX_SCAN);
-
-  const ghostBuf = buildParticleBuf(MAX_GHOST);
-  sampleMeshesInto(ghostBuf, [outerFrame], MAX_GHOST, 0.28, 0.22, 0, scanColor, false);
-
-  const contourMat = makeEndfieldMaterial(1.62, 1.0, true);
-  const scanMat = makeEndfieldMaterial(1.08, 0.48);
-  const ghostMat = makeEndfieldMaterial(0.92, 0.2);
+  const contourMat = makeEndfieldMaterial(1.38, 0.96, true);
+  contourMat.depthWrite = true;
 
   const contourPoints = new THREE.Points(makePointsGeo(contourBuf, contourBuf.count), contourMat);
-  const scanPoints = new THREE.Points(makePointsGeo(scanBuf, scanBuf.count), scanMat);
-  const ghostPoints = new THREE.Points(makePointsGeo(ghostBuf, ghostBuf.count), ghostMat);
 
   hullGroup.renderOrder = 0;
-  ghostPoints.renderOrder = 1;
-  scanPoints.renderOrder = 2;
   contourPoints.renderOrder = 4;
 
-  meshGroup.add(ghostPoints);
-  meshGroup.add(scanPoints);
   meshGroup.add(contourPoints);
 
-  layer.userData.sceneScale = 24;
-  layer.userData.rootY = 26;
+  const glowBuf = buildParticleBuf(12000);
+  sampleMeshesInto(glowBuf, [outerFrame], 12000, 0, 0, 0.022, () => ({ r: 0.82, g: 0.88, b: 0.98 }), true);
+  const glowMat = makeEndfieldMaterial(1.52, 0.42, false);
+  glowMat.depthWrite = false;
+  const glowPoints = new THREE.Points(makePointsGeo(glowBuf, glowBuf.count), glowMat);
+  glowPoints.renderOrder = 2;
+  meshGroup.add(glowPoints);
+
+  const scanBuf = buildParticleBuf(MAX_SCAN);
+  sampleMeshesInto(
+    scanBuf,
+    [...cubeletMeshes, outerFrame],
+    MAX_SCAN,
+    0.1,
+    0.06,
+    0,
+    () => ({ r: 0.62, g: 0.7, b: 0.86 }),
+    false
+  );
+  const scanMat = buildScanMaterial(makeEndfieldMaterial);
+  const scanPoints = new THREE.Points(makePointsGeo(scanBuf, scanBuf.count), scanMat);
+  scanPoints.renderOrder = 3;
+  meshGroup.add(scanPoints);
+
+  layer.userData.updateScan = (t) => {
+    const phase = (t * 0.38) % 1;
+    scanMat.uniforms.uScanY.value = -EXTENT + phase * EXTENT * 2;
+  };
+
+  layer.userData.sceneScale = 21;
+  layer.userData.sceneScaleMobile = 19;
+  layer.userData.pivotY = 26;
+  layer.userData.pivotYMobile = 32;
   layer.userData.camLookY = 26;
-  layer.userData.camRadius = 205;
+  layer.userData.camRadius = 208;
+  layer.userData.camRadiusMobile = 172;
   layer.userData.camHeight = 10;
+  layer.userData.camHeightMobile = 16;
 
   return {
     layer,
-    materials: [contourMat, scanMat, ghostMat],
+    materials: [contourMat, glowMat, scanMat],
   };
 }
 
@@ -524,7 +559,10 @@ export function initRubikCubeScene({ canvas, wrap }) {
   renderer.setClearColor(0x060a12, 1);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0a1420, 0.0028);
+  scene.fog = new THREE.FogExp2(0x0a1420, 0.0018);
+
+  const CAM_LOOK_Y = 26;
+  const CAM_RADIUS = 208;
 
   const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1500);
   const root = new THREE.Group();
@@ -576,27 +614,19 @@ export function initRubikCubeScene({ canvas, wrap }) {
     return mat;
   }
 
-  function addBlackHull(mesh, hullGroup, hullMat) {
-    const hull = new THREE.Mesh(mesh.geometry, hullMat);
-    hull.position.copy(mesh.position);
-    hull.rotation.copy(mesh.rotation);
-    hull.scale.copy(mesh.scale).multiplyScalar(0.92);
-    hullGroup.add(hull);
-  }
-
   const { layer } = createRubikCubeLayer({
     makeEndfieldMaterial,
     dummyMat,
     blackHullMat,
-    addBlackHull: (mesh, hullGroup, hullMat) => addBlackHull(mesh, hullGroup, hullMat),
   });
   layer.visible = true;
   layer.scale.setScalar(layer.userData.sceneScale);
+  layer.position.set(0, CAM_LOOK_Y, 0);
   root.add(layer);
 
   let targetRotY = 0.4;
   let rotY = targetRotY;
-  let targetRotX = 0.28;
+  let targetRotX = 0.32;
   let rotX = targetRotX;
   let dragging = false;
   let lastX = 0;
@@ -622,9 +652,8 @@ export function initRubikCubeScene({ canvas, wrap }) {
   });
   wrap.addEventListener("pointermove", (e) => {
     if (!dragging) return;
-    targetRotY += (e.clientX - lastX) * 0.008;
-    targetRotX += (e.clientY - lastY) * 0.006;
-    targetRotX = Math.max(-1.1, Math.min(1.1, targetRotX));
+    targetRotY += (e.clientX - lastX) * 0.007;
+    targetRotX += (e.clientY - lastY) * 0.007;
     lastX = e.clientX;
     lastY = e.clientY;
   });
@@ -634,13 +663,15 @@ export function initRubikCubeScene({ canvas, wrap }) {
   function animate() {
     requestAnimationFrame(animate);
     const dt = clock.getDelta();
-    if (!dragging) targetRotY += 0.2 * dt;
+    if (!dragging) targetRotY += 0.14 * dt;
     rotY += (targetRotY - rotY) * 0.07;
     rotX += (targetRotX - rotX) * 0.07;
-    root.rotation.y = rotY;
-    root.rotation.x = rotX;
-    camera.position.set(0, 36, 205);
-    camera.lookAt(0, 26, 0);
+    layer.rotation.order = "YXZ";
+    layer.rotation.y = rotY;
+    layer.rotation.x = rotX;
+    layer.userData.updateScan?.(clock.getElapsedTime());
+    camera.position.set(0, CAM_LOOK_Y + 10, CAM_RADIUS);
+    camera.lookAt(0, CAM_LOOK_Y, 0);
     renderer.render(scene, camera);
   }
 
