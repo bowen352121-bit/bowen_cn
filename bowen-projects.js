@@ -1,4 +1,4 @@
-/** 明殿文章库 — 在此数组追加新文章，全站「全站文章」数会自动 +1 */
+/** 文作文章库 — 在此数组追加新文章，全站「全站文章」数与搜索会自动纳入 */
 window.bowenProjects = [
   { 
     title: "FTL", 
@@ -7,7 +7,7 @@ window.bowenProjects = [
     image: "images/FTL封面.jpg",
     isTop: true,
     publishDate: "2026-06-25",
-    views: "12.4k", comments: 88, likes: 999, category: "明殿内参", tags: ["FTL", "飞行控制", "魔方", "主动控制"], lang: "简体中文"
+    views: "12.4k", comments: 88, likes: 999, category: "文作内参", tags: ["FTL", "飞行控制", "魔方", "主动控制"], lang: "简体中文"
   },
   {
     title: "能做的事有限，我也只是尽到责任。",
@@ -23,7 +23,7 @@ window.bowenProjects = [
     link: "modal", 
     image: "images/定积分极限封面.jpg",
     publishDate: "2026-06-24",
-    views: "659", comments: 0, likes: 13, category: "大千界", tags: ["数学", "定积分", "极限", "Riemann和"], lang: "简体中文"
+    views: "659", comments: 0, likes: 13, category: "拓界", tags: ["数学", "定积分", "极限", "Riemann和"], lang: "简体中文"
   },
   {
     title: "化学与炸弹：职中实验室里没做完的那一课",
@@ -39,7 +39,7 @@ window.bowenProjects = [
     link: "modal",
     image: "images/ZZZzhe.jpg",
     publishDate: "2026-05-11", // 1个月前 (5周前)
-    views: "1.04k", comments: 2, likes: 6, category: "明殿内参", lang: "简体中文"
+    views: "1.04k", comments: 2, likes: 6, category: "文作内参", lang: "简体中文"
   },
   { 
     title: "创造力是温柔的谎言吗", 
@@ -47,7 +47,7 @@ window.bowenProjects = [
     link: "modal", 
     image: "images/ZZZzhe1.jpg",
     publishDate: "2026-05-01", 
-    views: "1.32k", comments: 0, likes: 3, category: "大千界", lang: "简体中文"
+    views: "1.32k", comments: 0, likes: 3, category: "拓界", lang: "简体中文"
   },
   {
     title: "人类正在退出人类",
@@ -55,7 +55,7 @@ window.bowenProjects = [
     link: "modal",
     image: "images/骑士梦1.jpg",
     publishDate: "2026-04-15", 
-    views: "996", comments: 0, likes: 4, category: "覺有情", lang: "简体中文"
+    views: "996", comments: 0, likes: 4, category: "巧觉", lang: "简体中文"
   },
   { 
     title: "AI 代代替不了这样的你", 

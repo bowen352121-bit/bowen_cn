@@ -405,8 +405,8 @@ function sampleVolumeScan(buf, startIdx, maxIdx) {
 function buildScanMaterial(makeEndfieldMaterial) {
   const base = makeEndfieldMaterial(1.08, 0.55, false);
   base.uniforms.uScanY = { value: -EXTENT };
-  base.uniforms.uScanBand = { value: 0.42 };
-  base.uniforms.uScanBase = { value: 0.14 };
+  base.uniforms.uScanBand = { value: 0.48 };
+  base.uniforms.uScanBase = { value: 0.1 };
 
   base.vertexShader = `
     attribute vec3 color;
@@ -477,7 +477,7 @@ export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHull
   }
   meshGroup.add(outerFrame);
 
-  const contourColor = () => ({ r: 1.18, g: 1.22, b: 1.3 });
+  const contourColor = () => ({ r: 1.28, g: 1.32, b: 1.42 });
 
   const contourBuf = buildParticleBuf(MAX_CONTOUR);
   let contourIdx = 0;
@@ -487,29 +487,29 @@ export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHull
     MAX_CONTOUR,
     0,
     0,
-    0.012,
+    0.011,
     contourColor,
     true
   );
   contourIdx = contourBuf.count;
   contourBuf.count = sampleGridSeams(contourBuf, contourIdx, MAX_CONTOUR);
 
-  const contourMat = makeEndfieldMaterial(1.38, 0.96, true);
+  const contourMat = makeEndfieldMaterial(1.56, 1.0, true);
   contourMat.depthWrite = true;
 
   const contourPoints = new THREE.Points(makePointsGeo(contourBuf, contourBuf.count), contourMat);
 
   hullGroup.renderOrder = 0;
-  contourPoints.renderOrder = 4;
+  contourPoints.renderOrder = 5;
 
   meshGroup.add(contourPoints);
 
   const glowBuf = buildParticleBuf(12000);
-  sampleMeshesInto(glowBuf, [outerFrame], 12000, 0, 0, 0.022, () => ({ r: 0.82, g: 0.88, b: 0.98 }), true);
-  const glowMat = makeEndfieldMaterial(1.52, 0.42, false);
+  sampleMeshesInto(glowBuf, [outerFrame], 12000, 0, 0, 0.022, () => ({ r: 0.88, g: 0.92, b: 1.02 }), true);
+  const glowMat = makeEndfieldMaterial(1.64, 0.58, false);
   glowMat.depthWrite = false;
   const glowPoints = new THREE.Points(makePointsGeo(glowBuf, glowBuf.count), glowMat);
-  glowPoints.renderOrder = 2;
+  glowPoints.renderOrder = 3;
   meshGroup.add(glowPoints);
 
   const scanBuf = buildParticleBuf(MAX_SCAN);
@@ -520,12 +520,12 @@ export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHull
     0.1,
     0.06,
     0,
-    () => ({ r: 0.62, g: 0.7, b: 0.86 }),
+    () => ({ r: 0.68, g: 0.76, b: 0.92 }),
     false
   );
   const scanMat = buildScanMaterial(makeEndfieldMaterial);
   const scanPoints = new THREE.Points(makePointsGeo(scanBuf, scanBuf.count), scanMat);
-  scanPoints.renderOrder = 3;
+  scanPoints.renderOrder = 4;
   meshGroup.add(scanPoints);
 
   layer.userData.updateScan = (t) => {
@@ -533,13 +533,13 @@ export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHull
     scanMat.uniforms.uScanY.value = -EXTENT + phase * EXTENT * 2;
   };
 
-  layer.userData.sceneScale = 21;
-  layer.userData.sceneScaleMobile = 19;
+  layer.userData.sceneScale = 22;
+  layer.userData.sceneScaleMobile = 20;
   layer.userData.pivotY = 26;
   layer.userData.pivotYMobile = 32;
   layer.userData.camLookY = 26;
-  layer.userData.camRadius = 208;
-  layer.userData.camRadiusMobile = 172;
+  layer.userData.camRadius = 200;
+  layer.userData.camRadiusMobile = 166;
   layer.userData.camHeight = 10;
   layer.userData.camHeightMobile = 16;
 
@@ -550,19 +550,19 @@ export function createRubikCubeLayer({ makeEndfieldMaterial, dummyMat, blackHull
 }
 
 /** 独立页：02/index.html 用 */
-export function initRubikCubeScene({ canvas, wrap }) {
+export function initRubikCubeScene({ canvas, wrap, camOffsetX = 0 }) {
   if (!canvas || !wrap) throw new Error("canvas 容器缺失");
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.setClearColor(0x060a12, 1);
+  renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x0a1420, 0.0018);
 
   const CAM_LOOK_Y = 26;
-  const CAM_RADIUS = 208;
+  const CAM_RADIUS = 196;
 
   const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1500);
   const root = new THREE.Group();
@@ -621,7 +621,7 @@ export function initRubikCubeScene({ canvas, wrap }) {
   });
   layer.visible = true;
   layer.scale.setScalar(layer.userData.sceneScale);
-  layer.position.set(0, CAM_LOOK_Y, 0);
+  layer.position.set(camOffsetX, CAM_LOOK_Y, 0);
   root.add(layer);
 
   let targetRotY = 0.4;
@@ -670,8 +670,8 @@ export function initRubikCubeScene({ canvas, wrap }) {
     layer.rotation.y = rotY;
     layer.rotation.x = rotX;
     layer.userData.updateScan?.(clock.getElapsedTime());
-    camera.position.set(0, CAM_LOOK_Y + 10, CAM_RADIUS);
-    camera.lookAt(0, CAM_LOOK_Y, 0);
+    camera.position.set(camOffsetX * 0.25, CAM_LOOK_Y + 10, CAM_RADIUS);
+    camera.lookAt(camOffsetX, CAM_LOOK_Y, 0);
     renderer.render(scene, camera);
   }
 

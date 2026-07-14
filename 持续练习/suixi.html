@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>持续练习 · 冬宫 Lore | BOWEN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400&family=Bodoni+Moda:ital,opsz,wght@0,6..96,700;0,6..96,800;0,6..96,900;1,6..96,700;1,6..96,800;1,6..96,900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../click-effect.css?v=20260620">
   <link rel="stylesheet" href="../bangboo-loader.css?v=20260630m">
   <script src="../bangboo-loader.js?v=20260630m"></script>
@@ -33,6 +36,7 @@
       position: absolute;
       inset: 0;
       z-index: 1;
+      isolation: isolate;
       background: radial-gradient(ellipse 90% 80% at var(--scene-center-x) 32%, #243a52 0%, #121a28 38%, #060a12 72%, #020306 100%);
       transition: background 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -59,13 +63,247 @@
 
     #castle-canvas {
       display: block;
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       cursor: grab;
       touch-action: none;
+      z-index: 4;
     }
 
     #canvas-wrap.dragging #castle-canvas { cursor: grabbing; }
+
+    /* ── 02 魔方 · 电影海报（光束在底层，魔方压在线条上） ── */
+    .rubik-poster-back,
+    .rubik-poster-front {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+
+    .rubik-poster-back { z-index: 0; }
+    .rubik-poster-front { z-index: 6; }
+
+    #app.scene-rubik .rubik-poster-back,
+    #app.scene-rubik .rubik-poster-front {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #app.scene-rubik #canvas-wrap {
+      background: radial-gradient(ellipse 88% 72% at 26% 50%, #1c2535 0%, #0b1018 42%, #040508 78%, #000 100%);
+    }
+
+    #app.scene-rubik .scan-hud {
+      left: calc(var(--scene-center-x) - min(9vw, 58px));
+      top: 47%;
+      width: min(62vmin, 520px);
+      opacity: 0.15;
+      z-index: 2;
+      mask-image: radial-gradient(ellipse 34% 38% at 50% 50%, transparent 0%, transparent 78%, rgba(0, 0, 0, 0.35) 92%, #000 100%);
+      -webkit-mask-image: radial-gradient(ellipse 34% 38% at 50% 50%, transparent 0%, transparent 78%, rgba(0, 0, 0, 0.35) 92%, #000 100%);
+      filter: blur(0.25px);
+    }
+
+    #app.scene-rubik .scan-hud circle,
+    #app.scene-rubik .scan-hud line {
+      stroke: rgba(255, 255, 255, 0.1);
+    }
+
+    .rubik-poster__letterbox {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: clamp(24px, 6.5vh, 64px);
+      background: #000;
+    }
+
+    .rubik-poster__letterbox--top { top: 0; }
+    .rubik-poster__letterbox--bottom { bottom: 0; }
+
+    .rubik-poster__beams {
+      position: absolute;
+      inset: -18% -8%;
+      mask-image: radial-gradient(ellipse 36% 40% at 27% 48%, transparent 0%, transparent 52%, #000 82%);
+      -webkit-mask-image: radial-gradient(ellipse 36% 40% at 27% 48%, transparent 0%, transparent 52%, #000 82%);
+    }
+
+    .rubik-poster__beams span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 135%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 40%, rgba(255, 255, 255, 0.72) 50%, rgba(255, 255, 255, 0.32) 60%, transparent 100%);
+      transform-origin: center center;
+      opacity: 0.48;
+    }
+
+    .rubik-poster__beams span:nth-child(1) { transform: translate(-50%, -50%) rotate(-34deg) translateY(-20vh); }
+    .rubik-poster__beams span:nth-child(2) { transform: translate(-50%, -50%) rotate(-20deg) translateY(-9vh); opacity: 0.62; height: 2px; }
+    .rubik-poster__beams span:nth-child(3) { transform: translate(-50%, -50%) rotate(-6deg) translateY(1vh); opacity: 0.28; }
+    .rubik-poster__beams span:nth-child(4) { transform: translate(-50%, -50%) rotate(8deg) translateY(11vh); opacity: 0.42; }
+    .rubik-poster__beams span:nth-child(5) { transform: translate(-50%, -50%) rotate(24deg) translateY(22vh); opacity: 0.38; }
+    .rubik-poster__beams span:nth-child(6) { transform: translate(-50%, -50%) rotate(40deg) translateY(-2vh); opacity: 0.22; width: 105%; }
+    .rubik-poster__beams span:nth-child(7) { transform: translate(-50%, -50%) rotate(-44deg) translateY(15vh); opacity: 0.34; }
+
+    .rubik-poster__title-wrap {
+      position: absolute;
+      right: clamp(4%, 8vw, 12%);
+      top: 50%;
+      transform: translateY(-48%);
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+
+    .rubik-poster__title {
+      margin: 0;
+      font-family: "Bodoni Moda", "Times New Roman", Georgia, serif;
+      font-size: clamp(3.2rem, 11.2vw, 8.8rem);
+      font-weight: 800;
+      font-style: italic;
+      font-optical-sizing: auto;
+      line-height: 0.86;
+      letter-spacing: 0.015em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transform: perspective(760px) rotateY(-28deg) rotateX(15deg) rotateZ(-0.8deg);
+      transform-origin: 100% 52%;
+      background: linear-gradient(
+        165deg,
+        #ffffff 6%,
+        #f2f6ff 24%,
+        #b8c6de 46%,
+        #ffffff 58%,
+        #d5e0f2 74%,
+        #fafcff 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      filter:
+        drop-shadow(0 1px 0 rgba(0, 0, 0, 0.75))
+        drop-shadow(0 0 1px rgba(255, 255, 255, 0.45))
+        drop-shadow(0 0 32px rgba(186, 210, 255, 0.22));
+    }
+
+    .rubik-poster__title--bloom {
+      position: absolute;
+      inset: 0 auto auto 0;
+      background: none;
+      color: rgba(210, 228, 255, 0.72);
+      -webkit-text-fill-color: rgba(210, 228, 255, 0.72);
+      filter: blur(11px);
+      opacity: 0.72;
+      transform: perspective(760px) rotateY(-28deg) rotateX(15deg) rotateZ(-0.8deg) scale(1.04);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .rubik-poster__title-wrap > .rubik-poster__title:not(.rubik-poster__title--bloom) {
+      position: relative;
+      z-index: 1;
+    }
+
+    .rubik-poster__title-mark {
+      position: relative;
+      display: inline-block;
+    }
+
+    .rubik-poster__title-mark::after {
+      content: "";
+      position: absolute;
+      left: 0.14em;
+      top: 0.36em;
+      width: 0.17em;
+      height: 0.17em;
+      background: linear-gradient(135deg, #fff 0%, #c8d8f0 100%);
+      transform: rotate(45deg);
+      box-shadow: 0 0 6px rgba(200, 220, 255, 0.65);
+      pointer-events: none;
+    }
+
+    .rubik-poster__sub {
+      position: absolute;
+      right: clamp(6%, 10vw, 14%);
+      top: calc(50% + clamp(2.8rem, 9vw, 6.2rem));
+      transform: perspective(760px) rotateY(-20deg) rotateX(8deg);
+      font-family: "Barlow Condensed", "Segoe UI", sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.58rem, 1.4vw, 0.78rem);
+      letter-spacing: 0.38em;
+      color: rgba(220, 230, 245, 0.38);
+      text-transform: uppercase;
+    }
+
+    .rubik-poster__vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 50% 58% at 24% 50%, transparent 0%, rgba(0, 0, 0, 0.28) 70%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, transparent 42%, rgba(0, 0, 0, 0.5) 100%);
+    }
+
+    .rubik-poster__glow {
+      position: absolute;
+      left: calc(var(--scene-center-x) - min(9vw, 58px));
+      top: 47%;
+      width: min(44vmin, 380px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(195, 220, 255, 0.1) 0%, rgba(120, 160, 220, 0.03) 42%, transparent 72%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #app.scene-rubik .hint-drag {
+      z-index: 7;
+      color: rgba(255, 255, 255, 0.28);
+      letter-spacing: 0.2em;
+    }
+
+    @media (max-width: 768px) {
+      .rubik-poster__title-wrap {
+        right: 4%;
+      }
+
+      .rubik-poster__title {
+        font-size: clamp(2.2rem, 13vw, 3.4rem);
+        transform: perspective(700px) rotateY(-14deg) rotateX(5deg);
+      }
+
+      .rubik-poster__title--bloom {
+        transform: perspective(700px) rotateY(-14deg) rotateX(5deg) scale(1.03);
+      }
+
+      .rubik-poster__sub {
+        top: calc(50% + 2.2rem);
+        letter-spacing: 0.3em;
+      }
+
+      .rubik-poster__beams {
+        mask-image: radial-gradient(ellipse 42% 44% at 38% 46%, transparent 0%, transparent 48%, #000 80%);
+        -webkit-mask-image: radial-gradient(ellipse 42% 44% at 38% 46%, transparent 0%, transparent 48%, #000 80%);
+      }
+
+      #app.scene-rubik .scan-hud {
+        left: 40%;
+        width: min(70vmin, 94%);
+        opacity: 0.12;
+        mask-image: radial-gradient(ellipse 38% 42% at 50% 50%, transparent 0%, transparent 74%, rgba(0, 0, 0, 0.4) 90%, #000 100%);
+        -webkit-mask-image: radial-gradient(ellipse 38% 42% at 50% 50%, transparent 0%, transparent 74%, rgba(0, 0, 0, 0.4) 90%, #000 100%);
+      }
+
+      .rubik-poster__glow {
+        left: 40%;
+        width: min(52vmin, 320px);
+      }
+    }
 
   /* ── 终末地 Lore 侧栏（浮层覆盖，不挤压 canvas） ── */
     .lore-panel {
@@ -633,6 +871,13 @@
 <body>
   <div id="app">
     <div id="canvas-wrap">
+      <div class="rubik-poster-back" id="rubik-poster-back" aria-hidden="true">
+        <div class="rubik-poster__beams" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="rubik-poster__vignette" aria-hidden="true"></div>
+        <div class="rubik-poster__glow" aria-hidden="true"></div>
+      </div>
       <svg class="scan-hud" viewBox="0 0 400 400" aria-hidden="true">
         <circle cx="200" cy="200" r="168" stroke-width="0.7" stroke-dasharray="6 14" opacity="0.55"/>
         <circle cx="200" cy="200" r="152" stroke-width="0.45" stroke-dasharray="2 10" opacity="0.35"/>
@@ -643,6 +888,15 @@
         <line x1="352" y1="200" x2="376" y2="200" stroke-width="0.6" opacity="0.4"/>
       </svg>
       <canvas id="castle-canvas"></canvas>
+      <div class="rubik-poster-front" id="rubik-poster-front" aria-hidden="true">
+        <div class="rubik-poster__letterbox rubik-poster__letterbox--top"></div>
+        <div class="rubik-poster__letterbox rubik-poster__letterbox--bottom"></div>
+        <div class="rubik-poster__title-wrap">
+          <p class="rubik-poster__title rubik-poster__title--bloom" aria-hidden="true">ROTATE</p>
+          <p class="rubik-poster__title"><span class="rubik-poster__title-mark">R</span>OTATE</p>
+        </div>
+        <span class="rubik-poster__sub">PIXEL MESH · 02</span>
+      </div>
       <p class="hint-drag">DRAG TO ROTATE · 拖拽旋转</p>
     </div>
 
@@ -657,7 +911,7 @@
     <aside class="lore-panel" id="lore-panel">
       <div class="lore-panel-inner">
       <div class="lore-panel-handle" aria-hidden="true"></div>
-      <a class="back-link" href="../bowen.html">← 返回明殿</a>
+      <a class="back-link" href="../bowen.html">← 返回文作</a>
       <div class="lore-tag">WORLD LORE / 世界档案</div>
       <h1 class="lore-title">冬宫</h1>
       <p class="lore-subtitle">ZAPOLYARNY PALACE</p>
@@ -671,7 +925,7 @@
           <span class="lore-nav-num">02</span>魔方立体 · 像素线框
         </button>
         <button type="button" class="lore-nav-item" data-lore="03">
-          <span class="lore-nav-num">03</span>王庭尖塔群系
+          <span class="lore-nav-num">03</span>1
         </button>
         <button type="button" class="lore-nav-item" data-lore="04">
           <span class="lore-nav-num">04</span>云层之上的天空之城
@@ -938,7 +1192,10 @@
 
   <script type="module">
     import * as THREE from "three";
-    import { createRubikCubeLayer } from "./02/rubik-cube.js?v=20260703i";
+    import { createRubikCubeLayer } from "./02/rubik-cube.js?v=20260715h";
+    import { createVillaCastleLayer } from "./03/villa-estate.js?v=20260715e";
+    import { createSkyCastleLayer } from "./04/sky-citadel.js?v=20260715a";
+    import { createAuroraCastleLayer } from "./05/aurora-fortress.js?v=20260715b";
 
     const canvas = document.getElementById("castle-canvas");
     const wrap = document.getElementById("canvas-wrap");
@@ -947,6 +1204,7 @@
 
     const MAX_CASTLE_SURFACE = 320000;
     const MAX_GLACIER_SURFACE = 28000;
+    const MAX_PEDESTAL_SURFACE = 26000;
     const SNOW_PARTICLES = 900;
     const MAX_MIST_SURFACE = 9000;
     const CASTLE_LAYER_STEP = 0.155;
@@ -959,7 +1217,7 @@
     const renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
-      alpha: false,
+      alpha: true,
       powerPreference: "high-performance",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth <= 768 ? 1.5 : 2));
@@ -1247,6 +1505,105 @@
       return meshes;
     }
 
+    function buildCastlePedestal() {
+      const meshes = [];
+      const BASE_Y = -5.8;
+
+      const tier1 = new THREE.Mesh(
+        new THREE.CylinderGeometry(13.2, 14.6, 2.2, 24),
+        dummyMat
+      );
+      tier1.position.set(0, BASE_Y + 1.1, 0);
+      meshes.push(addSamplingMesh(tier1, 16, { tag: "pedestal", edge: true, hull: true }));
+
+      const tier2 = new THREE.Mesh(
+        new THREE.CylinderGeometry(10.2, 11.8, 1.7, 22),
+        dummyMat
+      );
+      tier2.position.set(0, BASE_Y + 2.75, 0);
+      meshes.push(addSamplingMesh(tier2, 14, { tag: "pedestal", edge: true, hull: true }));
+
+      const tier3 = new THREE.Mesh(
+        new THREE.CylinderGeometry(8.2, 9.6, 1.4, 20),
+        dummyMat
+      );
+      tier3.position.set(0, BASE_Y + 4.05, 0);
+      meshes.push(addSamplingMesh(tier3, 14, { tag: "pedestal", edge: true, hull: true }));
+
+      const crown = new THREE.Mesh(
+        new THREE.CylinderGeometry(6.8, 8.1, 0.9, 18),
+        dummyMat
+      );
+      crown.position.set(0, BASE_Y + 5.15, 0);
+      meshes.push(addSamplingMesh(crown, 12, { tag: "pedestal", edge: true, hull: true }));
+
+      const skirt = new THREE.Mesh(
+        new THREE.CylinderGeometry(14.8, 15.6, 0.55, 28),
+        dummyMat
+      );
+      skirt.position.set(0, BASE_Y + 0.28, 0);
+      meshes.push(addSamplingMesh(skirt, 14, { tag: "pedestal", edge: true, hull: true }));
+
+      for (let i = 0; i < 4; i++) {
+        const ry = BASE_Y + 0.55 + i * 1.35;
+        const rad = 14.4 - i * 1.05;
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(rad, 0.16, 8, 40),
+          dummyMat
+        );
+        ring.position.set(0, ry, 0);
+        ring.rotation.x = Math.PI / 2;
+        meshes.push(addSamplingMesh(ring, 8, { tag: "pedestal", edge: true, hull: true }));
+      }
+
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2;
+        const r = 12.8;
+        const x = Math.cos(a) * r;
+        const z = Math.sin(a) * r;
+        const pillar = new THREE.Mesh(
+          new THREE.BoxGeometry(0.62, 4.8, 0.62),
+          dummyMat
+        );
+        pillar.position.set(x, BASE_Y + 2.6, z);
+        pillar.rotation.y = -a;
+        meshes.push(addSamplingMesh(pillar, 6, { tag: "pedestal", edge: true, hull: true }));
+
+        const cap = new THREE.Mesh(
+          new THREE.BoxGeometry(0.95, 0.32, 0.95),
+          dummyMat
+        );
+        cap.position.set(x, BASE_Y + 5.05, z);
+        cap.rotation.y = -a;
+        meshes.push(addSamplingMesh(cap, 5, { tag: "pedestal", hull: true }));
+      }
+
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2 + Math.PI / 8;
+        const r = 7.5;
+        const butt = new THREE.Mesh(
+          new THREE.BoxGeometry(1.4, 2.2, 0.8),
+          dummyMat
+        );
+        butt.position.set(Math.cos(a) * r, BASE_Y + 4.85, Math.sin(a) * r);
+        butt.rotation.y = -a;
+        meshes.push(addSamplingMesh(butt, 5, { tag: "pedestal", hull: true }));
+      }
+
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const step = new THREE.Mesh(
+          new THREE.BoxGeometry(3.6, 0.38, 1.2),
+          dummyMat
+        );
+        step.position.set(Math.cos(a) * 10.5, BASE_Y + 0.45, Math.sin(a) * 10.5);
+        step.rotation.y = -a;
+        meshes.push(addSamplingMesh(step, 4, { tag: "pedestal", edge: true, hull: true }));
+      }
+
+      return meshes;
+    }
+
     function buildGothicCastleCluster() {
       const meshes = [];
       const rng = (i, j) => hash2(i * 3.17, j * 9.41);
@@ -1411,6 +1768,7 @@
 
     function buildCastleMeshes() {
       return [
+        ...buildCastlePedestal(),
         ...buildOrganicGlacier(),
         ...buildFoundationSupports(),
         ...buildGothicCastleCluster(),
@@ -1636,6 +1994,14 @@
       GLACIER_LAYER_STEP,
       GLACIER_ALONG_STEP
     );
+    const pedestalSurface = sampleAllSurfacesHorizontal(
+      meshEntries,
+      MAX_PEDESTAL_SURFACE,
+      0,
+      (e) => e.tag === "pedestal",
+      CASTLE_LAYER_STEP * 0.88,
+      CASTLE_ALONG_STEP * 0.88
+    );
 
     const snowBuf = {
       positions: new Float32Array((SNOW_PARTICLES + 500) * 3),
@@ -1655,22 +2021,26 @@
 
     const castleSurfaceGeo = makePointsFromBuf(castleSurface.buf, castleSurface.count);
     const glacierGeo = makePointsFromBuf(glacierSurface.buf, glacierSurface.count);
+    const pedestalGeo = makePointsFromBuf(pedestalSurface.buf, pedestalSurface.count);
     const snowGeo = makePointsFromBuf(snowBuf, snowCount);
     const goldGeo = makePointsFromBuf(goldSample.buf, goldSample.count);
 
     const castleMat = makeEndfieldMaterial(1.18, 0.9);
     const glacierMat = makeEndfieldMaterial(1.1, 0.72);
+    const pedestalMat = makeEndfieldMaterial(1.28, 0.96, true);
     const snowMat = makeEndfieldMaterial(0.95, 0.55);
     const goldMat = makeEndfieldMaterial(1.1, 0.45);
 
     const castlePoints = new THREE.Points(castleSurfaceGeo, castleMat);
     const glacierPoints = new THREE.Points(glacierGeo, glacierMat);
+    const pedestalPoints = new THREE.Points(pedestalGeo, pedestalMat);
     const snowPoints = new THREE.Points(snowGeo, snowMat);
     const goldPoints = new THREE.Points(goldGeo, goldMat);
 
     hullGroup.renderOrder = 0;
     castlePoints.renderOrder = 2;
     glacierPoints.renderOrder = 2;
+    pedestalPoints.renderOrder = 3;
     snowPoints.renderOrder = 1;
     goldPoints.renderOrder = 1;
 
@@ -1679,11 +2049,44 @@
     castleLayer.add(hullGroup);
     castleLayer.add(castlePoints);
     castleLayer.add(glacierPoints);
+    castleLayer.add(pedestalPoints);
     castleLayer.add(snowPoints);
     castleLayer.add(goldPoints);
     castleLayer.scale.set(SCENE_SCALE, SCENE_SCALE, SCENE_SCALE);
     castleLayer.position.y = ROOT_Y;
     root.add(castleLayer);
+
+    function setupCastleSceneLayer(result) {
+      const { layer, materials } = result;
+      layer.scale.set(layer.userData.sceneScale, layer.userData.sceneScale, layer.userData.sceneScale);
+      layer.position.y = layer.userData.rootY;
+      root.add(layer);
+      endfieldMaterials.push(...materials);
+      return layer;
+    }
+
+    const villaLayer = setupCastleSceneLayer(createVillaCastleLayer({
+      makeEndfieldMaterial,
+      dummyMat,
+      blackHullMat,
+    }));
+    const skyLayer = setupCastleSceneLayer(createSkyCastleLayer({
+      makeEndfieldMaterial,
+      dummyMat,
+      blackHullMat,
+    }));
+    const auroraLayer = setupCastleSceneLayer(createAuroraCastleLayer({
+      makeEndfieldMaterial,
+      dummyMat,
+      blackHullMat,
+    }));
+
+    const sceneLayers = {
+      "01": castleLayer,
+      "03": villaLayer,
+      "04": skyLayer,
+      "05": auroraLayer,
+    };
 
     const { layer: rubikLayer, materials: rubikMaterials } = createRubikCubeLayer({
       makeEndfieldMaterial,
@@ -1729,41 +2132,68 @@
       );
       if (activeSceneId !== "02") return;
       rubikPivot.position.y = mobile ? rubikLayer.userData.pivotYMobile : rubikLayer.userData.pivotY;
+      rubikPivot.position.x = mobile ? -1.0 : -2.5;
       camLookYActive = rubikPivot.position.y;
-      camRadiusActive = mobile ? rubikLayer.userData.camRadiusMobile : rubikLayer.userData.camRadius;
+      camRadiusActive = mobile ? rubikLayer.userData.camRadiusMobile - 6 : rubikLayer.userData.camRadius - 10;
       camHeightActive = mobile ? rubikLayer.userData.camHeightMobile : rubikLayer.userData.camHeight;
       floatBaseY = rubikPivot.position.y;
+    }
+
+    function getRubikCamOffsetX() {
+      return isMobileView() ? -0.9 : -2.2;
+    }
+
+    function applyCastleSceneLayout(layer) {
+      if (!layer?.userData) return;
+      camLookYActive = layer.userData.camLookY ?? CAM_LOOK_Y;
+      camRadiusActive = layer.userData.camRadius ?? camRadius;
+      camHeightActive = layer.userData.camHeight ?? CAM_HEIGHT_OFFSET;
+      floatBaseY = layer.userData.rootY ?? ROOT_Y;
+      floatLayer = layer;
+      scene.fog.density = layer.userData.fogDensity ?? 0.0025;
+    }
+
+    function applyRendererBackground(isRubik) {
+      if (isRubik) {
+        renderer.setClearColor(0x000000, 0);
+        scene.fog.density = 0.0012;
+      } else {
+        renderer.setClearColor(0x080c14, 1);
+      }
     }
 
     function setActiveScene(id) {
       activeSceneId = id;
       const isRubik = id === "02";
+      const activeCastle = sceneLayers[id] || castleLayer;
+
       appEl?.classList.toggle("scene-rubik", isRubik);
-      castleLayer.visible = !isRubik;
+      document.getElementById("rubik-poster-back")?.setAttribute("aria-hidden", isRubik ? "false" : "true");
+      document.getElementById("rubik-poster-front")?.setAttribute("aria-hidden", isRubik ? "false" : "true");
+      applyRendererBackground(isRubik);
+
+      Object.values(sceneLayers).forEach((layer) => {
+        layer.visible = layer === activeCastle && !isRubik;
+      });
+      castleLayer.visible = !isRubik && (id === "01" || !sceneLayers[id]);
       rubikPivot.visible = isRubik;
+
       targetRotY = 0;
       rotY = 0;
+      targetRotX = 0;
+      rotX = 0;
+      rubikPivot.rotation.set(0, 0, 0);
+      root.rotation.x = 0;
 
       if (isRubik) {
         targetRotX = 0.32;
         rotX = 0.32;
         rubikPivot.rotation.order = "YXZ";
         rubikPivot.rotation.x = 0.32;
-        rubikPivot.rotation.y = 0;
         floatLayer = rubikPivot;
-        scene.fog.density = 0.0025;
         applyRubikLayout();
       } else {
-        targetRotX = 0;
-        rotX = 0;
-        rubikPivot.rotation.set(0, 0, 0);
-        root.rotation.x = 0;
-        camLookYActive = CAM_LOOK_Y;
-        camRadiusActive = camRadius;
-        camHeightActive = CAM_HEIGHT_OFFSET;
-        floatBaseY = ROOT_Y;
-        floatLayer = castleLayer;
-        scene.fog.density = 0.0025;
+        applyCastleSceneLayout(id === "01" ? castleLayer : activeCastle);
       }
     }
 
@@ -1790,6 +2220,8 @@
       if (w < 1 || h < 1) return;
       if (activeSceneId === "02" && isMobileView()) {
         camera.setViewOffset(w, h, 0, Math.round(h * 0.11), w, h);
+      } else if (["03", "04", "05"].includes(activeSceneId) && isMobileView()) {
+        camera.setViewOffset(w, h, 0, Math.round(h * 0.08), w, h);
       } else {
         const offsetX = getSidebarOffsetX();
         if (offsetX > 0.5) {
@@ -1858,6 +2290,7 @@
         targetRotY += AUTO_SPIN_SPEED * dt;
       }
 
+      const activeCastle = sceneLayers[activeSceneId];
       if (activeSceneId === "02") {
         rotY += (targetRotY - rotY) * 0.06;
         rotX += (targetRotX - rotX) * 0.06;
@@ -1872,14 +2305,20 @@
         root.rotation.y = rotY;
         root.rotation.x = 0;
         root.rotation.order = "XYZ";
+        activeCastle?.userData.animate?.(t, activeCastle);
       }
 
-      floatLayer.position.y = floatBaseY + (activeSceneId === "02" ? Math.sin(t * 0.35) * 0.15 : Math.sin(t * 0.35) * 0.25);
+      const floatAmp = activeSceneId === "02" ? 0.15 : activeSceneId === "04" ? 0.1 : 0.25;
+      if (activeSceneId !== "04") {
+        floatLayer.position.y = floatBaseY + Math.sin(t * 0.35) * floatAmp;
+      }
       applyCameraViewport();
       const camSway = activeSceneId === "02" || isMobileView() ? 0 : Math.sin(t * 0.12) * 6;
-      camera.position.set(camSway, camLookYActive + camHeightActive, camRadiusActive);
+      const rubikOffX = activeSceneId === "02" ? getRubikCamOffsetX() : 0;
+      camera.position.set(camSway + rubikOffX * 0.25, camLookYActive + camHeightActive, camRadiusActive);
       const lookSway = isMobileView() ? 0 : camSway * 0.35;
-      camera.lookAt(lookSway, camLookYActive + (isMobileView() ? 0 : Math.sin(t * 0.2) * 1.2), 0);
+      const lookY = camLookYActive + (isMobileView() ? 0 : Math.sin(t * 0.2) * 1.2);
+      camera.lookAt(lookSway + rubikOffX, lookY, 0);
 
       renderer.render(scene, camera);
     }

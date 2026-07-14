@@ -74,7 +74,7 @@ function showArticleContent(article) {
   if (viewWordCount) viewWordCount.textContent = wordCount.toLocaleString();
   if (viewReadTime) viewReadTime.textContent = readMinutes;
   if (viewClickCount) viewClickCount.textContent = article.views;
-  if (viewCategory) viewCategory.textContent = article.category || '明殿内参';
+  if (viewCategory) viewCategory.textContent = article.category || '文作内参';
   renderArticleTags(article);
   if (viewRealTime) {
     const published = window.BowenArticleFormat?.formatPublishDate(article.publishDate) || article.publishDate || '';
@@ -349,6 +349,21 @@ function renderArticleList() {
 if (container) {
   renderArticleList();
 }
+
+window.BowenSearch?.init({
+  getProjects: () => projects,
+  onSelect: (article, index) => {
+    showArticleContent(article);
+    window.BowenSearch?.closeAll?.();
+    if (typeof index === "number" && index >= 0) {
+      history.replaceState({ view: "article" }, "", `${location.pathname}?read=${index}`);
+    }
+  },
+  instances: [
+    { input: "#bowen-search-input", results: "#bowen-search-results", btn: "#bowen-search-btn" },
+    { input: "#bowen-search-input-mobile", results: "#bowen-search-results-mobile", btn: "#bowen-search-btn-mobile" },
+  ],
+});
 
 if (btnLoadMore) {
   btnLoadMore.addEventListener('click', () => {

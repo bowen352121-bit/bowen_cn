@@ -1,141 +1,621 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>02 · 魔方立体 · 持续练习</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400&family=Bodoni+Moda:ital,opsz,wght@0,6..96,700;0,6..96,800;0,6..96,900;1,6..96,700;1,6..96,800;1,6..96,900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="../../click-effect.css?v=20260620">
+
   <style>
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+
+
     html, body {
+
       width: 100%;
+
       height: 100%;
+
       overflow: hidden;
-      background: #020306;
+
+      background: #000;
+
       color: #e8e8e8;
+
       font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+
     }
 
-    #app {
-      position: fixed;
-      inset: 0;
-    }
+
+
+    #app { position: fixed; inset: 0; }
+
+
 
     #canvas-wrap {
+
       position: absolute;
+
       inset: 0;
-      background: radial-gradient(ellipse 85% 75% at 50% 42%, #1a2838 0%, #0c121c 42%, #060a12 72%, #020306 100%);
+
+      isolation: isolate;
+
+      background: radial-gradient(ellipse 88% 72% at 26% 50%, #1c2535 0%, #0b1018 42%, #040508 78%, #000 100%);
+
     }
 
+
+
     #cube-canvas {
+
       display: block;
+
+      position: absolute;
+
+      inset: 0;
+
       width: 100%;
+
       height: 100%;
+
       cursor: grab;
+
       touch-action: none;
+
+      z-index: 4;
+
     }
+
+
 
     #canvas-wrap.dragging #cube-canvas { cursor: grabbing; }
 
-    .scan-hud {
+
+
+    .rubik-poster-back { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+    .rubik-poster-front { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+
+
+
+    .rubik-poster__letterbox {
+
       position: absolute;
-      left: 50%;
-      top: 46%;
-      width: min(70vmin, 520px);
-      aspect-ratio: 1;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: 2;
-      opacity: 0.75;
+
+      left: 0;
+
+      right: 0;
+
+      height: clamp(24px, 6.5vh, 64px);
+
+      background: #000;
+
     }
 
-    .scan-hud circle,
-    .scan-hud line {
-      fill: none;
-      stroke: rgba(255, 255, 255, 0.12);
+
+
+    .rubik-poster__letterbox--top { top: 0; }
+
+    .rubik-poster__letterbox--bottom { bottom: 0; }
+
+
+
+    .rubik-poster__beams {
+
+      position: absolute;
+
+      inset: -18% -8%;
+
+      mask-image: radial-gradient(ellipse 36% 40% at 27% 48%, transparent 0%, transparent 52%, #000 82%);
+
+      -webkit-mask-image: radial-gradient(ellipse 36% 40% at 27% 48%, transparent 0%, transparent 52%, #000 82%);
+
     }
+
+
+
+    .rubik-poster__beams span {
+
+      position: absolute;
+
+      left: 50%;
+
+      top: 50%;
+
+      width: 135%;
+
+      height: 1.5px;
+
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 40%, rgba(255, 255, 255, 0.72) 50%, rgba(255, 255, 255, 0.32) 60%, transparent 100%);
+
+      transform-origin: center center;
+
+      opacity: 0.48;
+
+    }
+
+
+
+    .rubik-poster__beams span:nth-child(1) { transform: translate(-50%, -50%) rotate(-34deg) translateY(-20vh); }
+
+    .rubik-poster__beams span:nth-child(2) { transform: translate(-50%, -50%) rotate(-20deg) translateY(-9vh); opacity: 0.62; height: 2px; }
+
+    .rubik-poster__beams span:nth-child(3) { transform: translate(-50%, -50%) rotate(-6deg) translateY(1vh); opacity: 0.28; }
+
+    .rubik-poster__beams span:nth-child(4) { transform: translate(-50%, -50%) rotate(8deg) translateY(11vh); opacity: 0.42; }
+
+    .rubik-poster__beams span:nth-child(5) { transform: translate(-50%, -50%) rotate(24deg) translateY(22vh); opacity: 0.38; }
+
+    .rubik-poster__beams span:nth-child(6) { transform: translate(-50%, -50%) rotate(40deg) translateY(-2vh); opacity: 0.22; width: 105%; }
+
+    .rubik-poster__beams span:nth-child(7) { transform: translate(-50%, -50%) rotate(-44deg) translateY(15vh); opacity: 0.34; }
+
+
+
+    .rubik-poster__title-wrap {
+
+      position: absolute;
+
+      right: clamp(4%, 8vw, 12%);
+
+      top: 50%;
+
+      transform: translateY(-48%);
+
+      transform-style: preserve-3d;
+
+      pointer-events: none;
+
+    }
+
+
+
+    .rubik-poster__title {
+
+      margin: 0;
+
+      font-family: "Bodoni Moda", "Times New Roman", Georgia, serif;
+
+      font-size: clamp(3.2rem, 11.2vw, 8.8rem);
+
+      font-weight: 800;
+
+      font-style: italic;
+
+      font-optical-sizing: auto;
+
+      line-height: 0.86;
+
+      letter-spacing: 0.015em;
+
+      text-transform: uppercase;
+
+      white-space: nowrap;
+
+      transform: perspective(760px) rotateY(-28deg) rotateX(15deg) rotateZ(-0.8deg);
+
+      transform-origin: 100% 52%;
+
+      background: linear-gradient(165deg, #ffffff 6%, #f2f6ff 24%, #b8c6de 46%, #ffffff 58%, #d5e0f2 74%, #fafcff 100%);
+
+      -webkit-background-clip: text;
+
+      background-clip: text;
+
+      color: transparent;
+
+      -webkit-text-fill-color: transparent;
+
+      filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.75)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.45)) drop-shadow(0 0 32px rgba(186, 210, 255, 0.22));
+
+    }
+
+
+
+    .rubik-poster__title--bloom {
+
+      position: absolute;
+
+      inset: 0 auto auto 0;
+
+      background: none;
+
+      color: rgba(210, 228, 255, 0.72);
+
+      -webkit-text-fill-color: rgba(210, 228, 255, 0.72);
+
+      filter: blur(11px);
+
+      opacity: 0.72;
+
+      transform: perspective(760px) rotateY(-28deg) rotateX(15deg) rotateZ(-0.8deg) scale(1.04);
+
+      pointer-events: none;
+
+      z-index: 0;
+
+    }
+
+
+
+    .rubik-poster__title-wrap > .rubik-poster__title:not(.rubik-poster__title--bloom) {
+
+      position: relative;
+
+      z-index: 1;
+
+    }
+
+
+
+    .rubik-poster__title-mark {
+
+      position: relative;
+
+      display: inline-block;
+
+    }
+
+
+
+    .rubik-poster__title-mark::after {
+
+      content: "";
+
+      position: absolute;
+
+      left: 0.14em;
+
+      top: 0.36em;
+
+      width: 0.17em;
+
+      height: 0.17em;
+
+      background: linear-gradient(135deg, #fff 0%, #c8d8f0 100%);
+
+      transform: rotate(45deg);
+
+      box-shadow: 0 0 6px rgba(200, 220, 255, 0.65);
+
+      pointer-events: none;
+
+    }
+
+
+
+    .rubik-poster__sub {
+
+      position: absolute;
+
+      right: clamp(6%, 10vw, 14%);
+
+      top: calc(50% + clamp(2.8rem, 9vw, 6.2rem));
+
+      transform: perspective(760px) rotateY(-20deg) rotateX(8deg);
+
+      font-family: "Barlow Condensed", "Segoe UI", sans-serif;
+
+      font-weight: 300;
+
+      font-size: clamp(0.58rem, 1.4vw, 0.78rem);
+
+      letter-spacing: 0.38em;
+
+      color: rgba(220, 230, 245, 0.38);
+
+      text-transform: uppercase;
+
+    }
+
+
+
+    .rubik-poster__vignette {
+
+      position: absolute;
+
+      inset: 0;
+
+      background:
+
+        radial-gradient(ellipse 50% 58% at 24% 50%, transparent 0%, rgba(0, 0, 0, 0.28) 70%),
+
+        linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, transparent 42%, rgba(0, 0, 0, 0.5) 100%);
+
+    }
+
+
+
+    .rubik-poster__glow {
+
+      position: absolute;
+
+      left: 32%;
+
+      top: 47%;
+
+      width: min(42vmin, 360px);
+
+      aspect-ratio: 1;
+
+      transform: translate(-50%, -50%);
+
+      background: radial-gradient(circle, rgba(180, 210, 255, 0.07) 0%, transparent 68%);
+
+      z-index: 2;
+
+    }
+
+
+
+    .scan-hud {
+
+      position: absolute;
+
+      left: 32%;
+
+      top: 47%;
+
+      width: min(58vmin, 480px);
+
+      aspect-ratio: 1;
+
+      transform: translate(-50%, -50%);
+
+      pointer-events: none;
+
+      z-index: 2;
+
+      opacity: 0.15;
+
+      mask-image: radial-gradient(ellipse 34% 38% at 50% 50%, transparent 0%, transparent 78%, rgba(0, 0, 0, 0.35) 92%, #000 100%);
+
+      -webkit-mask-image: radial-gradient(ellipse 34% 38% at 50% 50%, transparent 0%, transparent 78%, rgba(0, 0, 0, 0.35) 92%, #000 100%);
+
+      filter: blur(0.25px);
+
+    }
+
+
+
+    .scan-hud circle, .scan-hud line {
+
+      fill: none;
+
+      stroke: rgba(255, 255, 255, 0.1);
+
+    }
+
+
 
     .top-bar {
+
       position: absolute;
-      top: 0;
+
+      top: clamp(24px, 6.5vh, 64px);
+
       left: 0;
+
       right: 0;
+
       z-index: 10;
+
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       padding: 1rem 1.25rem;
-      background: linear-gradient(to bottom, rgba(2, 6, 12, 0.85), transparent);
+
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+
       pointer-events: none;
+
     }
 
+
+
     .top-bar a {
+
       pointer-events: auto;
+
       color: rgba(255, 255, 255, 0.72);
+
       text-decoration: none;
+
       font-size: 0.875rem;
-      letter-spacing: 0.04em;
+
     }
+
+
 
     .top-bar a:hover { color: #fff; }
 
+
+
     .top-tag {
+
       font-size: 0.75rem;
+
       letter-spacing: 0.18em;
+
       color: rgba(255, 255, 255, 0.38);
+
       text-transform: uppercase;
+
     }
+
+
 
     .hint {
+
       position: absolute;
-      bottom: 1.25rem;
+
+      bottom: calc(clamp(24px, 6.5vh, 64px) + 0.75rem);
+
       left: 50%;
+
       transform: translateX(-50%);
-      z-index: 5;
+
+      z-index: 6;
+
       font-size: 0.72rem;
-      letter-spacing: 0.22em;
-      color: rgba(255, 255, 255, 0.32);
+
+      letter-spacing: 0.2em;
+
+      color: rgba(255, 255, 255, 0.28);
+
       pointer-events: none;
+
       white-space: nowrap;
+
     }
+
+
+
+    @media (max-width: 768px) {
+
+      .rubik-poster__title-wrap { right: 4%; }
+
+      .rubik-poster__title { font-size: clamp(2.2rem, 13vw, 3.4rem); transform: perspective(700px) rotateY(-14deg) rotateX(5deg); }
+
+      .rubik-poster__title--bloom { transform: perspective(700px) rotateY(-14deg) rotateX(5deg) scale(1.03); }
+
+      .rubik-poster__sub { top: calc(50% + 2.2rem); letter-spacing: 0.3em; }
+
+      .scan-hud, .rubik-poster__glow { left: 40%; }
+
+      .rubik-poster__beams {
+
+        mask-image: radial-gradient(ellipse 42% 44% at 38% 46%, transparent 0%, transparent 48%, #000 80%);
+
+        -webkit-mask-image: radial-gradient(ellipse 42% 44% at 38% 46%, transparent 0%, transparent 48%, #000 80%);
+
+      }
+
+    }
+
   </style>
+
 </head>
+
 <body>
+
   <div id="app">
+
     <div id="canvas-wrap">
+
+      <div class="rubik-poster-back" aria-hidden="true">
+
+        <div class="rubik-poster__beams" aria-hidden="true">
+
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+
+        </div>
+
+        <div class="rubik-poster__vignette" aria-hidden="true"></div>
+
+        <div class="rubik-poster__glow" aria-hidden="true"></div>
+
+      </div>
+
       <svg class="scan-hud" viewBox="0 0 400 400" aria-hidden="true">
+
         <circle cx="200" cy="200" r="168" stroke-width="0.7" stroke-dasharray="5 12" opacity="0.5"/>
+
         <circle cx="200" cy="200" r="148" stroke-width="0.4" stroke-dasharray="2 9" opacity="0.35"/>
+
         <line x1="200" y1="28" x2="200" y2="52" stroke-width="0.55"/>
+
         <line x1="200" y1="348" x2="200" y2="372" stroke-width="0.55"/>
+
         <line x1="28" y1="200" x2="52" y2="200" stroke-width="0.55"/>
+
         <line x1="348" y1="200" x2="372" y2="200" stroke-width="0.55"/>
+
       </svg>
+
       <canvas id="cube-canvas"></canvas>
-      <p class="hint">DRAG TO ROTATE · 拖拽旋转 · 白色像素点 + 棱线</p>
+
+      <div class="rubik-poster-front" aria-hidden="true">
+
+        <div class="rubik-poster__letterbox rubik-poster__letterbox--top"></div>
+
+        <div class="rubik-poster__letterbox rubik-poster__letterbox--bottom"></div>
+
+        <div class="rubik-poster__title-wrap">
+
+          <p class="rubik-poster__title rubik-poster__title--bloom" aria-hidden="true">ROTATE</p>
+
+          <p class="rubik-poster__title"><span class="rubik-poster__title-mark">R</span>OTATE</p>
+
+        </div>
+
+
+
+        <span class="rubik-poster__sub">PIXEL MESH · 02</span>
+
+      </div>
+
+      <p class="hint">DRAG TO ROTATE · 拖拽旋转 · 白色像素线框魔方</p>
+
     </div>
+
+
 
     <div class="top-bar">
-      <a href="../suixi.html">← 持续练习</a>
+
+      <a href="../suixi.html#02">← 持续练习</a>
+
       <span class="top-tag">02 / RUBIK · PIXEL MESH</span>
+
     </div>
+
   </div>
 
+
+
   <script type="importmap">
-  {
-    "imports": {
-      "three": "../../vendor/three/three.module.js"
-    }
-  }
+
+  { "imports": { "three": "../../vendor/three/three.module.js" } }
+
   </script>
+
   <script type="module">
-    import { initRubikCubeScene } from "./rubik-cube.js?v=20260703h";
+
+    import { initRubikCubeScene } from "./rubik-cube.js?v=20260715h";
+
     initRubikCubeScene({
+
       canvas: document.getElementById("cube-canvas"),
+
       wrap: document.getElementById("canvas-wrap"),
+
+      camOffsetX: -2.2,
+
     });
+
   </script>
+
   <script src="../../click-effect.js?v=20260620"></script>
+
 </body>
+
 </html>
+
+

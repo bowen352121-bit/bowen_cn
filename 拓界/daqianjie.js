@@ -58,7 +58,7 @@ function initHeroCarousel() {
         const src = `../dqjimages/${photo.file}`;
         return `
             <div class="hero-slide">
-                <img src="${src}" alt="大千界横幅 ${photo.file}" loading="eager">
+                <img src="${src}" alt="拓界横幅 ${photo.file}" loading="eager">
             </div>
         `;
     }).join("");
@@ -114,7 +114,7 @@ function renderGallery() {
                 <span class="card-date">${formatCardDate(photo.addedAt)}</span>
                 <img
                     src="${src}"
-                    alt="大千界摄影作品 ${label}"
+                    alt="拓界摄影作品 ${label}"
                     data-added="${photo.addedAt}"
                     loading="lazy"
                 >

@@ -1,4 +1,4 @@
-/* 邦布 — 加载过场 / 明殿常驻挂件（精灵图 30 帧竖向） */
+/* 邦布 — 加载过场 / 文作常驻挂件（精灵图 30 帧竖向） */
 .bangboo-loader-wrap {
   position: fixed;
   right: 12px;
@@ -21,7 +21,7 @@
   visibility: visible;
 }
 
-/* 明殿：常驻右下角 */
+/* 文作：常驻右下角 */
 .bangboo-loader-wrap.is-persistent {
   z-index: 25;
   opacity: 1;
